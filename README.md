@@ -3,7 +3,7 @@
 > Clinical protocol validation using AI-powered playbook analysis
 
 **Version**: 2.3-production  
-**Status**: ✅ Production Ready - Agent V2 Complete (All Phases Implemented)  
+**Status**: ✅ Production Ready - Agent V2 
 **Last Updated**: 2025-11-29
 
 ---
@@ -62,11 +62,7 @@ Follow the prompts:
 
 ## 🏗️ Architecture
 
-### Agent V2 (Simplified Architecture) - **Recommended**
-
-**Status**: ✅ Implemented and functional
-
-Agent V2 is a **LLM-centric architecture** where:
+### Agent V2 is a **LLM-centric architecture** where:
 - **Zero clinical logic in code** - all clinical intelligence comes from LLM
 - **Single LLM call** - comprehensive analysis via super prompt
 - **Specialty-agnostic** - works identically for ORL, AVC, Pediatrics, etc.
@@ -104,14 +100,6 @@ CLI Report Generator → reports/*.txt, reports/*.json
 - ✅ Zero duplicação: arquivos obsoletos removidos
 - ✅ Imports limpos: sem referências quebradas
 - ✅ Sistema consolidado: estrutura clara e consistente
-
-### Legacy Architecture
-
-**Status**: ⚠️ Deprecated (maintained for compatibility)
-
-The legacy architecture uses multiple LLM calls and has some hardcoded clinical logic. It will be removed in Phase 3.
-
-**When to use**: Only if Agent V2 fails or for compatibility testing.
 
 ---
 
@@ -189,20 +177,6 @@ python scripts/setup_openrouter.py
 
 **Fix**: Add protocol JSON files to `models_json/` directory
 
-### Agent V2 not activating
-
-**Cause**: Feature flag not set or playbook_text empty
-
-**Fix**:
-```bash
-# Verify feature flag
-echo $env:USE_SIMPLIFIED_AGENT  # Windows PowerShell
-echo $USE_SIMPLIFIED_AGENT      # Linux/Mac
-
-# Set if needed
-$env:USE_SIMPLIFIED_AGENT="true"  # Windows PowerShell
-export USE_SIMPLIFIED_AGENT=true  # Linux/Mac
-```
 
 ### Import errors
 
@@ -286,12 +260,12 @@ python test_agent_v2_real_protocols.py
 
 ## 📈 Performance
 
-**Agent V2** (single LLM call):
+**Agent V2**:
 - **Latency p95**: ≤ 60 seconds
 - **Cost per analysis**: ~$0.05-0.10 (depends on model)
 - **Success rate**: ≥ 95%
 
-**Legacy** (multiple LLM calls):
+**Legacy**:
 - **Latency p95**: ~90-120 seconds
 - **Cost per analysis**: ~$0.10-0.15
 - **Success rate**: ~90%
