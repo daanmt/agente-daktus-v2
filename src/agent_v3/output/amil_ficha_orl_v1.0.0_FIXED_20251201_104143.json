@@ -1,0 +1,603 @@
+{
+  "metadata": {
+    "company": "UNIMED_FORTALEZA",
+    "name": "protocolo_solicitacao_testosterona",
+    "version": "0.1.2"
+  },
+  "nodes": [
+    {
+      "id": "node-2",
+      "type": "custom",
+      "position": {
+        "x": 900,
+        "y": 100
+      },
+      "data": {
+        "label": "Identificação - direta",
+        "descricao": "<p>Informações sobre o paciente e tipo de consulta. MUDANÇA V3: Adicionada aresta direta para o nó de reavaliação no caminho de consulta de retorno.</p>",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "P2",
+            "nodeId": "node-2",
+            "titulo": "<p><strong>Tipo de consulta:</strong></p>",
+            "descricao": "Primeira consulta ou retorno?",
+            "select": "E",
+            "options": [
+              {
+                "id": "primeiro_atendimento",
+                "label": "Primeira consulta",
+                "preselected": false,
+                "exclusive": true,
+                "iid": "f5fdcc20-f91a-48c2-b81a-49f515a9aad6"
+              },
+              {
+                "id": "retorno_atendimento",
+                "label": "Consulta de retorno",
+                "preselected": false,
+                "exclusive": true,
+                "iid": "90d26500-80e1-41c4-87f1-384ee378332a"
+              }
+            ],
+            "opcional": false,
+            "uid": "motivo_consulta",
+            "condicional": "visivel"
+          }
+        ]
+      }
+    },
+    {
+      "id": "node-3",
+      "type": "custom",
+      "position": {
+        "x": 1800,
+        "y": 100
+      },
+      "data": {
+        "label": "Avaliação geral - direta",
+        "condicao": "'primeiro_atendimento' in motivo_consulta",
+        "descricao": "<p>Avaliação inicial do paciente.</p>",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "P3",
+            "nodeId": "node-3",
+            "titulo": "<p><strong>Sintomas atuais do(a) paciente:</strong></p>",
+            "descricao": "Quais são os sintomas atuais? Dor, parestesia?",
+            "select": "E",
+            "options": [
+              {
+                "iid": "d48ecd9b-7dc6-49b6-bad8-25f4390e5cbc",
+                "id": "assintomatico",
+                "label": "Paciente assintomático",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "id": "hipotrofia_muscular",
+                "label": "Diminuição da massa magra e força muscular",
+                "preselected": false,
+                "exclusive": false,
+                "iid": "20baeb16-6372-49ec-bfe2-0d19d2a36af6"
+              },
+              {
+                "iid": "c27c58bf-a1f2-4109-a816-25bbe5affbb3",
+                "id": "aumenta_gordura_imc",
+                "label": "Aumento da gordura corporal ou do IMC",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "134abbbe-1684-4cc1-9bb8-f156f6d7d05e",
+                "id": "diminui_energia_cansaco",
+                "label": "Diminuição da energia ou cansaço",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "id": "diminui_densidade_osso",
+                "label": "Diminuição da densidade óssea",
+                "preselected": false,
+                "exclusive": false,
+                "iid": "2ff43155-8016-49b4-ac2f-ffd16c94ae11"
+              },
+              {
+                "iid": "01af4878-fdd0-4f0f-a1c1-6f3706fd1bf0",
+                "id": "fratura_fragilidade",
+                "label": "Fratura por fragilidade",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "edd816ef-cffe-45e6-8dc9-722622cdbc0c",
+                "id": "anemia_suspeita",
+                "label": "Anemia em investigação",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "8b88571a-e128-488e-b8fe-84196098acc8",
+                "id": "deficit_recente_cognicao",
+                "label": "Déficit cognitivo de início recente",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "2e2b8bde-c2bf-4aaa-a967-4cfefd5526df",
+                "id": "fogacho",
+                "label": "Ondas de calor ou fogacho",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "39932e48-b7ef-4c35-8706-f1ddb26b6d6d",
+                "id": "depressao",
+                "label": "Depressão",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "eab83936-7c1c-4f51-91f1-7c8c15e24718",
+                "id": "sudorese",
+                "label": "Sudorese",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "549cd5d5-e29c-4838-8aef-fa456c8d5926",
+                "id": "diminui_performance",
+                "label": "Diminuição da performance ou da vitalidade",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "e0f2a6f6-462c-4c4f-9359-180153e90286",
+                "id": "outros_sintomas",
+                "label": "Outros sinais ou sintomas",
+                "preselected": false,
+                "exclusive": false
+              }
+            ],
+            "opcional": false,
+            "uid": "sintomas_atuais",
+            "condicional": "visivel",
+            "expressao": ""
+          },
+          {
+            "id": "P613e35bd-d5cb-455d-85c7-83e31ac7644d",
+            "nodeId": "node-3",
+            "uid": "sinais_sintomas_hipogonadismo",
+            "titulo": "<p>Sinais ou sintomas de hipogonadismo:</p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "E",
+            "options": [
+              {
+                "iid": "a414be57-0a77-49a9-98f5-8c61c1706ec3",
+                "id": "atraso_dev_sexual",
+                "label": "Desenvolvimento sexual incompleto ou atrasado",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "915ae867-bd3c-4fc1-878c-4199ea9beb17",
+                "id": "ginecomastia",
+                "label": "Ginecomastia",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "d58c9262-0e21-4a60-a11a-bf0563e53359",
+                "id": "testiculo_pequeno",
+                "label": "Testículos muito pequenos",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "a32a45d8-5ad7-4410-a70f-c3c64e9e2d90",
+                "id": "perde_pelos",
+                "label": "Perda de pelos corporais",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "0ab1b15c-849c-4ca6-aa48-aa036fdc08e5",
+                "id": "libido_baixa",
+                "label": "Diminuição da libido ou das ereções espontâneas",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "2991f59c-b7de-46d1-8e6d-e17ad41df9fa",
+                "id": "infertilidade",
+                "label": "Infertilidade",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "5f31a6b8-b026-4420-9726-dd7ff8195330",
+                "id": "none_sintomas",
+                "label": "Nenhum dos sintomas",
+                "preselected": true,
+                "exclusive": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "feec4651-0d95-462a-a865-a5bb440eba81",
+      "type": "custom",
+      "position": {
+        "x": 2700,
+        "y": 100
+      },
+      "data": {
+        "label": "Avaliação comorbidades - direta",
+        "condicao": "'primeiro_atendimento' in motivo_consulta",
+        "descricao": "<p>Avaliação inicial do paciente. MUDANÇA V3: Fluxo ajustado para pular nó de reavaliação no caminho de primeira consulta.</p>",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "3de36f8d-8a0f-4308-a884-8b7368c212ff",
+            "nodeId": "node-3",
+            "uid": "risco_comorbidades",
+            "titulo": "<p><strong>Comorbidade(s) associada(s) a risco aumentado:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "E",
+            "options": [
+              {
+                "iid": "6c7c4dd5-9f5f-4590-bbb0-61c8d0299894",
+                "id": "uso_opioides",
+                "label": "Uso crônico de opioides",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "61be8ac5-9d54-4018-be06-48e4940b8b58",
+                "id": "uso_corticoides",
+                "label": "Uso crônico de corticoides",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "a5fdb6bd-272e-424c-8123-1b9e366e2acb",
+                "id": "radio_cirurgia_hipohipo",
+                "label": "Radioterapia ou cirurgia hipotalâmico-hipofisária",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "e4dce659-0d58-40a7-9a88-79259ae355a3",
+                "id": "tumor_hipohipo",
+                "label": "Tumor de hipófise ou hipotálamo (confirmado ou em investigação)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "5f5402a3-a555-49d1-902c-16fb7a38bb1d",
+                "id": "tce_disfuncao_hormonal",
+                "label": " Trauma craniano com disfunção hormonal",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "33a29c06-e99f-44b1-b32b-4ed336e953ba",
+                "id": "cirrose",
+                "label": "Cirrose hepática",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "3e63c397-d568-4ca8-994c-4db4e8215c5b",
+                "id": "drc",
+                "label": "Doença renal crônica",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "17a39618-e9b0-4229-8a4a-296556286f82",
+                "id": "hiv",
+                "label": "HIV",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "88608e55-8b2b-483a-8235-82dcb5cbeabc",
+                "id": "hemocromatose_hereditaria",
+                "label": "Hemocromatose hereditária",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "d10839bc-e9da-444d-9508-46c2efc5ad98",
+                "id": "klinefelter",
+                "label": "Síndrome de Klinefelter",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "5a450f05-2ff8-4a2d-b466-b040c4e8f7a1",
+                "id": "quimio_gonadotoxica",
+                "label": "História de quimioterapia gonadotóxica",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "f9b74123-b975-43ed-b725-0a774b6e2d5a",
+                "id": "dics",
+                "label": "Doença inflamatória crônica sistêmica",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "c0ec3e5a-9e99-4a5f-8574-028215e578b9",
+                "id": "outros_sintomas",
+                "label": "Outros sinais ou sintomas",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "3103936e-566d-4380-b458-a5dc4cf8d046",
+                "id": "sem_comorbidade",
+                "label": "Sem comorbidade",
+                "preselected": true,
+                "exclusive": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "52484c01-e863-4dca-a875-c3cc0502feb9",
+      "type": "custom",
+      "position": {
+        "x": 3600,
+        "y": 100
+      },
+      "data": {
+        "label": "Reavaliação - direta",
+        "condicao": "'retorno_atendimento' in motivo_consulta",
+        "descricao": "<p>Reavaliação do paciente. MUDANÇA V3: Adicionada aresta direta do nó de identificação para este nó no caminho de retorno.</p>",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "bcbdf92d-930a-4f9e-b5ee-34cac79cb459",
+            "nodeId": "node-3",
+            "titulo": "<p><strong>Testosterona total sérica:</strong></p>",
+            "descricao": "Quais são os sintomas atuais? Dor, parestesia?",
+            "select": "A",
+            "options": [],
+            "opcional": false,
+            "uid": "testo_serica",
+            "condicional": "visivel",
+            "min": 1,
+            "max": 10000,
+            "naSelecionado": false,
+            "naDescricao": ""
+          },
+          {
+            "id": "P7d92fa8e-97e5-4038-a4dc-b0ddd7e0b39d",
+            "nodeId": "52484c01-e863-4dca-a875-c3cc0502feb9",
+            "uid": "suspeita_defeito_dev_enzimatico",
+            "titulo": "<p><strong>Suspeita de distúrbios do desenvolvimento ou de defeitos enzimáticos:</strong></p>",
+            "descricao": "MUDANÇA V3: Refatorado para seleção única Sim/Não para captura booleana confiável.",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "E",
+            "options": [
+              {
+                "id": "true",
+                "label": "Sim",
+                "preselected": false,
+                "exclusive": true,
+                "iid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+              },
+              {
+                "id": "false",
+                "label": "Não",
+                "preselected": true,
+                "exclusive": true,
+                "iid": "b2c3d4e5-f6g7-8901-bcde-f23456789012"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "a3aed470-386f-40e4-80db-e08a5dcf3c33",
+      "type": "custom",
+      "position": {
+        "x": 4500,
+        "y": 100
+      },
+      "data": {
+        "label": "Não indicação de exame - direta",
+        "condicao": "(('primeiro_atendimento' in motivo_consulta) and (selected_any(sinais_sintomas_hipogonadismo, 'none_sintomas'))) or (('retorno_atendimento' in motivo_consulta) and (testo_serica >= 300))",
+        "descricao": "<p><strong>Seu paciente não possui critérios elegíveis, de acordo com a medicina baseada em evidências, para dosar a testosterona.</strong></p>",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "P977514e8-550d-4366-803c-afdc5645fb17",
+            "nodeId": "a3aed470-386f-40e4-80db-e08a5dcf3c33",
+            "uid": "desejo_solicitacao_sem_indicacao",
+            "titulo": "<p><strong>Deseja solicitar exames ainda assim?</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "C",
+            "options": [],
+            "defaultValue": "true"
+          },
+          {
+            "id": "P090f44dd-0058-4aeb-aba0-3f66af1e5f4c",
+            "nodeId": "a3aed470-386f-40e4-80db-e08a5dcf3c33",
+            "uid": "detalhamento_solicitacao_sem_indicacao",
+            "titulo": "<p><strong>Descrever abaixo qual a indicação clínica pela qual se justifica a solicitação do exame (mínimo 40 caracteres).</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "desejo_solicitacao_sem_indicacao == True",
+            "select": "B",
+            "options": [],
+            "min": 40
+          }
+        ]
+      }
+    },
+    {
+      "id": "node-7",
+      "type": "conduct",
+      "position": {
+        "x": 5400,
+        "y": 100
+      },
+      "data": {
+        "label": "Conduta - direta",
+        "condicao": "",
+        "descricao": "<p></p>",
+        "conduta": "conclusao",
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [
+            {
+              "id": "c28ddd23-5550-40e4-8beb-0efe1b22df03",
+              "nome": "Testosterona total - pesquisa e/ou dosagem",
+              "descricao": "MUDANÇA V3: Adicionado alerta sobre horário de coleta matinal para precisão diagnóstica.",
+              "condicional": "visivel",
+              "condicao": "not(desejo_solicitacao_sem_indicacao == False) or testo_serica < 300",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "40316513",
+              "categoria": "Laboratoriais",
+              "cid": "E29.1",
+              "indicacao": "Indicada na avaliação inicial do hipogonadismo. Uma segunda dosagem confirmatória deve ser solicitada se testosterona total reduzida (<300 ng/dL).",
+              "alerta": "Coletar amostra pela manhã, entre 7h e 10h, preferencialmente em jejum.",
+              "material": "Sangue"
+            },
+            {
+              "id": "da72f631-0f69-4e25-95c3-8c3bdae76432",
+              "nome": "Testosterona livre - pesquisa e/ou dosagem",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "not(desejo_solicitacao_sem_indicacao == False) or testo_serica < 300",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "40316505",
+              "categoria": "Laboratoriais",
+              "cid": "E29.1",
+              "indicacao": "Indicada apenas se exame prévio  com testosterona total reduzida (< 300 ng/dL).",
+              "alerta": "",
+              "material": "Sangue"
+            },
+            {
+              "id": "b0148caa-ea6a-4147-9be7-d24ad7c13c9e",
+              "nome": "Dehidrotestosterona (DHT) - pesquisa e/ou dosagem",
+              "descricao": "MUDANÇA V3: Condição ajustada para depender exclusivamente de suspeita de defeito enzimático ou distúrbios do desenvolvimento.",
+              "condicional": "visivel",
+              "condicao": "suspeita_defeito_dev_enzimatico == 'true'",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "40316220",
+              "categoria": "Laboratoriais",
+              "cid": "E29.1",
+              "indicacao": "Indicada apenas na pesquisa de distúrbios do desenvolvimento sexual ou suspeita de defeitos enzimáticos na conversão de testosterona em dehidrotestosterona.",
+              "alerta": "",
+              "material": "Sangue"
+            },
+            {
+              "id": "20ecbb89-116d-4aeb-a840-4e2b112e7ca1",
+              "nome": "Folículo estimulante, hormônio (FSH) - pesquisa e/ou dosagem",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "not(desejo_solicitacao_sem_indicacao == False) or testo_serica < 300",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "40316289",
+              "categoria": "Laboratoriais",
+              "cid": "E23.0",
+              "indicacao": "Testosterona total reduzida (< 300 ng/dL), para diferenciar hipogonadismo primário vs. secundário.",
+              "alerta": "",
+              "material": "Sangue"
+            },
+            {
+              "id": "9c247f6d-9f5a-4130-93a5-cc3c13cfe058",
+              "nome": "Hormônio luteinizante (LH) - pesquisa e/ou dosagem.",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "not(desejo_solicitacao_sem_indicacao == False) or testo_serica < 300",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": "40316335",
+              "categoria": "Laboratoriais",
+              "cid": "E23.0",
+              "indicacao": "Testosterona total reduzida (< 300 ng/dL), para diferenciar hipogonadismo primário vs. secundário.",
+              "alerta": "",
+              "material": "Sangue"
+            }
+          ],
+          "medicamento": [],
+          "encaminhamento": [],
+          "mensagem": [
+            {
+              "id": "58b7bfe8-007e-44f0-8d64-4065d6c0f2fd",
+              "nome": "MENSAGEM EXAME COBERTO",
+              "descricao": "<p></p>",
+              "condicional": "visivel",
+              "condicao": "not((('primeiro_atendimento' in motivo_consulta) and (selected_any(sinais_sintomas_hipogonadismo, 'none_sintomas'))) or (('retorno_atendimento' in motivo_consulta) and (testo_serica >= 300)))",
+              "conteudo": "<p>O seu paciente possui um exame adequadamente indicado de acordo com a<strong> medicina baseada em evidências</strong>, portanto abaixo disponibilizamos a prescrição do mesmo.</p>",
+              "observacao": ""
+            },
+            {
+              "id": "e99f664d-898d-4115-977c-15dded29024d",
+              "nome": "MENSAGEM EXAME NÃO COBERTO",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "(('primeiro_atendimento' in motivo_consulta) and (selected_any(sinais_sintomas_hipogonadismo, 'none_sintomas'))) or (('retorno_atendimento' in motivo_consulta) and (testo_serica >= 300))",
+              "conteudo": "<p>O seu paciente não possui critérios clínicos elegíveis, <strong>de acordo com a medicina baseada em evidências</strong>, para a solicitação da dosagem de testosterona.</p>",
+              "observacao": ""
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-node-2-node-3",
+      "source": "node-2",
+      "target": "node-3",
+      "data": {}
+    },
+    {
+      "id": "e-node-3-feec4651-0d95-462a-a865-a5bb440eba81",
+      "source": "node-3",
+      "target": "feec4651-0d95-462a-a865-a5bb440eba81",
+      "data": {}
+    },
+    {
+      "id": "e-feec4651-0d95-462a-a865-a5bb440eba81-a3aed470-386f-40e4-80db-e08a5dcf3c33",
+      "source": "feec4651-0d95-462a-a865-a5bb440eba81",
+      "target": "a3aed470-386f-40e4-80db-e08a5dcf3c33",
+      "data": {}
+    },
+    {
+      "id": "e-node-2-52484c01-e863-4dca-a875-c3cc0502feb9",
+      "source": "node-2",
+      "target": "52484c01-e863-4dca-a875-c3cc0502feb9",
+      "data": {}
+    },
+    {
+      "id": "e-52484c01-e863-4dca-a875-c3cc0502feb9-a3aed470-386f-40e4-80db-e08a5dcf3c33",
+      "source": "52484c01-e863-4dca-a875-c3cc0502feb9",
+      "target": "a3aed470-386f-40e4-80db-e08a5dcf3c33",
+      "data": {}
+    },
+    {
+      "id": "e-a3aed470-386f-40e4-80db-e08a5dcf3c33-node-7",
+      "source": "a3aed470-386f-40e4-80db-e08a5dcf3c33",
+      "target": "node-7",
+      "data": {}
+    }
+  ]
+}

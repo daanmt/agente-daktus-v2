@@ -2,7 +2,7 @@
 """
 Validação Crítica DIA 1: Auto-Apply de Melhorias
 
-Este script testa se Claude Sonnet 4.5 consegue aplicar automaticamente
+Este script testa se Claude Sonnet 4.0 consegue aplicar automaticamente
 as melhorias sugeridas pela v2 no JSON do protocolo.
 
 Resultado esperado: >80% de sucesso para prosseguir com implementação v3
@@ -21,8 +21,8 @@ load_dotenv(project_root / ".env")
 
 # Configurações
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-MODEL_AUTO_APPLY = "anthropic/claude-sonnet-4.5"
-PROTOCOLS_TO_TEST = 5  # Começar com 5 protocolos variados
+MODEL_AUTO_APPLY = "anthropic/claude-sonnet-4.0"
+PROTOCOLS_TO_TEST = 1  # Começar com 5 protocolos variados
 
 def load_protocol(protocol_path: str) -> dict:
     """Carrega protocolo JSON"""
@@ -36,7 +36,7 @@ def run_v2_analysis(protocol_path: str, playbook_path: str = None) -> dict:
     result = analyze(
         protocol_path=protocol_path,
         playbook_path=playbook_path,
-        model="anthropic/claude-sonnet-4.5"
+        model="anthropic/claude-sonnet-4.0"
     )
 
     suggestions = result.get('improvement_suggestions', [])
@@ -79,7 +79,7 @@ O JSON deve ser válido e parseável.
 
 def apply_improvements_via_llm(protocol_json: dict, suggestions: list) -> tuple[dict, str]:
     """
-    Aplica melhorias usando Claude Sonnet 4.5
+    Aplica melhorias usando Claude Sonnet 4.0
 
     Returns:
         (protocol_fixed, raw_response)
@@ -88,7 +88,7 @@ def apply_improvements_via_llm(protocol_json: dict, suggestions: list) -> tuple[
 
     prompt = build_auto_apply_prompt(protocol_json, suggestions)
 
-    print("\n🤖 Enviando para Claude Sonnet 4.5 para auto-apply...")
+    print("\n🤖 Enviando para Claude Sonnet 4.0 para auto-apply...")
 
     response = requests.post(
         "https://openrouter.ai/api/v1/chat/completions",

@@ -1,0 +1,1801 @@
+{
+  "metadata": {
+    "company": "amil",
+    "name": "ficha_orl",
+    "version": "1.0.0"
+  },
+  "nodes": [
+    {
+      "id": "node-identificacao-paciente",
+      "type": "custom",
+      "position": {
+        "x": 900,
+        "y": 100
+      },
+      "data": {
+        "label": "Identificação do Paciente",
+        "condicao": "",
+        "descricao": "Dados demográficos essenciais para estratificação clínica.",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Q-idade-paciente",
+            "nodeId": "node-identificacao-paciente",
+            "uid": "age",
+            "titulo": "<p><strong>Idade do paciente (anos):</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "number",
+            "options": [],
+            "min": 0,
+            "max": 120
+          },
+          {
+            "id": "Q-sexo-paciente",
+            "nodeId": "node-identificacao-paciente",
+            "uid": "sex",
+            "titulo": "<p><strong>Sexo do paciente:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "choice",
+            "options": [
+              {
+                "iid": "sexo-masculino-id",
+                "id": "masculino",
+                "label": "Masculino",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "sexo-feminino-id",
+                "id": "feminino",
+                "label": "Feminino",
+                "preselected": false,
+                "exclusive": true
+              }
+            ]
+          },
+          {
+            "id": "Q-gravidez-lactacao",
+            "nodeId": "node-identificacao-paciente",
+            "uid": "gravidez_lactacao",
+            "titulo": "<p><strong>Paciente está grávida ou amamentando?</strong></p>",
+            "descricao": "MUDANÇA V3: Pergunta crítica adicionada para avaliar risco/benefício de medicamentos (Prednisolona, antibióticos, anti-histamínicos) em mulheres em idade fértil",
+            "condicional": "visivel",
+            "expressao": "sex == 'feminino' and age >= 12 and age <= 55",
+            "select": "choice",
+            "options": [
+              {
+                "iid": "nao-gravida-lactante-id",
+                "id": "nao_gravida_lactante",
+                "label": "Não está grávida nem amamentando",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "gravida-id",
+                "id": "gravida",
+                "label": "Grávida",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "lactante-id",
+                "id": "lactante",
+                "label": "Amamentando",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "gravida-lactante-id",
+                "id": "gravida_lactante",
+                "label": "Grávida e amamentando",
+                "preselected": false,
+                "exclusive": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "node-tipo-consulta",
+      "type": "custom",
+      "position": {
+        "x": 1800,
+        "y": 100
+      },
+      "data": {
+        "label": "Tipo de Consulta",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Q-motivo-consulta",
+            "nodeId": "node-tipo-consulta",
+            "uid": "motivo_consulta",
+            "titulo": "<p><strong>Tipo de consulta:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "choice",
+            "options": [
+              {
+                "iid": "primeira-consulta-id",
+                "id": "primeira_consulta",
+                "label": "Primeira consulta/avaliação inicial",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "retorno-consulta-id",
+                "id": "retorno_consulta",
+                "label": "Consulta de retorno/seguimento",
+                "preselected": false,
+                "exclusive": true
+              }
+            ]
+          },
+          {
+            "id": "Q-exames-avaliacao",
+            "nodeId": "node-tipo-consulta",
+            "uid": "exames_avaliacao",
+            "titulo": "<p><strong>Paciente trouxe exames para avaliação?</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "'retorno_consulta' in motivo_consulta",
+            "select": "boolean",
+            "options": [],
+            "defaultValue": "false"
+          },
+          {
+            "id": "P57ff95d6-7efd-4af9-8346-731f3382b3e1",
+            "nodeId": "node-tipo-consulta",
+            "uid": "sintomas_hoje",
+            "titulo": "<p><strong>Paciente sintomático hoje?</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "'retorno_consulta' in motivo_consulta",
+            "select": "boolean",
+            "options": [],
+            "defaultValue": "false"
+          }
+        ]
+      }
+    },
+    {
+      "id": "node-sintomas-principais",
+      "type": "custom",
+      "position": {
+        "x": 2700,
+        "y": 100
+      },
+      "data": {
+        "label": "Sintomas Principais",
+        "condicao": "('primeira_consulta' in motivo_consulta) or ('retorno_consulta' in motivo_consulta and sintomas_hoje == true)",
+        "descricao": "Avaliação sintomática direcionada conforme tipo de consulta. MUDANÇA V3: Sintomas nasossinusais divididos em alérgicos/vasomotores e infecciosos/estruturais para melhor refinamento diagnóstico",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Q-sintomas-nasossinusais-alergicos",
+            "nodeId": "node-sintomas-principais",
+            "uid": "sintomas_nasossinusais_alergicos",
+            "titulo": "<p><strong>Sintomas nasais alérgicos/vasomotores presentes:</strong></p>",
+            "descricao": "MUDANÇA V3: Separação de sintomas alérgicos/vasomotores para refinar lógica de prescrição de anti-histamínicos e corticoides",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "multiChoice",
+            "options": [
+              {
+                "iid": "nenhum-sintoma-alergico-id",
+                "id": "nenhum_sintoma_alergico",
+                "label": "Nenhum sintoma alérgico/vasomotor",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "rinorreia-clara-id",
+                "id": "rinorreia_clara",
+                "label": "Rinorreia clara/aquosa",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "prurido-nasal-id",
+                "id": "prurido_nasal",
+                "label": "Prurido nasal",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "espirros-id",
+                "id": "espirros",
+                "label": "Espirros frequentes",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          },
+          {
+            "id": "Q-sintomas-nasossinusais-infecciosos",
+            "nodeId": "node-sintomas-principais",
+            "uid": "sintomas_nasossinusais_infecciosos",
+            "titulo": "<p><strong>Sintomas nasais infecciosos/estruturais presentes:</strong></p>",
+            "descricao": "MUDANÇA V3: Separação de sintomas infecciosos/estruturais para refinar lógica de prescrição de antibióticos e encaminhamentos",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "multiChoice",
+            "options": [
+              {
+                "iid": "nenhum-sintoma-infeccioso-id",
+                "id": "nenhum_sintoma_infeccioso",
+                "label": "Nenhum sintoma infeccioso/estrutural",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "obstrucao-nasal-id",
+                "id": "obstrucao_nasal",
+                "label": "Obstrução nasal",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "rinorreia-purulenta-id",
+                "id": "rinorreia_purulenta",
+                "label": "Rinorreia purulenta/espessa",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "dor-facial-id",
+                "id": "dor_facial",
+                "label": "Dor/pressão facial",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "hiposmia-anosmia-id",
+                "id": "hiposmia_anosmia",
+                "label": "Diminuição/perda do olfato",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          },
+          {
+            "id": "Q-sintomas-otologicos",
+            "nodeId": "node-sintomas-principais",
+            "uid": "sintomas_otologicos",
+            "titulo": "<p><strong>Sintomas otológicos presentes:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "multiChoice",
+            "options": [
+              {
+                "iid": "nenhum-sintoma-otologico-id",
+                "id": "nenhum_sintoma_otologico",
+                "label": "Nenhum sintoma otológico",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "otalgia-id",
+                "id": "otalgia",
+                "label": "Dor de ouvido (otalgia)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "otorreia-id",
+                "id": "otorreia",
+                "label": "Secreção no ouvido (otorreia)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "hipoacusia-id",
+                "id": "hipoacusia",
+                "label": "Diminuição da audição",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "plenitude-auricular-id",
+                "id": "plenitude_auricular",
+                "label": "Sensação de ouvido tampado",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "zumbido-id",
+                "id": "zumbido",
+                "label": "Zumbido no ouvido (tinnitus)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "prurido-auricular-id",
+                "id": "prurido_auricular",
+                "label": "Coceira no ouvido",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          },
+          {
+            "id": "Q-sintomas-vestibulares",
+            "nodeId": "node-sintomas-principais",
+            "uid": "sintomas_vestibulares",
+            "titulo": "<p><strong>Sintomas vestibulares presentes:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "multiChoice",
+            "options": [
+              {
+                "iid": "nenhum-sintoma-vestibular-id",
+                "id": "nenhum_sintoma_vestibular",
+                "label": "Nenhum sintoma vestibular",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "vertigem-rotatoria-id",
+                "id": "vertigem_rotatoria",
+                "label": "Vertigem rotatória",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "tontura-instabilidade-id",
+                "id": "tontura_instabilidade",
+                "label": "Tontura/instabilidade",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "desequilibrio-id",
+                "id": "desequilibrio",
+                "label": "Desequilíbrio",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "nausea-vomitos-id",
+                "id": "nausea_vomitos",
+                "label": "Náusea/vômitos",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          },
+          {
+            "id": "Q-sintomas-laringofaringeos",
+            "nodeId": "node-sintomas-principais",
+            "uid": "sintomas_laringofaringeos",
+            "titulo": "<p><strong>Sintomas laringofaríngeos presentes:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "multiChoice",
+            "options": [
+              {
+                "iid": "nenhum-sintoma-laringofaringeo-id",
+                "id": "nenhum_sintoma_laringofaringeo",
+                "label": "Nenhum sintoma laringofaríngeo",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "pigarro-cronico-id",
+                "id": "pigarro_cronico",
+                "label": "Pigarro crônico",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "rouquidao-id",
+                "id": "rouquidao",
+                "label": "Rouquidão",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "globo-faringeo-id",
+                "id": "globo_faringeo",
+                "label": "Sensação de globo faríngeo",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "tosse-seca-id",
+                "id": "tosse_seca",
+                "label": "Tosse seca persistente",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "halitose-id",
+                "id": "halitose",
+                "label": "Halitose (mau hálito)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "ardor-faringeo-id",
+                "id": "ardor_faringeo",
+                "label": "Ardor faríngeo",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          },
+          {
+            "id": "Q-sintomas-sono",
+            "nodeId": "node-sintomas-principais",
+            "uid": "sintomas_sono",
+            "titulo": "<p><strong>Sintomas relacionados ao sono:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "multiChoice",
+            "options": [
+              {
+                "iid": "nenhum-sintoma-sono-id",
+                "id": "nenhum_sintoma_sono",
+                "label": "Nenhum sintoma do sono",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "ronco-habitual-id",
+                "id": "ronco_habitual",
+                "label": "Ronco habitual",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "pausas-respiratorias-id",
+                "id": "pausas_respiratorias",
+                "label": "Pausas respiratórias observadas",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "sonolencia-diurna-id",
+                "id": "sonolencia_diurna",
+                "label": "Sonolência diurna excessiva",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "cefaleia-matinal-id",
+                "id": "cefaleia_matinal",
+                "label": "Cefaleia matinal",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "deficit-cognitivo-id",
+                "id": "deficit_cognitivo",
+                "label": "Déficit de concentração/memória",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "node-cronologia-fatores",
+      "type": "custom",
+      "position": {
+        "x": 3600,
+        "y": 100
+      },
+      "data": {
+        "label": "Cronologia e Fatores Modificadores",
+        "condicao": "not('nenhum_sintoma_alergico' in sintomas_nasossinusais_alergicos and 'nenhum_sintoma_infeccioso' in sintomas_nasossinusais_infecciosos and 'nenhum_sintoma_otologico' in sintomas_otologicos and 'nenhum_sintoma_vestibular' in sintomas_vestibulares and 'nenhum_sintoma_laringofaringeo' in sintomas_laringofaringeos and 'nenhum_sintoma_sono' in sintomas_sono)",
+        "descricao": "MUDANÇA V3: Condição simplificada para verificar se pelo menos um grupo de sintomas está presente (não todos marcados como 'nenhum')",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Q-duracao-sintomas",
+            "nodeId": "node-cronologia-fatores",
+            "uid": "duracao_sintomas",
+            "titulo": "<p><strong>Duração dos sintomas principais:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "choice",
+            "options": [
+              {
+                "iid": "duracao-agudo-id",
+                "id": "agudo",
+                "label": "Menos de 4 semanas (agudo)",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "duracao-subagudo-id",
+                "id": "subagudo",
+                "label": "4-12 semanas (subagudo)",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "duracao-cronico-id",
+                "id": "cronico",
+                "label": "Mais de 12 semanas (crônico)",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "duracao-intermitente-id",
+                "id": "intermitente",
+                "label": "Episódios intermitentes",
+                "preselected": false,
+                "exclusive": true
+              }
+            ]
+          },
+          {
+            "id": "Q-tratamento-atual",
+            "nodeId": "node-cronologia-fatores",
+            "uid": "tratamento_atual",
+            "titulo": "<p><strong>Tratamentos já realizados nos últimos 3 meses:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "multiChoice",
+            "options": [
+              {
+                "iid": "nenhum-tratamento-id",
+                "id": "nenhum_tratamento",
+                "label": "Nenhum tratamento específico",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "corticoide-spray-id",
+                "id": "corticoide_spray_nasal",
+                "label": "Corticoide spray nasal",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "anti-histaminico-id",
+                "id": "anti_histaminico_oral",
+                "label": "Anti-histamínico oral",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "antibiotico-oral-id",
+                "id": "antibiotico_oral",
+                "label": "Antibiótico oral",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "ibp-refluxo-id",
+                "id": "ibp_refluxo",
+                "label": "Inibidor bomba prótons",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "irrigacao-salina-id",
+                "id": "irrigacao_salina_previa",
+                "label": "Irrigação nasal",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "betaistina-previa-id",
+                "id": "betaistina_previa",
+                "label": "Betaistina",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "outros-tratamentos-id",
+                "id": "outros_tratamentos",
+                "label": "Outros tratamentos",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          },
+          {
+            "id": "Q-fatores-desencadeantes",
+            "nodeId": "node-cronologia-fatores",
+            "uid": "fatores_desencadeantes",
+            "titulo": "<p><strong>Fatores desencadeantes/agravantes identificados:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "multiChoice",
+            "options": [
+              {
+                "iid": "nenhum-fator-id",
+                "id": "nenhum_fator",
+                "label": "Nenhum fator identificado",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "alergenicos-id",
+                "id": "alergenicos",
+                "label": "Alérgenos (poeira, pólen, ácaros)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "irritantes-id",
+                "id": "irritantes",
+                "label": "Irritantes (fumaça, odores fortes)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "variacao-termica-id",
+                "id": "variacao_termica",
+                "label": "Variação térmica",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "sazonais-id",
+                "id": "sazonais",
+                "label": "Fatores sazonais",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "mudanca-posicao-id",
+                "id": "mudanca_posicao",
+                "label": "Mudança de posição da cabeça (vertigem)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "alimentares-id",
+                "id": "alimentares",
+                "label": "Alimentos ácidos/condimentados",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          },
+          {
+            "id": "Q-sintomas-associados",
+            "nodeId": "node-cronologia-fatores",
+            "uid": "sintomas_associados",
+            "titulo": "<p><strong>Sintomas sistêmicos associados:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "multiChoice",
+            "options": [
+              {
+                "iid": "nenhum-associado-id",
+                "id": "nenhum_associado",
+                "label": "Nenhum sintoma sistêmico",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "febre-id",
+                "id": "febre",
+                "label": "Febre",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "mal-estar-id",
+                "id": "mal_estar",
+                "label": "Mal-estar geral",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "cefaleia-id",
+                "id": "cefaleia",
+                "label": "Cefaleia",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "sintomas-neurologicos-id",
+                "id": "sintomas_neurologicos",
+                "label": "Sintomas neurológicos (diplopia, disartria, fraqueza)",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          },
+          {
+            "id": "Q-escala-epworth",
+            "nodeId": "node-cronologia-fatores",
+            "uid": "escala_epworth",
+            "titulo": "<p><strong>Escala de Sonolência de Epworth (0-3 para cada situação):</strong><br>0=Nunca; 1=Pouca chance; 2=Moderada chance; 3=Alta chance de cochilar</p>",
+            "descricao": "MUDANÇA V3: Campo tornado obrigatório quando sintomas de sono presentes para garantir avaliação adequada de SAHOS",
+            "condicional": "visivel",
+            "expressao": "selected_any(sintomas_sono, 'ronco_habitual', 'pausas_respiratorias', 'sonolencia_diurna')",
+            "select": "number",
+            "options": [],
+            "min": 0,
+            "max": 24,
+            "opcional": false,
+            "defaultValue": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "node-resultados-exames",
+      "type": "custom",
+      "position": {
+        "x": 4500,
+        "y": 100
+      },
+      "data": {
+        "label": "Resultados de Exames",
+        "condicao": "exames_avaliacao == true",
+        "descricao": "",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Q-tipos-exames-trazidos",
+            "nodeId": "node-resultados-exames",
+            "uid": "tipos_exames_trazidos",
+            "titulo": "<p><strong>Tipos de exames apresentados:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "multiChoice",
+            "options": [
+              {
+                "iid": "nenhum-exame-id",
+                "id": "nenhum_exame",
+                "label": "Nenhum exame apresentado",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "audiometria-id",
+                "id": "audiometria",
+                "label": "Audiometria",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "timpanometria-id",
+                "id": "timpanometria",
+                "label": "Timpanometria/Impedanciometria",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "vng-id",
+                "id": "vng",
+                "label": "VNG/Testes vestibulares",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "endoscopia-nasal-id",
+                "id": "endoscopia_nasal",
+                "label": "Endoscopia nasal",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "tc-seios-id",
+                "id": "tc_seios",
+                "label": "TC de seios da face",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "polissonografia-id",
+                "id": "polissonografia",
+                "label": "Polissonografia",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          },
+          {
+            "id": "Q-resultados-exames",
+            "nodeId": "node-resultados-exames",
+            "uid": "resultados_exames",
+            "titulo": "<p><strong>Resultados dos exames apresentados:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "not('nenhum_exame' in tipos_exames_trazidos)",
+            "select": "choice",
+            "options": [
+              {
+                "iid": "exames-normais-id",
+                "id": "normais",
+                "label": "Todos os exames normais",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "exames-alterados-id",
+                "id": "alterados",
+                "label": "Exames com alterações",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "exames-inconclusivos-id",
+                "id": "inconclusivos",
+                "label": "Resultados inconclusivos",
+                "preselected": false,
+                "exclusive": true
+              }
+            ]
+          },
+          {
+            "id": "Q-avaliacao-exames",
+            "nodeId": "node-resultados-exames",
+            "uid": "avaliacao_exames",
+            "titulo": "<p><strong>Avaliação detalhada dos exames alterados:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "resultados_exames == 'alterados'",
+            "select": "string",
+            "options": [],
+            "opcional": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "node-alergias-contraindicacoes",
+      "type": "custom",
+      "position": {
+        "x": 5400,
+        "y": 100
+      },
+      "data": {
+        "label": "Alergias e Contraindicações",
+        "condicao": "not('nenhum_sintoma_alergico' in sintomas_nasossinusais_alergicos and 'nenhum_sintoma_infeccioso' in sintomas_nasossinusais_infecciosos and 'nenhum_sintoma_otologico' in sintomas_otologicos and 'nenhum_sintoma_vestibular' in sintomas_vestibulares and 'nenhum_sintoma_laringofaringeo' in sintomas_laringofaringeos and 'nenhum_sintoma_sono' in sintomas_sono)",
+        "descricao": "MUDANÇA V3: Condição simplificada para verificar se pelo menos um grupo de sintomas está presente",
+        "condicional": "visivel",
+        "questions": [
+          {
+            "id": "Q-alergias-medicamentos",
+            "nodeId": "node-alergias-contraindicacoes",
+            "uid": "alergias_medicamentos",
+            "titulo": "<p><strong>Alergias medicamentosas conhecidas:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "multiChoice",
+            "options": [
+              {
+                "iid": "sem-alergias-id",
+                "id": "sem_alergias",
+                "label": "Sem alergias conhecidas",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "alergia-penicilina-id",
+                "id": "alergia_penicilina",
+                "label": "Alergia à penicilina/amoxicilina",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "alergia-sulfa-id",
+                "id": "alergia_sulfa",
+                "label": "Alergia à sulfa",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "alergia-macrolideos-id",
+                "id": "alergia_macrolideos",
+                "label": "Alergia a macrolídeos",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "alergia-corticoides-id",
+                "id": "alergia_corticoides",
+                "label": "Alergia a corticoides",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "outras-alergias-id",
+                "id": "outras_alergias",
+                "label": "Outras alergias medicamentosas",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          },
+          {
+            "id": "Q-comorbidades-relevantes",
+            "nodeId": "node-alergias-contraindicacoes",
+            "uid": "comorbidades_relevantes",
+            "titulo": "<p><strong>Comorbidades relevantes para prescrição:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "multiChoice",
+            "options": [
+              {
+                "iid": "sem-comorbidades-id",
+                "id": "sem_comorbidades",
+                "label": "Sem comorbidades relevantes",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "insuficiencia-renal-id",
+                "id": "insuficiencia_renal",
+                "label": "Insuficiência renal",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "insuficiencia-hepatica-id",
+                "id": "insuficiencia_hepatica",
+                "label": "Insuficiência hepática",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "asma-grave-id",
+                "id": "asma_grave",
+                "label": "Asma grave/DPOC",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "cardiopatia-grave-id",
+                "id": "cardiopatia_grave",
+                "label": "Cardiopatia grave",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "ulcera-peptica-id",
+                "id": "ulcera_peptica",
+                "label": "Úlcera péptica ativa",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "summary-processamento-clinico",
+      "type": "summary",
+      "position": {
+        "x": 6300,
+        "y": 100
+      },
+      "data": {
+        "label": "Processamento Clínico",
+        "condicao": "",
+        "descricao": "<p>Paciente de &lt;idade&gt; anos, sexo &lt;sexo&gt;.</p><p>&lt;Tipo de consulta&gt;</p><p><strong>Avaliação clínica e condutas otorrinolaringológicas</strong><br>&lt;Perguntas e respostas preenchidas&gt;</p>",
+        "condicional": "visivel",
+        "clinicalExpressions": [],
+        "templateMarkdown": ""
+      }
+    },
+    {
+      "id": "conduta-final-otorrinolaringologia",
+      "type": "conduct",
+      "position": {
+        "x": 7200,
+        "y": 100
+      },
+      "data": {
+        "label": "Condutas Otorrinolaringológicas",
+        "condicao": "",
+        "descricao": "",
+        "condicional": "visivel",
+        "conduta": "conclusao",
+        "condutaDataNode": {
+          "orientacao": [
+            {
+              "id": "orientacoes-rinite-alergica-completa",
+              "nome": "Controle Ambiental para Rinite Alérgica",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_nasossinusais_alergicos, 'prurido_nasal', 'espirros') and 'alergenicos' in fatores_desencadeantes",
+              "conteudo": "<p><strong>COMO REDUZIR OS ALÉRGENOS EM CASA:</strong></p><ul><li><strong>No quarto:</strong> Use capas antialérgicas no colchão e travesseiros. Lave roupas de cama semanalmente em água quente (60°C). Evite bichos de pelúcia, tapetes e cortinas pesadas.</li><li><strong>Limpeza:</strong> Aspire a casa 2x por semana com aspirador com filtro HEPA. Use pano úmido para remover poeira - nunca espanador seco.</li><li><strong>Umidade:</strong> Mantenha entre 40-50%. Use desumidificador se necessário. Conserte vazamentos imediatamente.</li><li><strong>Animais:</strong> Se tem pets, mantenha-os fora do quarto. Dê banho semanal nos animais.</li><li><strong>Plantas:</strong> Evite plantas dentro de casa - podem acumular fungos na terra.</li><li><strong>Ar condicionado:</strong> Limpe filtros mensalmente. Use apenas com janelas fechadas.</li></ul><p><strong>IMPORTANTE:</strong> Essas medidas reduzem significativamente os sintomas em 4-6 semanas.</p>"
+            },
+            {
+              "id": "orientacoes-irrigacao-nasal-detalhada",
+              "nome": "Técnica Correta da Irrigação Nasal",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "not('nenhum_sintoma_alergico' in sintomas_nasossinusais_alergicos) or not('nenhum_sintoma_infeccioso' in sintomas_nasossinusais_infecciosos)",
+              "conteudo": "<p><strong>COMO FAZER A IRRIGAÇÃO NASAL CORRETAMENTE:</strong></p><ol><li><strong>Prepare a solução:</strong> 1 colher de chá de sal em 500ml de água filtrada morna (temperatura corporal).</li><li><strong>Posição:</strong> Incline-se sobre a pia, vire a cabeça para o lado.</li><li><strong>Aplicação:</strong> Coloque o bico da seringa ou dispositivo na narina superior. Aplique devagar até a água sair pela outra narina.</li><li><strong>Repita:</strong> Vire a cabeça para o outro lado e repita o processo.</li><li><strong>Finalize:</strong> Assoe o nariz suavemente, uma narina de cada vez.</li></ol><p><strong>DICAS IMPORTANTES:</strong></p><ul><li>Faça 2x ao dia: manhã e noite</li><li>Use sempre água filtrada ou fervida (nunca da torneira)</li><li>Limpe bem o dispositivo após o uso</li><li>Se sentir ardor, reduza a quantidade de sal</li></ul><p><strong>BENEFÍCIOS:</strong> Remove muco, alérgenos e bactérias. Melhora a respiração e reduz infecções.</p>"
+            },
+            {
+              "id": "orientacoes-refluxo-comportamentais",
+              "nome": "Mudanças no Estilo de Vida para Refluxo",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_laringofaringeos, 'pigarro_cronico', 'globo_faringeo', 'ardor_faringeo', 'tosse_seca')",
+              "conteudo": "<p><strong>COMO CONTROLAR O REFLUXO QUE AFETA A GARGANTA:</strong></p><p><strong>Horários das refeições:</strong></p><ul><li>Pare de comer 3 horas antes de dormir</li><li>Faça refeições menores e mais frequentes</li><li>Mastigue bem e coma devagar</li><li>Não deite logo após comer</li></ul><p><strong>Alimentos que PIORAM (evite):</strong></p><ul><li>Café, refrigerantes, álcool</li><li>Chocolate, menta, hortelã</li><li>Alimentos ácidos: tomate, laranja, limão</li><li>Comidas gordurosas e frituras</li><li>Pimenta e temperos fortes</li></ul><p><strong>Posição para dormir:</strong></p><ul><li>Eleve a cabeceira da cama 15-20cm (coloque calços nos pés da cabeceira)</li><li>Use 2-3 travesseiros extras</li><li>Durma preferencialmente do lado esquerdo</li></ul><p><strong>ATENÇÃO:</strong> O refluxo na garganta é diferente da azia. Pode não causar queimação no peito, mas irrita muito a garganta.</p>"
+            },
+            {
+              "id": "orientacoes-sahos-comportamentais",
+              "nome": "Medidas para Melhorar o Sono e Reduzir o Ronco",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_sono, 'ronco_habitual', 'pausas_respiratorias', 'sonolencia_diurna')",
+              "conteudo": "<p><strong>COMO MELHORAR SEU SONO E REDUZIR O RONCO:</strong></p><p><strong>Posição para dormir:</strong></p><ul><li>Durma de lado - nunca de barriga para cima</li><li>Use uma almofada entre as pernas para manter a posição</li><li>Eleve ligeiramente a cabeceira da cama</li></ul><p><strong>Antes de dormir:</strong></p><ul><li>Evite álcool 4 horas antes de dormir</li><li>Não tome sedativos ou relaxantes musculares</li><li>Pare de comer 3 horas antes</li><li>Faça higiene nasal para desobstruir o nariz</li></ul><p><strong>Perda de peso (se necessário):</strong></p><ul><li>Mesmo 5-10kg podem melhorar muito o ronco</li><li>Exercite-se regularmente, mas não à noite</li><li>Procure ajuda nutricional se necessário</li></ul><p><strong>Higiene do sono:</strong></p><ul><li>Durma 7-8 horas por noite</li><li>Mantenha horários regulares</li><li>Quarto escuro, silencioso e fresco</li></ul><p><strong>IMPORTANTE:</strong> Se o ronco continuar alto ou houver pausas respiratórias, procure ajuda médica - pode ser apneia do sono.</p>"
+            },
+            {
+              "id": "orientacoes-protecao-auditiva",
+              "nome": "Proteção e Cuidados com os Ouvidos",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_otologicos, 'otalgia', 'otorreia', 'hipoacusia', 'zumbido', 'prurido_auricular')",
+              "conteudo": "<p><strong>COMO CUIDAR CORRETAMENTE DOS SEUS OUVIDOS:</strong></p><p><strong>O que NUNCA fazer:</strong></p><ul><li>Não use cotonetes dentro do ouvido</li><li>Não coloque objetos pontiagudos (grampos, palitos)</li><li>Não use gotas sem orientação médica</li><li>Evite limpeza excessiva - o ouvido se limpa sozinho</li></ul><p><strong>Proteção contra água:</strong></p><ul><li>Use protetores auriculares na piscina/mar</li><li>Seque bem os ouvidos após o banho</li><li>Incline a cabeça para cada lado para escorrer a água</li></ul><p><strong>Proteção contra ruído:</strong></p><ul><li>Use protetores em ambientes barulhentos (>85dB)</li><li>Reduza o volume de fones de ouvido</li><li>Faça pausas em ambientes ruidosos</li></ul><p><strong>Sinais de alerta:</strong></p><ul><li>Dor intensa no ouvido</li><li>Saída de pus ou sangue</li><li>Perda súbita da audição</li><li>Zumbido que não melhora</li></ul><p><strong>PROCURE AJUDA IMEDIATA</strong> se apresentar qualquer sinal de alerta.</p>"
+            },
+            {
+              "id": "orientacoes-vertigem-prevencao",
+              "nome": "Como Prevenir e Lidar com Vertigem",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_vestibulares, 'vertigem_rotatoria', 'tontura_instabilidade', 'desequilibrio')",
+              "conteudo": "<p><strong>COMO LIDAR COM CRISES DE VERTIGEM:</strong></p><p><strong>Durante a crise:</strong></p><ul><li>Deite-se imediatamente em local seguro</li><li>Mantenha os olhos abertos e fixe em um ponto</li><li>Evite movimentos bruscos da cabeça</li><li>Respire lenta e profundamente</li><li>Peça ajuda se necessário</li></ul><p><strong>Prevenção de crises:</strong></p><ul><li>Levante-se devagar da cama ou cadeira</li><li>Evite movimentos rápidos da cabeça</li><li>Mantenha boa hidratação</li><li>Durma com a cabeceira elevada</li><li>Evite ambientes muito escuros</li></ul><p><strong>Exercícios de reabilitação vestibular:</strong></p><ul><li>Movimente os olhos lentamente para cima/baixo, direita/esquerda</li><li>Gire a cabeça lentamente para os lados (apenas se não causar vertigem)</li><li>Caminhe em linha reta focando um ponto à frente</li></ul><p><strong>ATENÇÃO:</strong> Procure emergência se a vertigem vier acompanhada de dor de cabeça intensa, visão dupla, fraqueza ou dificuldade para falar.</p>"
+            },
+            {
+              "id": "orientacoes-uso-medicamentos",
+              "nome": "Como Usar Corretamente os Medicamentos Nasais",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "(not('nenhum_sintoma_alergico' in sintomas_nasossinusais_alergicos) or not('nenhum_sintoma_infeccioso' in sintomas_nasossinusais_infecciosos)) and not('alergia_corticoides' in alergias_medicamentos)",
+              "conteudo": "<p><strong>TÉCNICA CORRETA PARA SPRAYS NASAIS:</strong></p><ol><li><strong>Prepare o nariz:</strong> Assoe suavemente antes de usar</li><li><strong>Posição:</strong> Mantenha a cabeça ereta, não incline para trás</li><li><strong>Aplicação:</strong> Aponte o spray para a parede lateral do nariz (não para o septo)</li><li><strong>Borrifada:</strong> Faça uma borrifada enquanto inspira suavemente</li><li><strong>Após o uso:</strong> Não assoe o nariz por 15 minutos</li></ol><p><strong>CUIDADOS IMPORTANTES:</strong></p><ul><li>Agite bem antes de usar</li><li>Limpe o bico após cada uso</li><li>Não compartilhe com outras pessoas</li><li>Use na mesma hora todos os dias</li><li>Continue o tratamento mesmo se melhorar</li></ul><p><strong>EFEITOS ESPERADOS:</strong></p><ul><li>Melhora gradual em 3-7 dias</li><li>Efeito máximo em 2-4 semanas</li><li>É normal sentir leve ardor inicial</li></ul><p><strong>PARE E PROCURE AJUDA</strong> se houver sangramento nasal frequente ou dor intensa.</p>"
+            },
+            {
+              "id": "orientacoes-fatores-irritantes",
+              "nome": "Como Evitar Irritantes Ambientais",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "'irritantes' in fatores_desencadeantes or 'variacao_termica' in fatores_desencadeantes",
+              "conteudo": "<p><strong>COMO PROTEGER-SE DE IRRITANTES DO AR:</strong></p><p><strong>Em casa:</strong></p><ul><li>Evite produtos de limpeza com cheiro forte</li><li>Não use aerossóis, perfumes ou desodorantes ambientais</li><li>Ventile bem a casa após limpeza</li><li>Evite velas perfumadas e incensos</li><li>Use produtos de limpeza neutros</li></ul><p><strong>No trabalho/rua:</strong></p><ul><li>Evite locais com fumaça de cigarro</li><li>Use máscara em ambientes com poeira</li><li>Afaste-se de escapamentos de carros</li><li>Evite perfumes fortes em outras pessoas</li></ul><p><strong>Mudanças de temperatura:</strong></p><ul><li>Use lenço ou cachecol cobrindo nariz/boca no frio</li><li>Evite mudanças bruscas de temperatura</li><li>Respire pelo nariz, não pela boca</li><li>Umidifique o ar em ambientes secos</li></ul><p><strong>DICA IMPORTANTE:</strong> Mantenha sempre um lenço limpo para cobrir nariz e boca quando necessário.</p>"
+            },
+            {
+              "id": "orientacoes-higiene-vocal",
+              "nome": "Cuidados com a Voz e Garganta",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_laringofaringeos, 'rouquidao', 'pigarro_cronico', 'tosse_seca')",
+              "conteudo": "<p><strong>COMO CUIDAR DA SUA VOZ E GARGANTA:</strong></p><p><strong>Hidratação:</strong></p><ul><li>Beba 2-3 litros de água por dia</li><li>Prefira água em temperatura ambiente</li><li>Evite bebidas geladas ou muito quentes</li><li>Chás mornos de camomila ou gengibre ajudam</li></ul><p><strong>Hábitos que PREJUDICAM a voz:</strong></p><ul><li>Gritar ou falar muito alto</li><li>Pigarrear constantemente</li><li>Sussurrar (força mais que falar normal)</li><li>Fumar ou ficar em ambientes com fumaça</li><li>Bebidas alcoólicas em excesso</li></ul><p><strong>Como falar corretamente:</strong></p><ul><li>Use tom de voz natural</li><li>Respire pelo nariz</li><li>Faça pausas durante conversas longas</li><li>Mantenha postura ereta</li></ul><p><strong>Quando descansar a voz:</strong></p><ul><li>Se estiver rouco, fale menos</li><li>Evite conversar em ambientes barulhentos</li><li>Descanse a voz após uso intenso</li></ul><p><strong>PROCURE AJUDA</strong> se a rouquidão durar mais de 2 semanas.</p>"
+            },
+            {
+              "id": "orientacoes-alimentacao-orl",
+              "nome": "Alimentação que Ajuda na Recuperação",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "not('nenhum_sintoma_alergico' in sintomas_nasossinusais_alergicos) or not('nenhum_sintoma_infeccioso' in sintomas_nasossinusais_infecciosos) or not('nenhum_sintoma_laringofaringeo' in sintomas_laringofaringeos)",
+              "conteudo": "<p><strong>ALIMENTOS QUE AJUDAM:</strong></p><ul><li><strong>Anti-inflamatórios naturais:</strong> Gengibre, cúrcuma, mel, própolis</li><li><strong>Ricos em vitamina C:</strong> Acerola, laranja, kiwi, morango</li><li><strong>Hidratantes:</strong> Sopas mornas, chás, água de coco</li><li><strong>Ômega 3:</strong> Peixes, linhaça, chia</li></ul><p><strong>ALIMENTOS QUE PIORAM:</strong></p><ul><li><strong>Produtores de muco:</strong> Leite e derivados em excesso</li><li><strong>Irritantes:</strong> Pimenta, alimentos muito condimentados</li><li><strong>Ácidos:</strong> Refrigerantes, vinagre, frutas cítricas em excesso</li><li><strong>Processados:</strong> Embutidos, conservas, alimentos industrializados</li></ul><p><strong>DICAS ESPECIAIS:</strong></p><ul><li>Chá de gengibre com mel: anti-inflamatório natural</li><li>Gargarejo com água morna e sal: limpa a garganta</li><li>Inalação com vapor de água: umidifica as vias aéreas</li><li>Evite gelados durante o tratamento</li></ul><p><strong>IMPORTANTE:</strong> Mantenha alimentação equilibrada para fortalecer a imunidade.</p>"
+            },
+            {
+              "id": "orientacoes-quando-procurar-ajuda",
+              "nome": "Sinais de Alerta - Quando Buscar Ajuda Urgente",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "conteudo": "<p><strong>PROCURE AJUDA MÉDICA IMEDIATAMENTE SE APRESENTAR:</strong></p><p><strong>Sintomas respiratórios graves:</strong></p><ul><li>Dificuldade para respirar ou falta de ar</li><li>Chiado no peito ou respiração ruidosa</li><li>Lábios ou unhas azulados</li><li>Sensação de sufocamento</li></ul><p><strong>Sintomas neurológicos:</strong></p><ul><li>Vertigem com dor de cabeça intensa</li><li>Visão dupla ou embaçada</li><li>Fraqueza em braços ou pernas</li><li>Dificuldade para falar ou engolir</li><li>Confusão mental</li></ul><p><strong>Sintomas infecciosos graves:</strong></p><ul><li>Febre alta (acima de 39°C)</li><li>Dor de cabeça muito forte</li><li>Rigidez no pescoço</li><li>Saída de sangue pelo nariz ou ouvido</li><li>Inchaço no rosto ou pescoço</li></ul><p><strong>RETORNE À CONSULTA SE:</strong></p><ul><li>Não houver melhora em 7-10 dias de tratamento</li><li>Os sintomas piorarem</li><li>Surgirem novos sintomas</li><li>Tiver dúvidas sobre o tratamento</li></ul>"
+            }
+          ],
+          "exame": [
+            {
+              "id": "audiometria-tonal-vocal",
+              "nome": "Audiometria tonal limiar + discriminação vocal",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_otologicos, 'hipoacusia', 'plenitude_auricular', 'zumbido')",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": [
+                {
+                  "sistema": "TUSS",
+                  "valor": "40103072",
+                  "iid": "865414db-df8d-45be-a3b3-01c52b64ae3e"
+                }
+              ],
+              "categoria": "Audiologia",
+              "cid": "H90, H91",
+              "indicacao": "Quantificação da perda auditiva e avaliação da função coclear em pacientes com hipoacusia, plenitude auricular ou zumbido",
+              "alerta": "Realizar em ambiente acusticamente tratado. Aguardar 24h após exposição a ruído intenso",
+              "material": "Exame funcional"
+            },
+            {
+              "id": "audiometria-vocal-discriminacao",
+              "nome": "Audiometria vocal - discriminação",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_otologicos, 'hipoacusia') and resultados_exames == 'alterados'",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": [
+                {
+                  "sistema": "TUSS",
+                  "valor": "40103099",
+                  "iid": "0c53b973-2660-43d8-a44d-d22d358acd0d"
+                }
+              ],
+              "categoria": "Audiologia complementar",
+              "cid": "H90, H91",
+              "indicacao": "Paciente com perda auditiva confirmada na audiometria tonal, especialmente neurossensorial",
+              "alerta": "Complementar obrigatório em perdas neurossensoriais para avaliação discriminatória",
+              "material": "Exame funcional"
+            },
+            {
+              "id": "audiometria-infantil",
+              "nome": "Audiometria infantil condicionada (Peep-show)",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_otologicos, 'hipoacusia', 'plenitude_auricular') and age >= 0.5 and age <= 4",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": [
+                {
+                  "sistema": "TUSS",
+                  "valor": "40103080",
+                  "iid": "6bbfa7e4-f1bb-4b52-bac4-4d6c9ca6a627"
+                }
+              ],
+              "categoria": "Audiologia Pediátrica",
+              "cid": "H90, H91",
+              "indicacao": "Avaliação auditiva em crianças de 6 meses a 4 anos com suspeita de perda auditiva",
+              "alerta": "Requer colaboração da criança. Pode necessitar múltiplas sessões",
+              "material": "Exame funcional"
+            },
+            {
+              "id": "timpanometria-impedanciometria",
+              "nome": "Timpanometria / Impedanciometria",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_otologicos, 'plenitude_auricular', 'otalgia') or (selected_any(sintomas_otologicos, 'otalgia') and age <= 12)",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": [
+                {
+                  "sistema": "TUSS",
+                  "valor": "30103439",
+                  "iid": "563a5abf-e7b9-409e-8056-e69d3e490baf"
+                }
+              ],
+              "categoria": "Audiologia",
+              "cid": "H65, H66, H73",
+              "indicacao": "Diagnóstico de efusão da orelha média, disfunção tubária e integridade da membrana timpânica",
+              "alerta": "Contraindicado em otorreia ativa ou perfuração timpânica conhecida",
+              "material": "Exame funcional"
+            },
+            {
+              "id": "vng-vestibular",
+              "nome": "Vectoeletronistagmografia (VNG)",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "'vertigem_rotatoria' in sintomas_vestibulares or ('desequilibrio' in sintomas_vestibulares and 'tontura_instabilidade' in sintomas_vestibulares)",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": [
+                {
+                  "sistema": "TUSS",
+                  "valor": "40103749",
+                  "iid": "2910a737-2445-4386-a526-c34a52ded188"
+                }
+              ],
+              "categoria": "Otoneurologia",
+              "cid": "H81, H82",
+              "indicacao": "Registro e análise objetiva do nistagmo em síndromes vestibulares periféricas e centrais",
+              "alerta": "Suspender medicações vestibulossupressoras 48h antes. Jejum de 3h",
+              "material": "Exame funcional"
+            },
+            {
+              "id": "prova-calorica-vestibular",
+              "nome": "Testes vestibulares com prova calórica",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "'vertigem_rotatoria' in sintomas_vestibulares and 'mudanca_posicao' in fatores_desencadeantes",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": [
+                {
+                  "sistema": "TUSS",
+                  "valor": "41401476",
+                  "iid": "963bbcfa-85b2-41f7-94f7-45b555be03dd"
+                }
+              ],
+              "categoria": "Otoneurologia",
+              "cid": "H81.1, H81.2",
+              "indicacao": "Avaliação da função vestibular periférica em casos de vertigem unilateral ou suspeita de neurite vestibular",
+              "alerta": "Contraindicado em perfuração timpânica. Pode causar náusea intensa",
+              "material": "Exame funcional"
+            },
+            {
+              "id": "endoscopia-nasal-flexivel",
+              "nome": "Vídeo-endoscopia nasal flexível",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "duracao_sintomas == 'cronico' or (selected_any(sintomas_nasossinusais_infecciosos, 'obstrucao_nasal', 'hiposmia_anosmia') and duracao_sintomas != 'agudo')",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": [
+                {
+                  "sistema": "TUSS",
+                  "valor": "40201210",
+                  "iid": "fb250414-870a-4ecb-acb7-85c36cb128ec"
+                }
+              ],
+              "categoria": "Endoscopia",
+              "cid": "J30, J32, J33",
+              "indicacao": "Diagnóstico e seguimento de rinossinusite crônica, pólipos nasais e avaliação da mucosa nasossinusal",
+              "alerta": "Anestesia tópica nasal prévia. Risco mínimo de epistaxe",
+              "material": "Exame visual"
+            },
+            {
+              "id": "tc-seios-face-solicitacao",
+              "nome": "Tomografia computadorizada de seios da face",
+              "descricao": "MUDANÇA V3: Exame adicionado para solicitação em casos de RSC refratária, pré-operatório ou suspeita de complicação",
+              "condicional": "visivel",
+              "condicao": "(duracao_sintomas == 'cronico' and selected_any(sintomas_nasossinusais_infecciosos, 'obstrucao_nasal', 'hiposmia_anosmia', 'dor_facial') and 'corticoide_spray_nasal' in tratamento_atual) or ('febre' in sintomas_associados and 'dor_facial' in sintomas_nasossinusais_infecciosos and duracao_sintomas != 'agudo')",
+              "condicionalExame": "extra-hospitalar",
+              "codigo": [
+                {
+                  "sistema": "TUSS",
+                  "valor": "40901114",
+                  "iid": "tc-seios-face-solicitacao-id"
+                }
+              ],
+              "categoria": "Imagem",
+              "cid": "J32, J01",
+              "indicacao": "Rinossinusite crônica refratária ao tratamento clínico otimizado, planejamento pré-operatório de FESS, suspeita de complicações (celulite orbitária, abscesso)",
+              "alerta": "Realizar apenas após falha de tratamento clínico adequado (mínimo 8-12 semanas). Não indicado em rinossinusite aguda não complicada",
+              "material": "Imagem"
+            },
+            {
+              "id": "polissonografia-completa",
+              "nome": "Polissonografia de noite inteira",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_sono, 'ronco_habitual') and (selected_any(sintomas_sono, 'pausas_respiratorias', 'sonolencia_diurna') or escala_epworth >= 10)",
+              "condicionalExame": "intra-hospitalar",
+              "codigo": [
+                {
+                  "sistema": "TUSS",
+                  "valor": "40103528",
+                  "iid": "a4db435e-3605-4481-a076-0799154ec671"
+                }
+              ],
+              "categoria": "Medicina do Sono",
+              "cid": "G47.3",
+              "indicacao": "Diagnóstico de síndrome da apneia obstrutiva do sono (SAHOS) em pacientes com ronco e sintomas sugestivos ou Escala de Epworth ≥10",
+              "alerta": "Suspender sedativos. Higiene do sono adequada no dia do exame",
+              "material": "Exame do sono"
+            }
+          ],
+          "medicamento": [
+            {
+              "id": "irrigacao-nasal-salina",
+              "nome": "Irrigação nasal com soro fisiológico 0,9%",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "not('nenhum_sintoma_alergico' in sintomas_nasossinusais_alergicos) or not('nenhum_sintoma_infeccioso' in sintomas_nasossinusais_infecciosos)",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "iid": "e8335f37-58c5-4a5a-8e50-4432a8c7c823",
+                  "sistema": "MEVO",
+                  "valor": "43640"
+                }
+              ],
+              "categoria": "Terapia de suporte universal",
+              "nomeMed": "Soro fisiológico 0,9%",
+              "posologia": "<p><strong>20-40mL por narina, 2 vezes ao dia</strong><br/>Usar seringa de 20mL ou dispositivo específico<br/>Inclinar cabeça lateralmente sobre pia<br/>Aplicar em uma narina até sair pela outra<br/>Uso contínuo como manutenção</p>",
+              "mensagemMedico": "<p>Terapia universal recomendada para todas as condições nasossinusais. Evidência nível I A. Remove muco, alérgenos e melhora clearance mucociliar. Segura para uso prolongado.</p>",
+              "via": "Intranasal"
+            },
+            {
+              "id": "budesonida-nasal-spray",
+              "nome": "Budesonida spray nasal 64mcg/dose",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "(selected_any(sintomas_nasossinusais_infecciosos, 'obstrucao_nasal') or selected_any(sintomas_nasossinusais_alergicos, 'rinorreia_clara', 'prurido_nasal', 'espirros')) and duracao_sintomas != 'agudo' and not('alergia_corticoides' in alergias_medicamentos) and not('corticoide_spray_nasal' in tratamento_atual) and not(gravidez_lactacao == 'gravida' or gravidez_lactacao == 'gravida_lactante')",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "iid": "c4e433cd-8f35-41fb-971b-be0cfb28440d",
+                  "sistema": "MEVO",
+                  "valor": "30812"
+                }
+              ],
+              "categoria": "Corticosteroide intranasal",
+              "nomeMed": "Budesonida",
+              "posologia": "<p><strong>1-2 jatos por narina, 1-2 vezes ao dia</strong><br/>Uso contínuo por no mínimo 4-8 semanas<br/>Agitar antes do uso<br/>Aplicar com a cabeça levemente inclinada para frente</p>",
+              "mensagemMedico": "<p>Primeira linha para rinite alérgica e rinossinusite crônica. Efeito anti-inflamatório local com mínima absorção sistêmica. Orientar uso correto da técnica inalatória. MUDANÇA V3: Contraindicado em gravidez (usar apenas se benefício superar risco).</p>",
+              "via": "Intranasal"
+            },
+            {
+              "id": "mometasona-nasal-spray",
+              "nome": "Mometasona spray nasal 50mcg/dose",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "duracao_sintomas == 'cronico' and selected_any(sintomas_nasossinusais_infecciosos, 'obstrucao_nasal', 'hiposmia_anosmia') and not('alergia_corticoides' in alergias_medicamentos) and not(gravidez_lactacao == 'gravida' or gravidez_lactacao == 'gravida_lactante')",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "iid": "56efc776-38e2-490a-b341-973895db5302",
+                  "sistema": "MEVO",
+                  "valor": "44833"
+                }
+              ],
+              "categoria": "Corticosteroide intranasal",
+              "nomeMed": "Mometasona",
+              "posologia": "<p><strong>2 jatos por narina, 1 vez ao dia</strong> (preferencialmente pela manhã)<br/>Uso contínuo por 8-12 semanas<br/>Agitar antes do uso<br/>Técnica correta é fundamental para eficácia</p>",
+              "mensagemMedico": "<p>Alternativa eficaz à budesonida em rinossinusite crônica com pólipos. Maior potência anti-inflamatória. Excelente para recuperação do olfato. MUDANÇA V3: Evitar em gravidez.</p>",
+              "via": "Intranasal"
+            },
+            {
+              "id": "fluticasona-nasal-spray",
+              "nome": "Furoato de Fluticasona spray nasal 27,5mcg/dose",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "(selected_any(sintomas_nasossinusais_infecciosos, 'obstrucao_nasal') or selected_any(sintomas_nasossinusais_alergicos, 'rinorreia_clara')) and 'alergenicos' in fatores_desencadeantes and not('alergia_corticoides' in alergias_medicamentos) and not(gravidez_lactacao == 'gravida' or gravidez_lactacao == 'gravida_lactante')",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "iid": "c9ffe2f8-de8c-484a-9e6a-acc111d5d700",
+                  "sistema": "MEVO",
+                  "valor": "3783"
+                }
+              ],
+              "categoria": "Corticosteroide intranasal",
+              "nomeMed": "Furoato de Fluticasona",
+              "posologia": "<p><strong>1-2 jatos por narina, 1-2 vezes ao dia</strong><br/>Spray nasal 55-110 µg/dose conforme necessidade<br/>Alternativa em rinite alérgica persistente</p>",
+              "mensagemMedico": "<p>Alternativa em rinite alérgica persistente ou rinossinusite crônica leve com obstrução nasal. Evidência I A conforme tabela. MUDANÇA V3: Evitar em gravidez.</p>",
+              "via": "Intranasal"
+            },
+            {
+              "id": "budesonida-irrigacao-nasal",
+              "nome": "Budesonida irrigação nasal 0,5mg em 250mL",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "duracao_sintomas == 'cronico' and 'hiposmia_anosmia' in sintomas_nasossinusais_infecciosos and ('corticoide_spray_nasal' in tratamento_atual or resultados_exames == 'alterados') and not(gravidez_lactacao == 'gravida' or gravidez_lactacao == 'gravida_lactante')",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "iid": "43b84465-60bb-473d-adb9-e0852c6caf49",
+                  "sistema": "MEVO",
+                  "valor": "41584"
+                }
+              ],
+              "categoria": "Corticosteroide irrigação",
+              "nomeMed": "Budesonida irrigação",
+              "posologia": "<p><strong>0,5 mg diluída em 250 mL de soro fisiológico, 1 vez ao dia por 30–60 dias</strong><br/>Aplicar com dispositivo de irrigação<br/>Indicada para casos refratários ao spray</p>",
+              "mensagemMedico": "<p>Rinossinusite crônica com pólipos nasais e anosmia, refratária ao corticoide em spray. Evidência I A. Maior concentração local. MUDANÇA V3: Evitar em gravidez.</p>",
+              "via": "Irrigação nasal"
+            },
+            {
+              "id": "fexofenadina-anthistaminico",
+              "nome": "Fexofenadina 120mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_nasossinusais_alergicos, 'prurido_nasal', 'espirros') or 'alergenicos' in fatores_desencadeantes and not('anti_histaminico_oral' in tratamento_atual)",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 30,
+              "codigo": [
+                {
+                  "sistema": "MEVO",
+                  "valor": "4544",
+                  "iid": "10991faa-6fdb-433f-ba4a-257e30ee353b"
+                }
+              ],
+              "categoria": "Anti-histamínico",
+              "nomeMed": "Fexofenadina",
+              "posologia": "<p><strong>120-180mg via oral, 1 vez ao dia</strong><br/>Preferencialmente em jejum<br/>Não causa sonolência<br/>Pode ser usado continuamente durante a estação alergênica</p>",
+              "mensagemMedico": "<p>Anti-histamínico de 2ª geração, primeira linha em rinite alérgica. Não atravessa barreira hematoencefálica. Excelente perfil de segurança. MUDANÇA V3: Seguro em gravidez categoria B e lactação.</p>",
+              "via": "Oral"
+            },
+            {
+              "id": "loratadina-anthistaminico",
+              "nome": "Loratadina 10mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_nasossinusais_alergicos, 'prurido_nasal', 'espirros') and 'sazonais' in fatores_desencadeantes",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 30,
+              "codigo": [
+                {
+                  "sistema": "MEVO",
+                  "valor": "42388",
+                  "iid": "848f12f9-4423-498a-8ac7-07976cf20b8f"
+                }
+              ],
+              "categoria": "Anti-histamínico",
+              "nomeMed": "Loratadina",
+              "posologia": "<p><strong>5-10mg via oral por dia</strong><br/>Pode ser tomado com ou sem alimentos<br/>Alternativa econômica para rinite alérgica leve sazonal</p>",
+              "mensagemMedico": "<p>Rinite alérgica leve com prurido nasal e espirros, especialmente sazonal. Evidência II A conforme tabela. MUDANÇA V3: Seguro em gravidez categoria B e lactação.</p>",
+              "via": "Oral"
+            },
+            {
+              "id": "azelastina-intranasal",
+              "nome": "Azelastina spray nasal 0,1%",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "'irritantes' in fatores_desencadeantes or 'variacao_termica' in fatores_desencadeantes",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "iid": "ef91f194-46f8-45da-9beb-7d5fe96b3439",
+                  "sistema": "MEVO",
+                  "valor": "43598"
+                }
+              ],
+              "categoria": "Anti-histamínico intranasal",
+              "nomeMed": "Azelastina",
+              "posologia": "<p><strong>1-2 jatos por narina, 2 vezes ao dia</strong><br/>Efeito imediato na obstrução nasal<br/>Ideal para rinite vasomotora</p>",
+              "mensagemMedico": "<p>Rinite vasomotora e mista, obstrução nasal por irritantes químicos ou odores. Evidência II A conforme tabela. MUDANÇA V3: Categoria C na gravidez - usar com cautela.</p>",
+              "via": "Intranasal"
+            },
+            {
+              "id": "amoxicilina-clavulanato-antibiotico",
+              "nome": "Amoxicilina + Clavulanato 875mg + 125mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_nasossinusais_infecciosos, 'rinorreia_purulenta', 'dor_facial') and ('febre' in sintomas_associados or duracao_sintomas == 'agudo') and not('alergia_penicilina' in alergias_medicamentos) and not('antibiotico_oral' in tratamento_atual)",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 14,
+              "codigo": [
+                {
+                  "sistema": "MEVO",
+                  "valor": "40833",
+                  "iid": "ef5c4bcf-ac26-4644-b5cc-8a290fb3c0c6"
+                }
+              ],
+              "categoria": "Antibiótico",
+              "nomeMed": "Amoxicilina + Clavulanato",
+              "posologia": "<p><strong>875/125 mg via oral de 12 em 12 horas por 7-10 dias</strong><br/>Tomar com alimentos para reduzir efeitos gastrointestinais<br/>Completar todo o ciclo mesmo com melhora</p>",
+              "mensagemMedico": "<p>Primeira linha em rinossinusite bacteriana aguda (ABRS). Rinorreia purulenta com dor facial e febre persistente por mais de 10 dias. Evidência I A. MUDANÇA V3: Seguro em gravidez categoria B e lactação.</p>",
+              "via": "Oral"
+            },
+            {
+              "id": "azitromicina-antibiotico",
+              "nome": "Azitromicina 500mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_nasossinusais_infecciosos, 'rinorreia_purulenta', 'dor_facial') and 'febre' in sintomas_associados and 'alergia_penicilina' in alergias_medicamentos",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 3,
+              "codigo": [
+                {
+                  "sistema": "MEVO",
+                  "valor": "3958",
+                  "iid": "422723c3-ac5a-46a3-a634-fb20edd1b574"
+                }
+              ],
+              "categoria": "Antibiótico macrolídeo",
+              "nomeMed": "Azitromicina",
+              "posologia": "<p><strong>500mg via oral, 1 vez ao dia por 3 dias</strong><br/>Tomar 1 hora antes ou 2 horas após as refeições<br/>Alternativa em alérgicos à penicilina</p>",
+              "mensagemMedico": "<p>Rinossinusite bacteriana aguda em pacientes alérgicos à penicilina. Evidência II B conforme tabela. MUDANÇA V3: Categoria B na gravidez, seguro em lactação.</p>",
+              "via": "Oral"
+            },
+            {
+              "id": "ciprofloxacino-dexametasona-otico",
+              "nome": "Ciprofloxacino + Dexametasona gotas otológicas",
+              "descricao": "MUDANÇA V3: Tratamento tópico adicionado para Otite Externa (OE) - primeira linha conforme solicitado",
+              "condicional": "visivel",
+              "condicao": "('otorreia' in sintomas_otologicos or 'prurido_auricular' in sintomas_otologicos or 'otalgia' in sintomas_otologicos) and duracao_sintomas == 'agudo' and not('alergia_sulfa' in alergias_medicamentos)",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "MEVO",
+                  "valor": "41892",
+                  "iid": "ciprofloxacino-dexametasona-otico-id"
+                }
+              ],
+              "categoria": "Antibiótico + Corticoide tópico otológico",
+              "nomeMed": "Ciprofloxacino + Dexametasona",
+              "posologia": "<p><strong>4 gotas no ouvido afetado, 2 vezes ao dia por 7 dias</strong><br/>Aquecer o frasco nas mãos antes de aplicar<br/>Deitar de lado e manter posição por 5 minutos após aplicação<br/>Não usar se houver perfuração timpânica conhecida</p>",
+              "mensagemMedico": "<p>Primeira linha para Otite Externa (OE). Combinação antibiótico + anti-inflamatório reduz dor e infecção rapidamente. Evidência I A. MUDANÇA V3: Evitar em gravidez/lactação se possível.</p>",
+              "via": "Tópico otológico"
+            },
+            {
+              "id": "prednisolona-corticoide-sistemico",
+              "nome": "Prednisolona 20mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "(duracao_sintomas == 'cronico' and selected_any(sintomas_nasossinusais_infecciosos, 'obstrucao_nasal', 'hiposmia_anosmia') and 'corticoide_spray_nasal' in tratamento_atual) or ('vertigem_rotatoria' in sintomas_vestibulares and duracao_sintomas == 'agudo') and not('alergia_corticoides' in alergias_medicamentos) and not(gravidez_lactacao == 'gravida' or gravidez_lactacao == 'gravida_lactante')",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 5,
+              "codigo": [
+                {
+                  "sistema": "MEVO",
+                  "valor": "32630",
+                  "iid": "6536a160-0c01-4726-afbe-9cfc25b2922f"
+                }
+              ],
+              "categoria": "Corticosteroide sistêmico",
+              "nomeMed": "Prednisolona",
+              "posologia": "<p><strong>0,5mg/kg/dia (máximo 40mg) pela manhã por 5-10 dias</strong><br/>Tomar com alimentos<br/>Redução gradual se uso prolongado<br/>Curso curto para minimizar efeitos adversos</p>",
+              "mensagemMedico": "<p>Rinossinusite crônica com pólipos e anosmia, refratária ao corticoide intranasal. Evidência II A conforme tabela. MUDANÇA V3: CONTRAINDICADO em gravidez - risco categoria C/D.</p>",
+              "via": "Oral"
+            },
+            {
+              "id": "pantoprazol-ibp",
+              "nome": "Pantoprazol 40mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_laringofaringeos, 'pigarro_cronico', 'globo_faringeo', 'tosse_seca', 'ardor_faringeo') and not('ibp_refluxo' in tratamento_atual)",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 60,
+              "codigo": [
+                {
+                  "sistema": "MEVO",
+                  "valor": "39024",
+                  "iid": "b56454f2-5913-4e7e-b5bc-5c079a4c4664"
+                }
+              ],
+              "categoria": "Inibidor da bomba de prótons",
+              "nomeMed": "Pantoprazol",
+              "posologia": "<p><strong>40mg via oral, 1-2 vezes ao dia em jejum</strong><br/>Tomar 30-60 minutos antes das refeições<br/>Uso contínuo por 8-12 semanas mínimo<br/>Adultos: 40 mg VO 1–2×/dia; Crianças: 0,3–1,2 mg/kg/dia</p>",
+              "mensagemMedico": "<p>Pigarro crônico, sensação de globo faríngeo, tosse seca persistente, ardor na garganta. Evidência I A conforme tabela. MUDANÇA V3: Categoria B na gravidez, seguro em lactação.</p>",
+              "via": "Oral"
+            },
+            {
+              "id": "betaistina-vertigem",
+              "nome": "Betaistina 24mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "'vertigem_rotatoria' in sintomas_vestibulares and duracao_sintomas != 'agudo' and not('betaistina_previa' in tratamento_atual)",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 60,
+              "codigo": [
+                {
+                  "iid": "9ed4175b-3b64-4746-ac89-daf7743c38a6",
+                  "sistema": "MEVO",
+                  "valor": "54101"
+                }
+              ],
+              "categoria": "Vasodilatador labiríntico",
+              "nomeMed": "Betaistina",
+              "posologia": "<p><strong>24mg via oral de 12 em 12 horas</strong><br/>Tomar com alimentos<br/>Uso contínuo por 8-12 semanas<br/>Pode levar 2-4 semanas para efeito pleno</p>",
+              "mensagemMedico": "<p>Indicado em vertigem periférica recorrente e doença de Ménière. Melhora microcirculação labiríntica. Não usar na fase aguda da vertigem. MUDANÇA V3: Evitar em gravidez (sem estudos adequados).</p>",
+              "via": "Oral"
+            }
+          ],
+          "encaminhamento": [
+            {
+              "id": "otorrinolaringologia-especialista",
+              "nome": "Otorrinolaringologia",
+              "descricao": "<p>Encaminhamento para avaliação especializada em otorrinolaringologia</p>",
+              "condicional": "visivel",
+              "condicao": "duracao_sintomas == 'cronico' or ('vertigem_rotatoria' in sintomas_vestibulares and 'sintomas_neurologicos' in sintomas_associados) or (selected_any(sintomas_sono, 'ronco_habitual', 'pausas_respiratorias') and escala_epworth >= 15)",
+              "indicacao": "Rinossinusite crônica, vertigem com sinais centrais, SAHOS grave, casos refratários ao tratamento inicial",
+              "codigo": "",
+              "cid": "J32, H81, G47.3",
+              "destino": "Otorrinolaringologia"
+            },
+            {
+              "id": "fonoaudiologia-reabilitacao",
+              "nome": "Fonoaudiologia",
+              "descricao": "<p>Avaliação e reabilitação fonoaudiológica</p>",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_otologicos, 'hipoacusia', 'zumbido') or 'vertigem_rotatoria' in sintomas_vestibulares or 'rouquidao' in sintomas_laringofaringeos",
+              "indicacao": "Perda auditiva, reabilitação vestibular, terapia do zumbido, disfonia",
+              "codigo": "",
+              "cid": "H90, H81, R49",
+              "destino": "Fonoaudiologia"
+            },
+            {
+              "id": "medicina-sono-especializada",
+              "nome": "Medicina do Sono",
+              "descricao": "<p>Avaliação especializada em distúrbios do sono</p>",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_sono, 'pausas_respiratorias', 'sonolencia_diurna') and escala_epworth >= 10",
+              "indicacao": "Síndrome da apneia obstrutiva do sono, distúrbios do sono complexos",
+              "codigo": "",
+              "cid": "G47.3",
+              "destino": "Medicina do Sono"
+            },
+            {
+              "id": "gastroenterologia-drge",
+              "nome": "Gastroenterologia",
+              "descricao": "<p>Avaliação de doença do refluxo gastroesofágico</p>",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_laringofaringeos, 'pigarro_cronico', 'globo_faringeo', 'ardor_faringeo') and duracao_sintomas == 'cronico' and 'ibp_refluxo' in tratamento_atual",
+              "indicacao": "DRGE refratária com manifestações laringofaríngeas, necessidade de pH-metria",
+              "codigo": "",
+              "cid": "K21",
+              "destino": "Gastroenterologia"
+            },
+            {
+              "id": "neurologia-vertigem-central",
+              "nome": "Neurologia",
+              "descricao": "<p>Avaliação neurológica urgente</p>",
+              "condicional": "visivel",
+              "condicao": "'vertigem_rotatoria' in sintomas_vestibulares and 'sintomas_neurologicos' in sintomas_associados",
+              "indicacao": "Vertigem central, sintomas neurológicos associados, suspeita de lesão do SNC",
+              "codigo": "",
+              "cid": "H81.9, G93.1",
+              "destino": "Neurologia"
+            }
+          ],
+          "mensagem": [
+            {
+              "id": "msg-rinite-alergica-manejo",
+              "nome": "RINITE ALÉRGICA - MANEJO COMBINADO",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_nasossinusais_alergicos, 'prurido_nasal', 'espirros') and 'alergenicos' in fatores_desencadeantes",
+              "conteudo": "<p><strong>DIAGNÓSTICO: RINITE ALÉRGICA</strong></p><p></p><p><strong>Estratégia terapêutica escalonada:</strong> Corticosteroide intranasal (primeira linha) + anti-histamínico conforme sintomas + irrigação nasal universal. Controle ambiental fundamental para sucesso terapêutico.</p><p></p><p><strong>Reavaliação:</strong> 4-6 semanas. Considerar imunoterapia se refratária ao tratamento otimizado.</p><p></p><p></p>",
+              "observacao": ""
+            },
+            {
+              "id": "msg-rinossinusite-bacteriana",
+              "nome": "RINOSSINUSITE BACTERIANA AGUDA",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_nasossinusais_infecciosos, 'rinorreia_purulenta', 'dor_facial') and 'febre' in sintomas_associados",
+              "conteudo": "<p><strong>RINOSSINUSITE BACTERIANA AGUDA</strong></p><p></p><p><strong>Critérios ABRS confirmados:</strong> </p><ul><li><p>Sintomas &gt;10 dias sem melhora OU </p></li><li><p>Febre ≥39°C + dor facial intensa OU </p></li><li><p>Piora após melhora inicial.</p></li></ul><p></p><p><strong>Conduta:</strong> </p><ul><li><p>Antibiótico 7-10 dias + irrigação nasal adjuvante. </p></li><li><p>Reavaliação 48-72h se não houver melhora. </p></li><li><p>Considerar resistência bacteriana em falha terapêutica.</p></li></ul><p></p><p></p>",
+              "observacao": ""
+            },
+            {
+              "id": "msg-rinossinusite-cronica-escalonada",
+              "nome": "RINOSSINUSITE CRÔNICA - MANEJO ESCALONADO",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "duracao_sintomas == 'cronico' and selected_any(sintomas_nasossinusais_infecciosos, 'obstrucao_nasal', 'hiposmia_anosmia')",
+              "conteudo": "<p><strong>MANEJO ESCALONADO DE RSC</strong></p><p></p><p><strong>Tratamento escalonado RSC:</strong> </p><ul><li><p>1ª linha: Corticoide intranasal + irrigação (8-12 sem); </p></li><li><p>2ª linha: Curso corticoide sistêmico; </p></li><li><p>3ª linha: Endoscopia nasal; </p></li><li><p>4ª linha: TC seios; </p></li><li><p>5ª linha: FESS.</p></li></ul><p></p><p><strong>Investigação:</strong> Asma, alergia, deficiência imunológica. Abordagem multidisciplinar essencial.</p><p></p><p></p>",
+              "observacao": ""
+            },
+            {
+              "id": "msg-otite-media-pediatrica",
+              "nome": "OTITE MÉDIA AGUDA - MANEJO PEDIÁTRICO",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "'otalgia' in sintomas_otologicos and 'febre' in sintomas_associados and age <= 12",
+              "conteudo": "<p><strong>MANEJO PEDIÁTRICO - OMA</strong></p><ul><li><p>&lt;6 meses: sempre antibiótico; </p></li><li><p>6m-2a: tratar se bilateral/grave; </p></li><li><p>&gt;2a: observação se leve.</p></li></ul><p><strong>Essencial:</strong> Analgesia adequada independente do antibiótico. Reavaliação 48-72h obrigatória. Timpanometria para confirmação diagnóstica.</p><p></p><p></p>",
+              "observacao": ""
+            },
+            {
+              "id": "msg-otite-externa-tratamento",
+              "nome": "OTITE EXTERNA - TRATAMENTO TÓPICO",
+              "descricao": "MUDANÇA V3: Mensagem adicionada para orientar tratamento de OE",
+              "condicional": "visivel",
+              "condicao": "('otorreia' in sintomas_otologicos or 'prurido_auricular' in sintomas_otologicos or 'otalgia' in sintomas_otologicos) and duracao_sintomas == 'agudo'",
+              "conteudo": "<p><strong>OTITE EXTERNA (OE) - TRATAMENTO TÓPICO</strong></p><p></p><p><strong>Princípios do tratamento:</strong></p><ul><li><p>Limpeza cuidadosa do conduto auditivo externo</p></li><li><p>Antibiótico tópico + anti-inflamatório (primeira linha)</p></li><li><p>Evitar manipulação e entrada de água no ouvido</p></li><li><p>Analgesia sistêmica se dor intensa</p></li></ul><p></p><p><strong>Cuidados essenciais:</strong></p><ul><li><p>Manter ouvido seco durante todo o tratamento (7 dias)</p></li><li><p>Não usar cotonetes ou objetos no ouvido</p></li><li><p>Suspender tratamento tópico se houver perfuração timpânica</p></li><li><p>Reavaliação obrigatória em 7-10 dias</p></li></ul><p></p><p><strong>Sinais de alerta:</strong> Dor intensa persistente, febre, edema periauricular, paralisia facial → encaminhar urgência.</p><p></p><p></p>",
+              "observacao": ""
+            },
+            {
+              "id": "msg-hipoacusia-infantil-intervencao",
+              "nome": "HIPOACUSIA INFANTIL - INTERVENÇÃO PRECOCE",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "'hipoacusia' in sintomas_otologicos and age <= 12",
+              "conteudo": "<p><strong>HIPOACUSIA INFANTIL - INTERVENÇÃO PRECOCE</strong></p><p></p><p><strong>Protocolo 1-3-6:</strong> Triagem até 1 mês, diagnóstico até 3 meses, intervenção até 6 meses de idade.</p><p></p><p><strong>Conduta:</strong> Audiometria + timpanometria urgente. Investigar causas tratáveis. Encaminhamento fonoaudiológico imediato. Acompanhamento multidisciplinar obrigatório.</p><p></p><p></p>",
+              "observacao": ""
+            },
+            {
+              "id": "msg-vertigem-periferica-diagnostico",
+              "nome": "VERTIGEM PERIFÉRICA - DIAGNÓSTICO DIFERENCIAL",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "'vertigem_rotatoria' in sintomas_vestibulares and not('sintomas_neurologicos' in sintomas_associados)",
+              "conteudo": "<p><strong>VERTIGEM PERIFÉRICA - DIAGNÓSTICO DIFERENCIAL</strong></p><p></p><p><strong>Características confirmadas:</strong> Vertigem rotatória súbita + nistagmo horizontal-rotatório fatigável + ausência de sinais neurológicos.</p><p></p><p><strong>Tratamento:</strong> Fase aguda: repouso + antivertiginosos máximo 3-5 dias. Reabilitação vestibular precoce pós-aguda. Betaistina para casos recorrentes.</p><p></p><p></p>",
+              "observacao": ""
+            },
+            {
+              "id": "msg-vertigem-central-alerta",
+              "nome": "VERTIGEM CENTRAL - ALERTA NEUROLÓGICO",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "'vertigem_rotatoria' in sintomas_vestibulares and 'sintomas_neurologicos' in sintomas_associados",
+              "conteudo": "<p><strong>⚠️ SUSPEITA VERTIGEM CENTRAL:</strong> Sintomas neurológicos associados identificados. Necessita avaliação neurológica URGENTE.</p><p></p><p><strong>Conduta:</strong> </p><ul><li><p>NÃO usar antivertiginosos. </p></li><li><p>Solicitar neuroimagem. </p></li><li><p>Encaminhar emergência se sintomas agudos. </p></li><li><p>Considerar AVC, tumor, esclerose múltipla.</p></li></ul><p></p><p></p>",
+              "observacao": ""
+            },
+            {
+              "id": "msg-refluxo-laringofaringeo-especifico",
+              "nome": "REFLUXO LARINGOFARÍNGEO - TRATAMENTO ESPECÍFICO",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_laringofaringeos, 'pigarro_cronico', 'globo_faringeo', 'tosse_seca')",
+              "conteudo": "<p><strong>REFLUXO LARINGOFARÍNGEO - TRATAMENTO ESPECÍFICO</strong></p><p></p><p><strong>DRGE-LF confirmado:</strong> Diferente da DRGE clássica - raramente causa pirose. Resposta mais lenta que DRGE esofágica.</p><p></p><p><strong>Tratamento:</strong> </p><ul><li><p>IBP doses altas 3-6 meses + medidas comportamentais rigorosas. </p></li><li><p>Considerar pH-metria se refratário após 3 meses de tratamento otimizado.</p></li></ul><p></p><p></p>",
+              "observacao": ""
+            },
+            {
+              "id": "msg-sahos-multidisciplinar",
+              "nome": "SÍNDROME DA APNEIA OBSTRUTIVA DO SONO",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(sintomas_sono, 'ronco_habitual', 'pausas_respiratorias', 'sonolencia_diurna')",
+              "conteudo": "<p><strong>SÍNDROME DA APNEIA OBSTRUTIVA DO SONO</strong></p><p></p><p><strong>SAHOS confirmado:</strong> Polissonografia para diagnóstico definitivo. Escala Epworth ≥10 sugere sonolência patológica.</p><p></p><p><strong>Tratamento escalonado:</strong> CPAP (padrão-ouro moderado-grave) + perda ponderal + tratamento obstrução nasal. Acompanhamento cardiológico se indicado.</p><p></p><p></p>",
+              "observacao": ""
+            },
+            {
+              "id": "msg-tratamento-previo-otimizacao",
+              "nome": "OTIMIZAÇÃO BASEADA EM TRATAMENTO PRÉVIO",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "not('nenhum_tratamento' in tratamento_atual)",
+              "conteudo": "<p><strong>OTIMIZAÇÃO BASEADA EM TRATAMENTO PRÉVIO</strong></p><p></p><p><strong>Histórico terapêutico identificado:</strong> Avaliação de resposta prévia realizada. Estratégia otimizada para evitar redundâncias.</p><p></p><p><strong>Conduta:</strong> </p><ul><li><p>Escalonamento terapêutico baseado em eficácia anterior. </p></li><li><p>Verificação de aderência e técnica de uso. </p></li><li><p>Ajustes personalizados implementados.</p></li></ul><p></p><p></p>",
+              "observacao": ""
+            },
+            {
+              "id": "msg-orientacoes-gerais-prevencao",
+              "nome": "ORIENTAÇÕES GERAIS DE PREVENÇÃO",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "conteudo": "<p><strong>ORIENTAÇÕES GERAIS DE PREVENÇÃO</strong></p><p></p><p><strong>Medidas preventivas universais:</strong> Higiene nasal diária + evitar poluição + vacinação atualizada + hidratação adequada + umidificação ambiente + controle fatores alérgicos.</p><p></p><p><strong>Sinais de alerta para reavaliação imediata:</strong> Febre alta, dor intensa, sintomas neurológicos, piora súbita. </p><p></p><p>Retorno programado conforme evolução clínica.</p><p></p><p></p>",
+              "observacao": ""
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-node-identificacao-paciente-node-tipo-consulta",
+      "source": "node-identificacao-paciente",
+      "target": "node-tipo-consulta",
+      "data": {}
+    },
+    {
+      "id": "e-node-tipo-consulta-node-sintomas-principais",
+      "source": "node-tipo-consulta",
+      "target": "node-sintomas-principais",
+      "data": {}
+    },
+    {
+      "id": "e-node-sintomas-principais-node-cronologia-fatores",
+      "source": "node-sintomas-principais",
+      "target": "node-cronologia-fatores",
+      "data": {}
+    },
+    {
+      "id": "e-node-cronologia-fatores-node-resultados-exames",
+      "source": "node-cronologia-fatores",
+      "target": "node-resultados-exames",
+      "data": {}
+    },
+    {
+      "id": "e-node-resultados-exames-node-alergias-contraindicacoes",
+      "source": "node-resultados-exames",
+      "target": "node-alergias-contraindicacoes",
+      "data": {}
+    },
+    {
+      "id": "e-node-alergias-contraindicacoes-summary-processamento-clinico",
+      "source": "node-alergias-contraindicacoes",
+      "target": "summary-processamento-clinico",
+      "data": {}
+    },
+    {
+      "id": "e-summary-processamento-clinico-conduta-final-otorrinolaringologia",
+      "source": "summary-processamento-clinico",
+      "target": "conduta-final-otorrinolaringologia",
+      "data": {}
+    }
+  ]
+}

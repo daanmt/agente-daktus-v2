@@ -1,0 +1,19 @@
+{
+  "timestamp": "20251201_103057",
+  "model_used": "anthropic/claude-sonnet-4.5",
+  "suggestions_applied": 5,
+  "validation": {
+    "valid_json": true,
+    "structure_preserved": true,
+    "changes_detected": true,
+    "errors": [],
+    "warnings": [
+      "Nodes adicionados: 16 → 20"
+    ]
+  },
+  "files": {
+    "original": "C:\\Users\\daanm\\AgenteV2\\models_json\\amil_ficha_reumatologia_v0.1.0_27-11-2025-0914.json",
+    "report": "C:\\Users\\daanm\\AgenteV2\\reports\\amil_ficha_reumatologia_v0.1.0_27-11-2025-0914_20251201_093419.json",
+    "fixed": "C:\\Users\\daanm\\AgenteV2\\src\\agent_v3\\output\\amil_ficha_orl_v1.0.0_FIXED_20251201_103057.json"
+  }
+}
