@@ -13,7 +13,7 @@ from pathlib import Path
 def analyze_and_fix(
     protocol_path: str,
     playbook_path: Optional[str] = None,
-    model: str = "anthropic/claude-sonnet-4.5",
+    model: str = "x-ai/grok-4-fast",
     auto_apply: bool = True,
     confidence_threshold: float = 0.90
 ) -> Dict[str, Any]:
