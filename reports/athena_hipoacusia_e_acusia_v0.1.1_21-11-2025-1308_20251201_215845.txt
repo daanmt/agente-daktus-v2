@@ -1,0 +1,56 @@
+============================================================
+AGENT V3 - PROTOCOL ANALYSIS REPORT
+============================================================
+
+METADATA
+------------------------------------------------------------
+Protocol: C:\Users\daanm\AgenteV2\models_json\athena_hipoacusia_e_acusia_v0.1.1_21-11-2025-1308.json
+Playbook: C:\Users\daanm\AgenteV2\models_json\[ATHENA] Hipoacusia e acusia 2256587d2ef5800ba8aac10cbff8f29c.md
+Model: x-ai/grok-4.1-fast:free
+Timestamp: 2025-12-01T21:58:45.361223
+Processing Time: 0ms
+
+IMPROVEMENT SUGGESTIONS
+------------------------------------------------------------
+Total: 30 suggestions
+
+ALTA PRIORIDADE:
+  1. Expandir sinais de alarme com meningite
+  2. Adicionar verificação de idade pediátrica
+  3. Adicionar encaminhamento urgente para schwannoma
+  4. Adicionar contraindicação renal para esteroides
+  5. Incluir diabetes/HI em histórico para esteroides
+  6. Condicionar RM apenas se audiometria confirma NS
+  7. Priorizar TC sobre RM se contra-indicação RM
+  8. Evitar intratimpânico se oral ok
+
+MÉDIA PRIORIDADE:
+  1. Verificar trauma acústico recente em súbita
+  2. Adicionar gravidez em contra-indicações RM
+  3. Alertar hiperdosagem esteroides idosos
+  4. Limitar esteroides orais a <2 semanas sintomas
+  5. Verificar ototoxicidade medicamentos crônicos
+  6. Criar branch para perda condutiva óbvia
+  7. Substituir TC por audiometria em otosclerose suspeita
+  8. Evitar ABR se EOA normal
+  9. Automatizar skip de exame físico em retornos
+  10. Usar EOA como triagem universal primeiro atendimento
+  11. Adicionar botão 'sem alterações' global
+  12. Consolidar nodes de retorno e exames
+
+BAIXA PRIORIDADE:
+  1. Melhorar labels de resultados audiometria
+  2. Adicionar tooltips em opções complexas
+  3. Padronizar títulos de perguntas com bold consistente
+  4. Preencher default true para booleans comuns
+  5. Agrupar sintomas associados logicamente
+  6. Auto-preencher exames_recentes baseado retorno
+  7. Adicionar preview de summary em nodes finais
+  8. Ocultar detailing se não critérios
+  9. Melhorar template summary com variáveis
+  10. Incluir ícones para tipos de select
+
+
+============================================================
+Full JSON report saved to: C:\Users\daanm\AgenteV2\reports\athena_hipoacusia_e_acusia_v0.1.1_21-11-2025-1308_20251201_215845.json
+============================================================

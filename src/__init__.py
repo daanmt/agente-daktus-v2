@@ -1,12 +1,10 @@
 """
-Agente de QA para Protocolos Clínicos - Daktus
-Agent V2 ONLY - Simplified LLM-centric architecture
+Agente Daktus | QA - Sistema Unificado
+
+Este é o módulo raiz do projeto unificado.
+Para uso, importe diretamente de agent.*
 """
 
-from agent_v2.pipeline import analyze
-
-__version__ = "2.0.0"
-__all__ = [
-    "analyze",
-]
+__version__ = "3.0.0-alpha"
+__all__ = []
 

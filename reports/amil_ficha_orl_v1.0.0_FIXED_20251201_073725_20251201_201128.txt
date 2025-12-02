@@ -1,0 +1,328 @@
+============================================================
+AGENT V3 - PROTOCOL ANALYSIS REPORT
+============================================================
+
+METADATA
+------------------------------------------------------------
+Protocol: C:\Users\daanm\AgenteV2\models_json\amil_ficha_orl_v1.0.0_FIXED_20251201_073725.json
+Playbook: C:\Users\daanm\AgenteV2\models_json\Sobre a ficha de atendimento em Otorrinolaringolog 29d6587d2ef5800ba358f9c1b2236875.md
+Model: google/gemini-2.5-flash-preview-09-2025
+Timestamp: 2025-12-01T20:11:28.053893
+Processing Time: 0ms
+
+IMPROVEMENT SUGGESTIONS
+------------------------------------------------------------
+Total: 50 suggestions
+
+ALTA PRIORIDADE:
+  1. Adicionar alerta de contraindicação de Prednisolona em Gravidez/Lactação
+  2. Incluir verificação de perfuração timpânica antes de gotas otológicas
+  3. Verificar uso de AINEs/AAS antes de prescrever Corticoide Sistêmico
+  4. Adicionar alerta de risco de ototoxicidade na orientação de proteção auditiva
+  5. Adicionar indicação de Encaminhamento para Oftalmologia em caso de Diplopia/Perda Visual
+  6. Adicionar opção de 'Sintomas de Alarme' no nó de Sintomas Associados
+  7. Diferenciar Otite Externa de Otite Média Crônica Supurativa (OMCS)
+  8. Adicionar alerta de risco de Síndrome de Reye para AAS em crianças
+  9. Adicionar verificação de Diabetes Mellitus nas Comorbidades
+  10. Adicionar verificação de uso de Anticoagulantes
+  11. Adicionar verificação de Alergia a Macrolídeos antes de Azitromicina
+  12. Adicionar alerta de risco de Torsades de Pointes com Azitromicina
+
+MÉDIA PRIORIDADE:
+  1. Adicionar campo de texto livre para 'Outras Alergias'
+  2. Adicionar opção de 'Otite Média Aguda' na conduta
+  3. Adicionar verificação de Hipertensão/Glaucoma antes de Descongestionantes
+  4. Adicionar indicação de Audiometria para Hipoacusia Súbita
+  5. Criar lógica de prescrição de Corticoide Oral para Hipoacusia Súbita
+  6. Adicionar indicação de Encaminhamento para Cirurgia de Cabeça e Pescoço
+  7. Adicionar verificação de uso de Betabloqueadores antes de Betaistina
+  8. Criar um nó de 'Exame Físico Simplificado'
+  9. Adicionar alerta de risco de sangramento nasal com Corticoides Intranasais
+  10. Reforçar a necessidade de jejum para VNG
+  11. Otimizar a indicação de TC de Seios da Face
+  12. Adicionar indicação de VNG para Zumbido associado à Vertigem
+  13. Adicionar indicação de Timpanometria para Hipoacusia Infantil
+  14. Criar lógica de retorno para 'Exames Alterados'
+  15. Criar lógica de prescrição de Analgésicos/Antitérmicos
+  16. Condicionar Budesonida Irrigação à falha de Spray Nasal
+  17. Criar lógica de prescrição de Pantoprazol em dose única diária
+  18. Adicionar opção de 'Exames Solicitados Anteriormente' no retorno
+  19. Priorizar Loratadina sobre Fexofenadina em casos leves/sazonais
+  20. Adicionar opção de Corticoide Tópico de baixo custo (Fluticasona Propionato)
+  21. Simplificar a condição de visibilidade do nó 'Cronologia e Fatores'
+  22. Automatizar a exclusão de 'Nenhum Sintoma' ao selecionar outro
+
+BAIXA PRIORIDADE:
+  1. Adicionar indicação de Endoscopia Nasal para Epistaxe Recorrente
+  2. Adicionar campo de texto livre para 'Outros Tratamentos'
+  3. Adicionar opção de 'Otoscopia Normal' no nó de Exames
+  4. Melhorar a descrição do Zumbido (Tinnitus)
+  5. Adicionar campo de 'Grau de Sonolência' na Escala de Epworth
+  6. Adicionar campo de 'Intensidade da Dor' (Escala Visual Analógica)
+  7. Melhorar a descrição do campo 'Idade do paciente'
+  8. Adicionar campo de 'Data da Última Consulta' para retornos
+  9. Adicionar campo de 'Observações' no nó de Identificação
+  10. Adicionar campo de 'Data de Início' para sintomas
+  11. Garantir que o campo 'Avaliação detalhada dos exames' seja texto livre
+  12. Melhorar a descrição da Escala de Epworth
+  13. Padronizar a nomenclatura de 'Gravidez/Lactação'
+  14. Revisar a formatação HTML nos títulos das perguntas
+  15. Padronizar o uso de 'selected_any' nas expressões condicionais
+  16. Reorganizar as opções de Sintomas Otológicos
+
+DETAILED LIST:
+------------------------------------------------------------
+1. [BAIXA] EFICIENCIA
+   Title: Adicionar indicação de Endoscopia Nasal para Epistaxe Recorrente
+   Description: Incluir 'Epistaxe Recorrente' como uma condição para a solicitação de Endoscopia Nasal, mesmo na ausência de sintomas crônicos de rinossinusite.
+   Impact: Segurança=4, Economia=L, Eficiência=M, Usabilidade=5
+
+2. [BAIXA] USABILIDADE
+   Title: Adicionar campo de texto livre para 'Outros Tratamentos'
+   Description: Permitir que o usuário especifique quais foram os 'Outros tratamentos' realizados (outros_tratamentos) no nó 'Cronologia e Fatores'.
+   Impact: Segurança=3, Economia=L, Eficiência=L, Usabilidade=8
+
+3. [BAIXA] EFICIENCIA
+   Title: Adicionar opção de 'Otoscopia Normal' no nó de Exames
+   Description: Incluir 'Otoscopia Normal' como uma opção de exame trazido, pois é um achado comum em retornos e influencia a conduta (exclui OE/OMA).
+   Impact: Segurança=3, Economia=L, Eficiência=M, Usabilidade=6
+
+4. [BAIXA] USABILIDADE
+   Title: Melhorar a descrição do Zumbido (Tinnitus)
+   Description: Na opção 'zumbido' (sintomas otológicos), adicionar uma breve descrição sobre a importância de caracterizar o zumbido (pulsátil, contínuo, intermitente).
+   Impact: Segurança=3, Economia=L, Eficiência=L, Usabilidade=7
+
+5. [BAIXA] USABILIDADE
+   Title: Adicionar campo de 'Grau de Sonolência' na Escala de Epworth
+   Description: Após o preenchimento da Escala de Epworth, exibir o resultado total e classificar o grau de sonolência (Normal: 0-9, Leve: 10-12, Moderada: 13-15, Grave: 16-24) para o médico.
+   Impact: Segurança=3, Economia=L, Eficiência=M, Usabilidade=9
+
+6. [BAIXA] USABILIDADE
+   Title: Adicionar campo de 'Intensidade da Dor' (Escala Visual Analógica)
+   Description: No nó 'Cronologia e Fatores', adicionar uma escala de 0 a 10 para avaliar a intensidade da dor (se 'otalgia' ou 'dor_facial' estiverem presentes).
+   Impact: Segurança=3, Economia=L, Eficiência=L, Usabilidade=8
+
+7. [BAIXA] USABILIDADE
+   Title: Melhorar a descrição do campo 'Idade do paciente'
+   Description: Adicionar uma nota na descrição do campo 'Q-idade-paciente' sobre a importância da idade para estratificação pediátrica/geriátrica.
+   Impact: Segurança=1, Economia=L, Eficiência=L, Usabilidade=7
+
+8. [BAIXA] USABILIDADE
+   Title: Adicionar campo de 'Data da Última Consulta' para retornos
+   Description: No nó 'Tipo de Consulta', se 'retorno_consulta' for selecionado, solicitar a data da última consulta para contextualizar a evolução dos sintomas e a duração do tratamento prévio.
+   Impact: Segurança=1, Economia=L, Eficiência=L, Usabilidade=8
+
+9. [BAIXA] USABILIDADE
+   Title: Adicionar campo de 'Observações' no nó de Identificação
+   Description: Incluir um campo de texto livre no nó 'Identificação do Paciente' para observações gerais (e.g., 'paciente trazido pela mãe', 'dificuldade de comunicação').
+   Impact: Segurança=1, Economia=L, Eficiência=L, Usabilidade=9
+
+10. [BAIXA] USABILIDADE
+   Title: Adicionar campo de 'Data de Início' para sintomas
+   Description: No nó 'Cronologia e Fatores', adicionar um campo de data para registrar o início dos sintomas, complementando a duração (agudo/crônico).
+   Impact: Segurança=1, Economia=L, Eficiência=L, Usabilidade=7
+
+11. [BAIXA] USABILIDADE
+   Title: Garantir que o campo 'Avaliação detalhada dos exames' seja texto livre
+   Description: Confirmar que o campo 'Q-avaliacao-exames' (avaliação detalhada dos exames alterados) é do tipo 'string' (texto livre) e não 'choice', para permitir a descrição clínica dos achados.
+   Impact: Segurança=1, Economia=L, Eficiência=L, Usabilidade=9
+
+12. [BAIXA] USABILIDADE
+   Title: Melhorar a descrição da Escala de Epworth
+   Description: A descrição da Escala de Epworth é longa e complexa no título. Mover a explicação detalhada (0=Nunca; 1=Pouca chance...) para o campo 'descricao' e manter o título conciso.
+   Impact: Segurança=0, Economia=L, Eficiência=L, Usabilidade=8
+
+13. [BAIXA] USABILIDADE
+   Title: Padronizar a nomenclatura de 'Gravidez/Lactação'
+   Description: No nó 'Identificação do Paciente', a pergunta Q-gravidez-lactacao usa 'gravidez_lactacao' como UID, mas as opções usam IDs como 'gravida' e 'lactante'. Padronizar o UID para 'status_gestacional_lactac...
+   Impact: Segurança=0, Economia=L, Eficiência=L, Usabilidade=7
+
+14. [BAIXA] USABILIDADE
+   Title: Revisar a formatação HTML nos títulos das perguntas
+   Description: Remover as tags <p> e <strong> redundantes nos títulos das perguntas (e.g., Q-idade-paciente.titulo) para simplificar a estrutura do JSON, assumindo que a renderização da interface adicionará o estilo...
+   Impact: Segurança=0, Economia=L, Eficiência=L, Usabilidade=5
+
+15. [BAIXA] USABILIDADE
+   Title: Padronizar o uso de 'selected_any' nas expressões condicionais
+   Description: Revisar todas as expressões condicionais que verificam a presença de sintomas (e.g., no nó 'Cronologia e Fatores' e nas condutas) para garantir o uso consistente da função 'selected_any' ou 'in' para ...
+   Impact: Segurança=0, Economia=L, Eficiência=M, Usabilidade=5
+
+16. [BAIXA] USABILIDADE
+   Title: Reorganizar as opções de Sintomas Otológicos
+   Description: Reorganizar a lista de 'Sintomas otológicos' para agrupar sintomas de infecção (otalgia, otorreia) primeiro, seguidos por sintomas auditivos (hipoacusia, zumbido) e, por fim, sintomas de plenitude/pru...
+   Impact: Segurança=0, Economia=L, Eficiência=L, Usabilidade=7
+
+17. [MEDIA] USABILIDADE
+   Title: Adicionar campo de texto livre para 'Outras Alergias'
+   Description: No nó 'node-alergias-contraindicacoes', permitir que o usuário especifique 'Outras alergias medicamentosas' (outras_alergias) em um campo de texto livre, em vez de apenas marcar a opção.
+   Impact: Segurança=7, Economia=L, Eficiência=M, Usabilidade=9
+
+18. [MEDIA] EFICIENCIA
+   Title: Adicionar opção de 'Otite Média Aguda' na conduta
+   Description: Criar uma mensagem específica (msg) e uma lógica de prescrição para Otite Média Aguda (OMA), diferenciando-a da Otite Externa (OE), especialmente em crianças, onde a Amoxicilina é a primeira linha.
+   Impact: Segurança=7, Economia=L, Eficiência=A, Usabilidade=5
+
+19. [MEDIA] SEGURANCA
+   Title: Adicionar verificação de Hipertensão/Glaucoma antes de Descongestionantes
+   Description: Embora não haja descongestionantes nasais prescritos, se o protocolo for expandido, deve-se incluir a verificação de hipertensão e glaucoma, pois descongestionantes tópicos/orais são contraindicados o...
+   Impact: Segurança=7, Economia=L, Eficiência=L, Usabilidade=3
+
+20. [MEDIA] EFICIENCIA
+   Title: Adicionar indicação de Audiometria para Hipoacusia Súbita
+   Description: Criar uma condição de alta prioridade para Audiometria se 'hipoacusia' for selecionada e 'duracao_sintomas' for 'agudo', pois a perda auditiva neurossensorial súbita é uma emergência ORL.
+   Impact: Segurança=7, Economia=M, Eficiência=A, Usabilidade=6
+
+21. [MEDIA] EFICIENCIA
+   Title: Criar lógica de prescrição de Corticoide Oral para Hipoacusia Súbita
+   Description: Se 'hipoacusia' for selecionada e 'duracao_sintomas' for 'agudo', prescrever Prednisolona (ou equivalente) imediatamente, com alerta de urgência, mesmo antes da audiometria (se não houver contraindica...
+   Impact: Segurança=7, Economia=M, Eficiência=A, Usabilidade=6
+
+22. [MEDIA] EFICIENCIA
+   Title: Adicionar indicação de Encaminhamento para Cirurgia de Cabeça e Pescoço
+   Description: Criar um encaminhamento específico para Cirurgia de Cabeça e Pescoço condicionado à presença de 'rouquidão' crônica (duracao_sintomas == 'cronico') ou 'globo_faringeo' persistente, após falha de trata...
+   Impact: Segurança=7, Economia=L, Eficiência=M, Usabilidade=5
+
+23. [MEDIA] SEGURANCA
+   Title: Adicionar verificação de uso de Betabloqueadores antes de Betaistina
+   Description: Incluir uma verificação de comorbidades ou medicamentos para uso de betabloqueadores, pois eles podem interagir com a Betaistina ou mascarar sintomas vestibulares.
+   Impact: Segurança=6, Economia=L, Eficiência=L, Usabilidade=4
+
+24. [MEDIA] EFICIENCIA
+   Title: Criar um nó de 'Exame Físico Simplificado'
+   Description: Adicionar um nó de 'Exame Físico Simplificado' após os sintomas, com campos de escolha rápida (e.g., 'Otoscopia: Normal/Alterada', 'Rinoscopia: Normal/Edema/Secreção Purulenta', 'Orofaringe: Normal/Hi...
+   Impact: Segurança=6, Economia=L, Eficiência=A, Usabilidade=7
+
+25. [MEDIA] SEGURANCA
+   Title: Adicionar alerta de risco de sangramento nasal com Corticoides Intranasais
+   Description: Incluir na orientação 'orientacoes-uso-medicamentos' um alerta sobre o risco de epistaxe (sangramento nasal) com o uso de sprays nasais, e a importância da técnica correta (apontar para a parede later...
+   Impact: Segurança=6, Economia=L, Eficiência=L, Usabilidade=5
+
+26. [MEDIA] SEGURANCA
+   Title: Reforçar a necessidade de jejum para VNG
+   Description: Na descrição do exame VNG, destacar a importância do jejum de 3h e a suspensão de medicamentos vestibulossupressores 48h antes, pois o não cumprimento invalida o exame.
+   Impact: Segurança=6, Economia=M, Eficiência=M, Usabilidade=5
+
+27. [MEDIA] EFICIENCIA
+   Title: Otimizar a indicação de TC de Seios da Face
+   Description: A condição para solicitar TC de Seios da Face é complexa. Simplificar a lógica para focar em 'RSC refratária' (duração crônica + falha de tratamento otimizado) ou 'sinais de complicação' (febre + dor ...
+   Impact: Segurança=5, Economia=M, Eficiência=A, Usabilidade=6
+
+28. [MEDIA] EFICIENCIA
+   Title: Adicionar indicação de VNG para Zumbido associado à Vertigem
+   Description: Ajustar a condição de solicitação de VNG para incluir pacientes com 'vertigem_rotatoria' E 'zumbido', pois a associação sugere Doença de Ménière, que requer investigação otoneurológica.
+   Impact: Segurança=5, Economia=M, Eficiência=A, Usabilidade=5
+
+29. [MEDIA] EFICIENCIA
+   Title: Adicionar indicação de Timpanometria para Hipoacusia Infantil
+   Description: Incluir a Timpanometria como exame obrigatório em crianças (age <= 12) com 'hipoacusia' ou 'plenitude_auricular', pois a Otite Média com Efusão (OME) é uma causa comum e requer confirmação objetiva.
+   Impact: Segurança=5, Economia=M, Eficiência=A, Usabilidade=6
+
+30. [MEDIA] EFICIENCIA
+   Title: Criar lógica de retorno para 'Exames Alterados'
+   Description: Se 'resultados_exames' for 'alterados', o protocolo deve sugerir automaticamente o retorno para discussão dos resultados, mesmo que o paciente não esteja sintomático hoje.
+   Impact: Segurança=4, Economia=L, Eficiência=A, Usabilidade=7
+
+31. [MEDIA] EFICIENCIA
+   Title: Criar lógica de prescrição de Analgésicos/Antitérmicos
+   Description: Adicionar um medicamento de suporte (e.g., Paracetamol ou Dipirona) condicionado à presença de 'febre', 'mal_estar', 'cefaleia' ou 'otalgia', pois são sintomas comuns que requerem alívio imediato.
+   Impact: Segurança=3, Economia=L, Eficiência=A, Usabilidade=7
+
+32. [MEDIA] ECONOMIA
+   Title: Condicionar Budesonida Irrigação à falha de Spray Nasal
+   Description: Reforçar a condição de prescrição de Budesonida para irrigação nasal, garantindo que ela só seja solicitada após a falha do tratamento com corticoide spray nasal (corticoide_spray_nasal in tratamento_...
+   Impact: Segurança=3, Economia=A, Eficiência=M, Usabilidade=3
+
+33. [MEDIA] EFICIENCIA
+   Title: Criar lógica de prescrição de Pantoprazol em dose única diária
+   Description: Ajustar a posologia do Pantoprazol para 40mg 1x/dia, que é a dose padrão para DRGE-LF, e simplificar a posologia para evitar confusão com a dose de 2x/dia, que é reservada para casos mais graves ou re...
+   Impact: Segurança=2, Economia=M, Eficiência=M, Usabilidade=6
+
+34. [MEDIA] EFICIENCIA
+   Title: Adicionar opção de 'Exames Solicitados Anteriormente' no retorno
+   Description: No nó 'Tipo de Consulta', se for 'retorno_consulta', adicionar uma pergunta sobre se o paciente está retornando para discutir exames solicitados na consulta anterior, mesmo que não os tenha trazido ho...
+   Impact: Segurança=2, Economia=L, Eficiência=A, Usabilidade=7
+
+35. [MEDIA] ECONOMIA
+   Title: Priorizar Loratadina sobre Fexofenadina em casos leves/sazonais
+   Description: Ajustar a lógica de prescrição para priorizar Loratadina (mais econômica) em rinite alérgica leve e sazonal, reservando Fexofenadina para casos mais graves ou persistentes, ou quando a Loratadina falh...
+   Impact: Segurança=1, Economia=A, Eficiência=L, Usabilidade=1
+
+36. [MEDIA] ECONOMIA
+   Title: Adicionar opção de Corticoide Tópico de baixo custo (Fluticasona Propionato)
+   Description: Incluir a Fluticasona Propionato (mais antiga e geralmente mais barata) como alternativa à Budesonida e Mometasona, condicionada a casos de rinite alérgica pura.
+   Impact: Segurança=1, Economia=A, Eficiência=L, Usabilidade=2
+
+37. [MEDIA] EFICIENCIA
+   Title: Simplificar a condição de visibilidade do nó 'Cronologia e Fatores'
+   Description: Criar uma variável de resumo (e.g., 'sintomas_presentes') para simplificar a longa expressão condicional do nó 'node-cronologia-fatores', melhorando a performance e legibilidade.
+   Impact: Segurança=0, Economia=L, Eficiência=A, Usabilidade=5
+
+38. [MEDIA] EFICIENCIA
+   Title: Automatizar a exclusão de 'Nenhum Sintoma' ao selecionar outro
+   Description: Implementar lógica de interface para que, ao selecionar qualquer sintoma em um campo multiChoice (e.g., sintomas_nasossinusais_alergicos), a opção 'Nenhum sintoma...' seja automaticamente desmarcada, ...
+   Impact: Segurança=0, Economia=L, Eficiência=A, Usabilidade=8
+
+39. [ALTA] SEGURANCA
+   Title: Adicionar alerta de contraindicação de Prednisolona em Gravidez/Lactação
+   Description: Reforçar a contraindicação de Prednisolona (corticosteroide sistêmico) em gestantes e lactantes, mesmo que a condição já esteja na expressão condicional, para garantir a segurança em caso de erro de l...
+   Impact: Segurança=10, Economia=L, Eficiência=L, Usabilidade=8
+
+40. [ALTA] SEGURANCA
+   Title: Incluir verificação de perfuração timpânica antes de gotas otológicas
+   Description: Adicionar uma pergunta de segurança no nó de sintomas otológicos ou na conduta, verificando se há perfuração timpânica conhecida, pois o uso de Ciprofloxacino + Dexametasona é contraindicado nesse cas...
+   Impact: Segurança=9, Economia=L, Eficiência=M, Usabilidade=7
+
+41. [ALTA] SEGURANCA
+   Title: Verificar uso de AINEs/AAS antes de prescrever Corticoide Sistêmico
+   Description: Adicionar uma pergunta sobre o uso concomitante de AINEs ou AAS no nó 'Alergias e Contraindicações', pois o uso de Prednisolona em pacientes com úlcera péptica ativa ou em uso de AINEs aumenta o risco...
+   Impact: Segurança=9, Economia=L, Eficiência=M, Usabilidade=6
+
+42. [ALTA] SEGURANCA
+   Title: Adicionar alerta de risco de ototoxicidade na orientação de proteção auditiva
+   Description: Incluir um alerta específico na orientação 'orientacoes-protecao-auditiva' sobre o risco de ototoxicidade por medicamentos (e.g., aminoglicosídeos, altas doses de AAS) para pacientes com hipoacusia ou...
+   Impact: Segurança=9, Economia=L, Eficiência=L, Usabilidade=5
+
+43. [ALTA] SEGURANCA
+   Title: Adicionar indicação de Encaminhamento para Oftalmologia em caso de Diplopia/Perda Visual
+   Description: Criar um encaminhamento específico para Oftalmologia condicionado à presença de sintomas visuais (diplopia, perda visual) listados em 'sintomas_neurologicos', devido ao risco de complicações orbitária...
+   Impact: Segurança=9, Economia=L, Eficiência=M, Usabilidade=5
+
+44. [ALTA] SEGURANCA
+   Title: Adicionar opção de 'Sintomas de Alarme' no nó de Sintomas Associados
+   Description: Incluir opções específicas de 'red flags' (e.g., perda visual, diplopia, edema periorbitário) no Q-sintomas-associados para garantir a detecção precoce de complicações de rinossinusite.
+   Impact: Segurança=8, Economia=L, Eficiência=M, Usabilidade=6
+
+45. [ALTA] SEGURANCA
+   Title: Diferenciar Otite Externa de Otite Média Crônica Supurativa (OMCS)
+   Description: A prescrição de gotas otológicas (Ciprofloxacino + Dexametasona) deve ser condicionada à ausência de perfuração timpânica, exceto se for OMCS. Adicionar uma opção para diferenciar a otorreia (OE vs. O...
+   Impact: Segurança=8, Economia=L, Eficiência=M, Usabilidade=5
+
+46. [ALTA] SEGURANCA
+   Title: Adicionar alerta de risco de Síndrome de Reye para AAS em crianças
+   Description: Incluir uma orientação de segurança sobre a contraindicação de AAS em crianças com sintomas virais (febre, mal-estar), devido ao risco de Síndrome de Reye.
+   Impact: Segurança=8, Economia=L, Eficiência=L, Usabilidade=5
+
+47. [ALTA] SEGURANCA
+   Title: Adicionar verificação de Diabetes Mellitus nas Comorbidades
+   Description: Incluir Diabetes Mellitus (DM) na lista de comorbidades relevantes, pois pacientes diabéticos têm maior risco de otite externa maligna e rinossinusite fúngica invasiva.
+   Impact: Segurança=8, Economia=L, Eficiência=L, Usabilidade=4
+
+48. [ALTA] SEGURANCA
+   Title: Adicionar verificação de uso de Anticoagulantes
+   Description: Incluir a verificação de uso de anticoagulantes (e.g., Varfarina, NOACs) no nó 'Alergias e Contraindicações', devido ao risco de epistaxe grave e complicações cirúrgicas.
+   Impact: Segurança=8, Economia=L, Eficiência=L, Usabilidade=4
+
+49. [ALTA] SEGURANCA
+   Title: Adicionar verificação de Alergia a Macrolídeos antes de Azitromicina
+   Description: A condição de prescrição da Azitromicina deve incluir explicitamente a verificação de 'alergia_macrolideos' (já listada nas alergias) para evitar reações alérgicas cruzadas.
+   Impact: Segurança=8, Economia=L, Eficiência=L, Usabilidade=5
+
+50. [ALTA] SEGURANCA
+   Title: Adicionar alerta de risco de Torsades de Pointes com Azitromicina
+   Description: Incluir um alerta de segurança na prescrição de Azitromicina sobre o risco de prolongamento do intervalo QT, especialmente em pacientes com cardiopatia grave (já listada nas comorbidades).
+   Impact: Segurança=8, Economia=L, Eficiência=L, Usabilidade=5
+
+
+============================================================
+Full JSON report saved to: C:\Users\daanm\AgenteV2\reports\amil_ficha_orl_v1.0.0_FIXED_20251201_073725_20251201_201128.json
+============================================================

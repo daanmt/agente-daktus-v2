@@ -1,0 +1,32 @@
+============================================================
+AGENT V2 - PROTOCOL ANALYSIS REPORT
+============================================================
+
+METADATA
+------------------------------------------------------------
+Protocol: C:\Users\daanm\AgenteV2\models_json\amil_ficha_orl_v1.0.0_11-11-2025-1643.json
+Playbook: C:\Users\daanm\AgenteV2\models_json\Sobre a ficha de atendimento em Otorrinolaringolog 29d6587d2ef5800ba358f9c1b2236875.md
+Model: google/gemini-2.5-flash-preview-09-2025
+Timestamp: 
+Processing Time: 0ms
+
+IMPROVEMENT SUGGESTIONS
+------------------------------------------------------------
+Total: 6 suggestions
+
+ALTA PRIORIDADE:
+  1. Adicionar a opção de 'Gravidez/Lactação' nas Comorbidades Relevantes (node-alergias-contraindicacoes). Muitas das medicações ORL (antibióticos, betaistina, IBP) possuem restrições ou exigem cautela nessas populações, o que é um fator crítico de segurança para prescrição.
+  2. Implementar inicialização de variáveis. Garantir que variáveis como 'resultados_exames' e 'escala_epworth' tenham um valor padrão (e.g., null, 0, 'nao_aplicavel') se os nós condicionais forem pulados. Isso evita falhas nas expressões condicionais dos nós de conduta.
+  3. Incluir a opção de 'TC de Seios da Face' como exame a ser solicitado (conduta 'exame'). Atualmente, só existe a opção de avaliação se o paciente trouxe o exame. A indicação para RSC crônica ou ABRS refratária é crucial.
+
+MÉDIA PRIORIDADE:
+  1. Simplificar a pergunta Q-sintomas-principais. Para cada lista de sintomas (nasossinusais, otológicos, etc.), a opção 'Nenhum sintoma X' deve ser exclusiva e pré-selecionada. Se o usuário selecionar qualquer outro sintoma, a opção 'Nenhum' deve ser automaticamente desmarcada para evitar inconsistências de dados.
+  2. Adicionar um antibiótico de segunda linha (e.g., Levofloxacino ou Doxiciclina) para ABRS em caso de falha terapêutica ou alergia a macrolídeos/penicilina, conforme as diretrizes ORL.
+
+BAIXA PRIORIDADE:
+  1. Revisar a condição de visibilidade do 'node-cronologia-fatores'. Se o paciente não tiver sintomas (todos 'nenhum'), o nó deve ser pulado. A condição atual é complexa e deve ser simplificada para 'selected_any(sintomas_nasossinusais, 'obstrucao_nasal', ...) OR selected_any(sintomas_otologicos, 'otalgia', ...)'.
+
+
+============================================================
+Full JSON report saved to: C:\Users\daanm\AgenteV2\reports\amil_ficha_orl_v1.0.0_11-11-2025-1643_20251201_203725.json
+============================================================

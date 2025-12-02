@@ -1,0 +1,1339 @@
+{
+  "structural_analysis": {
+    "json_valid": true,
+    "logic_issues": [
+      {
+        "node_id": "node-identificacao-paciente",
+        "issue": "Expressão condicional incompleta",
+        "severity": "media",
+        "description": "A expressão condicional para Q-gravidez-lactacao (sex == 'feminino' and age >= 12 and age <= 55) não considera o caso de 'sex' não estar preenchido, o que pode causar erro de avaliação em tempo de execução."
+      },
+      {
+        "node_id": "node-sintomas-principais",
+        "issue": "Exclusividade de opções em multiChoice",
+        "severity": "baixa",
+        "description": "As opções 'nenhum_sintoma_alergico', 'nenhum_sintoma_infeccioso', etc., estão marcadas como 'exclusive: true' dentro de um campo 'multiChoice'. Isso é contraditório. Se o usuário selecionar 'nenhum', as outras opções devem ser desmarcadas automaticamente, mas a exclusividade deve ser tratada pela lógica de interface, não pelo atributo 'exclusive' do JSON, que geralmente se aplica a 'choice'."
+      },
+      {
+        "node_id": "node-cronologia-fatores",
+        "issue": "Condição de visibilidade complexa e redundante",
+        "severity": "baixa",
+        "description": "A condição de visibilidade do nó ('not('nenhum_sintoma_alergico' in sintomas_nasossinusais_alergicos and ...)') é muito longa. Seria mais eficiente usar uma variável de resumo ou simplificar a lógica, garantindo que o nó só apareça se houver sintomas."
+      }
+    ],
+    "unreachable_nodes": [],
+    "dead_end_paths": []
+  },
+  "clinical_extraction": {
+    "syndromes": [
+      {
+        "name": "Rinossinusite Crônica (RSC)",
+        "description": "Sintomas nasais infecciosos/estruturais por mais de 12 semanas.",
+        "symptoms": [
+          "obstrucao_nasal",
+          "rinorreia_purulenta",
+          "dor_facial",
+          "hiposmia_anosmia"
+        ]
+      },
+      {
+        "name": "Rinite Alérgica",
+        "description": "Sintomas nasais alérgicos/vasomotores, frequentemente sazonais ou desencadeados por alérgenos.",
+        "symptoms": [
+          "rinorreia_clara",
+          "prurido_nasal",
+          "espirros"
+        ]
+      },
+      {
+        "name": "Doença do Refluxo Laringofaríngeo (DRGE-LF)",
+        "description": "Sintomas laringofaríngeos crônicos sem pirose.",
+        "symptoms": [
+          "pigarro_cronico",
+          "globo_faringeo",
+          "tosse_seca",
+          "ardor_faringeo"
+        ]
+      },
+      {
+        "name": "Síndrome da Apneia Obstrutiva do Sono (SAHOS)",
+        "description": "Distúrbio do sono caracterizado por ronco e pausas respiratórias.",
+        "symptoms": [
+          "ronco_habitual",
+          "pausas_respiratorias",
+          "sonolencia_diurna"
+        ]
+      }
+    ],
+    "exams": [
+      {
+        "name": "Audiometria",
+        "type": "Audiologia",
+        "indication": "Hipoacusia, zumbido"
+      },
+      {
+        "name": "VNG",
+        "type": "Otoneurologia",
+        "indication": "Vertigem rotatória"
+      },
+      {
+        "name": "Polissonografia",
+        "type": "Medicina do Sono",
+        "indication": "SAHOS"
+      },
+      {
+        "name": "TC de Seios da Face",
+        "type": "Imagem",
+        "indication": "RSC refratária"
+      }
+    ],
+    "treatments": [
+      {
+        "name": "Budesonida spray nasal",
+        "type": "Corticosteroide intranasal",
+        "indication": "Rinite alérgica, RSC"
+      },
+      {
+        "name": "Amoxicilina + Clavulanato",
+        "type": "Antibiótico",
+        "indication": "Rinossinusite bacteriana aguda"
+      },
+      {
+        "name": "Pantoprazol",
+        "type": "IBP",
+        "indication": "Refluxo Laringofaríngeo"
+      },
+      {
+        "name": "Ciprofloxacino + Dexametasona",
+        "type": "Tópico otológico",
+        "indication": "Otite Externa"
+      }
+    ],
+    "red_flags": [
+      {
+        "flag": "Sintomas neurológicos associados à vertigem",
+        "urgency": "Urgente",
+        "action": "Encaminhamento para Neurologia/Emergência (msg-vertigem-central-alerta)"
+      },
+      {
+        "flag": "Febre alta e dor facial intensa em ABRS",
+        "urgency": "Urgente",
+        "action": "Início imediato de antibiótico e reavaliação em 48-72h (msg-rinossinusite-bacteriana)"
+      },
+      {
+        "flag": "Gravidez/Lactação e uso de Corticoides Sistêmicos",
+        "urgency": "Crítico",
+        "action": "Contraindicação de Prednisolona (prednisolona-corticoide-sistemico)"
+      }
+    ]
+  },
+  "improvement_suggestions": [
+    {
+      "id": "sug_033",
+      "category": "eficiencia",
+      "priority": "baixa",
+      "title": "Adicionar indicação de Endoscopia Nasal para Epistaxe Recorrente",
+      "description": "Incluir 'Epistaxe Recorrente' como uma condição para a solicitação de Endoscopia Nasal, mesmo na ausência de sintomas crônicos de rinossinusite.",
+      "rationale": "A endoscopia é o padrão-ouro para identificar a origem do sangramento nasal recorrente (e.g., área de Kiesselbach, pólipos).",
+      "impact_scores": {
+        "seguranca": 4,
+        "economia": "L",
+        "eficiencia": "M",
+        "usabilidade": 5
+      },
+      "evidence": {
+        "playbook_reference": "endoscopia-nasal-flexivel: Indicacao: Diagnóstico e seguimento de rinossinusite crônica, pólipos nasais e avaliação da mucosa nasossinusal",
+        "context": "Epistaxe não está listada como indicação.",
+        "clinical_rationale": "Diagnóstico etiológico da epistaxe."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_013",
+      "category": "usabilidade",
+      "priority": "baixa",
+      "title": "Adicionar campo de texto livre para 'Outros Tratamentos'",
+      "description": "Permitir que o usuário especifique quais foram os 'Outros tratamentos' realizados (outros_tratamentos) no nó 'Cronologia e Fatores'.",
+      "rationale": "A informação sobre tratamentos prévios é crucial para entender a refratariedade da doença.",
+      "impact_scores": {
+        "seguranca": 3,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 8
+      },
+      "evidence": {
+        "playbook_reference": "Q-tratamento-atual: id: outros_tratamentos, label: Outros tratamentos",
+        "context": "A opção existe, mas sem detalhamento.",
+        "clinical_rationale": "Permite avaliar se o tratamento prévio foi adequado ou se houve uso de medicamentos não convencionais."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_021",
+      "category": "eficiencia",
+      "priority": "baixa",
+      "title": "Adicionar opção de 'Otoscopia Normal' no nó de Exames",
+      "description": "Incluir 'Otoscopia Normal' como uma opção de exame trazido, pois é um achado comum em retornos e influencia a conduta (exclui OE/OMA).",
+      "rationale": "Permite registrar achados clínicos importantes que podem ter sido realizados em consultas anteriores ou por outros profissionais.",
+      "impact_scores": {
+        "seguranca": 3,
+        "economia": "L",
+        "eficiencia": "M",
+        "usabilidade": 6
+      },
+      "evidence": {
+        "playbook_reference": "Q-tipos-exames-trazidos: Lista de exames",
+        "context": "A lista atual foca em exames complementares (Audiometria, TC), mas não em achados clínicos documentados.",
+        "clinical_rationale": "Melhora a documentação do exame físico prévio."
+      },
+      "implementation_effort": {
+        "effort": "baixo",
+        "estimated_time": "30min",
+        "complexity": "simples"
+      }
+    },
+    {
+      "id": "sug_038",
+      "category": "usabilidade",
+      "priority": "baixa",
+      "title": "Melhorar a descrição do Zumbido (Tinnitus)",
+      "description": "Na opção 'zumbido' (sintomas otológicos), adicionar uma breve descrição sobre a importância de caracterizar o zumbido (pulsátil, contínuo, intermitente).",
+      "rationale": "A caracterização do zumbido é crucial para o diagnóstico diferencial (e.g., zumbido pulsátil sugere causa vascular).",
+      "impact_scores": {
+        "seguranca": 3,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 7
+      },
+      "evidence": {
+        "playbook_reference": "Q-sintomas-otologicos: id: zumbido",
+        "context": "A opção é genérica.",
+        "clinical_rationale": "Melhora a qualidade da anamnese para zumbido."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_044",
+      "category": "usabilidade",
+      "priority": "baixa",
+      "title": "Adicionar campo de 'Grau de Sonolência' na Escala de Epworth",
+      "description": "Após o preenchimento da Escala de Epworth, exibir o resultado total e classificar o grau de sonolência (Normal: 0-9, Leve: 10-12, Moderada: 13-15, Grave: 16-24) para o médico.",
+      "rationale": "Facilita a interpretação imediata do resultado da escala.",
+      "impact_scores": {
+        "seguranca": 3,
+        "economia": "L",
+        "eficiencia": "M",
+        "usabilidade": 9
+      },
+      "evidence": {
+        "playbook_reference": "Q-escala-epworth: min: 0, max: 24",
+        "context": "O protocolo coleta o valor, mas não o interpreta.",
+        "clinical_rationale": "Padronização da avaliação de SAHOS."
+      },
+      "implementation_effort": {
+        "effort": "alto",
+        "estimated_time": "1 dia",
+        "complexity": "complexa"
+      }
+    },
+    {
+      "id": "sug_047",
+      "category": "usabilidade",
+      "priority": "baixa",
+      "title": "Adicionar campo de 'Intensidade da Dor' (Escala Visual Analógica)",
+      "description": "No nó 'Cronologia e Fatores', adicionar uma escala de 0 a 10 para avaliar a intensidade da dor (se 'otalgia' ou 'dor_facial' estiverem presentes).",
+      "rationale": "Permite quantificar a gravidade do sintoma e monitorar a resposta ao tratamento.",
+      "impact_scores": {
+        "seguranca": 3,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 8
+      },
+      "evidence": {
+        "playbook_reference": "Q-sintomas-nasossinusais-infecciosos: dor_facial",
+        "context": "A dor é qualitativa, mas não quantificada.",
+        "clinical_rationale": "Melhora a avaliação da dor."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_019",
+      "category": "usabilidade",
+      "priority": "baixa",
+      "title": "Melhorar a descrição do campo 'Idade do paciente'",
+      "description": "Adicionar uma nota na descrição do campo 'Q-idade-paciente' sobre a importância da idade para estratificação pediátrica/geriátrica.",
+      "rationale": "Reforça a importância do dado para o raciocínio clínico subsequente.",
+      "impact_scores": {
+        "seguranca": 1,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 7
+      },
+      "evidence": {
+        "playbook_reference": "Q-idade-paciente: descricao: ''",
+        "context": "O campo de descrição está vazio.",
+        "clinical_rationale": "N/A"
+      },
+      "implementation_effort": {
+        "effort": "baixo",
+        "estimated_time": "15min",
+        "complexity": "simples"
+      }
+    },
+    {
+      "id": "sug_028",
+      "category": "usabilidade",
+      "priority": "baixa",
+      "title": "Adicionar campo de 'Data da Última Consulta' para retornos",
+      "description": "No nó 'Tipo de Consulta', se 'retorno_consulta' for selecionado, solicitar a data da última consulta para contextualizar a evolução dos sintomas e a duração do tratamento prévio.",
+      "rationale": "Melhora a qualidade da informação coletada em consultas de seguimento.",
+      "impact_scores": {
+        "seguranca": 1,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 8
+      },
+      "evidence": {
+        "playbook_reference": "Q-motivo-consulta: id: retorno_consulta",
+        "context": "Apenas a presença de retorno é verificada, não o intervalo desde a última consulta.",
+        "clinical_rationale": "Permite avaliar a adesão ao tratamento e a evolução temporal da doença."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_031",
+      "category": "usabilidade",
+      "priority": "baixa",
+      "title": "Adicionar campo de 'Observações' no nó de Identificação",
+      "description": "Incluir um campo de texto livre no nó 'Identificação do Paciente' para observações gerais (e.g., 'paciente trazido pela mãe', 'dificuldade de comunicação').",
+      "rationale": "Permite capturar informações contextuais importantes para a consulta.",
+      "impact_scores": {
+        "seguranca": 1,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 9
+      },
+      "evidence": {
+        "playbook_reference": "N/A",
+        "context": "Falta de campo para notas gerais no início do fluxo.",
+        "clinical_rationale": "N/A"
+      },
+      "implementation_effort": {
+        "effort": "baixo",
+        "estimated_time": "15min",
+        "complexity": "simples"
+      }
+    },
+    {
+      "id": "sug_041",
+      "category": "usabilidade",
+      "priority": "baixa",
+      "title": "Adicionar campo de 'Data de Início' para sintomas",
+      "description": "No nó 'Cronologia e Fatores', adicionar um campo de data para registrar o início dos sintomas, complementando a duração (agudo/crônico).",
+      "rationale": "Permite um registro mais preciso da cronologia, especialmente em casos de sintomas intermitentes.",
+      "impact_scores": {
+        "seguranca": 1,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 7
+      },
+      "evidence": {
+        "playbook_reference": "Q-duracao-sintomas: Duração dos sintomas principais",
+        "context": "A duração é categórica, mas a data de início é útil para o prontuário.",
+        "clinical_rationale": "N/A"
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_050",
+      "category": "usabilidade",
+      "priority": "baixa",
+      "title": "Garantir que o campo 'Avaliação detalhada dos exames' seja texto livre",
+      "description": "Confirmar que o campo 'Q-avaliacao-exames' (avaliação detalhada dos exames alterados) é do tipo 'string' (texto livre) e não 'choice', para permitir a descrição clínica dos achados.",
+      "rationale": "A descrição de exames alterados requer texto livre e detalhado.",
+      "impact_scores": {
+        "seguranca": 1,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 9
+      },
+      "evidence": {
+        "playbook_reference": "Q-avaliacao-exames: select: string",
+        "context": "O tipo 'string' está correto, mas a sugestão é garantir que a interface suporte um campo de texto longo.",
+        "clinical_rationale": "N/A"
+      },
+      "implementation_effort": {
+        "effort": "baixo",
+        "estimated_time": "15min",
+        "complexity": "simples"
+      }
+    },
+    {
+      "id": "sug_006",
+      "category": "usabilidade",
+      "priority": "baixa",
+      "title": "Melhorar a descrição da Escala de Epworth",
+      "description": "A descrição da Escala de Epworth é longa e complexa no título. Mover a explicação detalhada (0=Nunca; 1=Pouca chance...) para o campo 'descricao' e manter o título conciso.",
+      "rationale": "Melhora a clareza visual do formulário para o usuário.",
+      "impact_scores": {
+        "seguranca": 0,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 8
+      },
+      "evidence": {
+        "playbook_reference": "Q-escala-epworth: titulo: <p><strong>Escala de Sonolência de Epworth (0-3 para cada situação):</strong><br>0=Nunca; 1=Pouca chance; 2=Moderada chance; 3=Alta chance de cochilar</p>",
+        "context": "O título está sobrecarregado de informações.",
+        "clinical_rationale": "N/A"
+      },
+      "implementation_effort": {
+        "effort": "baixo",
+        "estimated_time": "15min",
+        "complexity": "simples"
+      }
+    },
+    {
+      "id": "sug_009",
+      "category": "usabilidade",
+      "priority": "baixa",
+      "title": "Padronizar a nomenclatura de 'Gravidez/Lactação'",
+      "description": "No nó 'Identificação do Paciente', a pergunta Q-gravidez-lactacao usa 'gravidez_lactacao' como UID, mas as opções usam IDs como 'gravida' e 'lactante'. Padronizar o UID para 'status_gestacional_lactacao' para maior clareza na lógica de expressões.",
+      "rationale": "Melhora a rastreabilidade e legibilidade das expressões condicionais que dependem deste campo.",
+      "impact_scores": {
+        "seguranca": 0,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 7
+      },
+      "evidence": {
+        "playbook_reference": "Q-gravidez-lactacao: uid: gravidez_lactacao",
+        "context": "A nomenclatura atual é funcional, mas pode ser mais descritiva.",
+        "clinical_rationale": "N/A"
+      },
+      "implementation_effort": {
+        "effort": "baixo",
+        "estimated_time": "30min",
+        "complexity": "simples"
+      }
+    },
+    {
+      "id": "sug_022",
+      "category": "usabilidade",
+      "priority": "baixa",
+      "title": "Revisar a formatação HTML nos títulos das perguntas",
+      "description": "Remover as tags <p> e <strong> redundantes nos títulos das perguntas (e.g., Q-idade-paciente.titulo) para simplificar a estrutura do JSON, assumindo que a renderização da interface adicionará o estilo necessário.",
+      "rationale": "Melhora a legibilidade do JSON e a portabilidade do conteúdo.",
+      "impact_scores": {
+        "seguranca": 0,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 5
+      },
+      "evidence": {
+        "playbook_reference": "Q-idade-paciente: titulo: <p><strong>Idade do paciente (anos):</strong></p>",
+        "context": "A maioria dos títulos usa formatação HTML desnecessária.",
+        "clinical_rationale": "N/A"
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "2h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_025",
+      "category": "usabilidade",
+      "priority": "baixa",
+      "title": "Padronizar o uso de 'selected_any' nas expressões condicionais",
+      "description": "Revisar todas as expressões condicionais que verificam a presença de sintomas (e.g., no nó 'Cronologia e Fatores' e nas condutas) para garantir o uso consistente da função 'selected_any' ou 'in' para listas multiChoice.",
+      "rationale": "Melhora a robustez e a manutenibilidade do código lógico.",
+      "impact_scores": {
+        "seguranca": 0,
+        "economia": "L",
+        "eficiencia": "M",
+        "usabilidade": 5
+      },
+      "evidence": {
+        "playbook_reference": "Q-escala-epworth: expressao: selected_any(sintomas_sono, 'ronco_habitual', 'pausas_respiratorias', 'sonolencia_diurna')",
+        "context": "Algumas expressões usam 'in' para verificar um único item, enquanto outras usam 'selected_any' para múltiplos. A consistência é chave.",
+        "clinical_rationale": "N/A"
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "2h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_034",
+      "category": "usabilidade",
+      "priority": "baixa",
+      "title": "Reorganizar as opções de Sintomas Otológicos",
+      "description": "Reorganizar a lista de 'Sintomas otológicos' para agrupar sintomas de infecção (otalgia, otorreia) primeiro, seguidos por sintomas auditivos (hipoacusia, zumbido) e, por fim, sintomas de plenitude/prurido.",
+      "rationale": "Melhora o fluxo de raciocínio clínico e a usabilidade do formulário.",
+      "impact_scores": {
+        "seguranca": 0,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 7
+      },
+      "evidence": {
+        "playbook_reference": "Q-sintomas-otologicos: Lista de opções",
+        "context": "A ordem atual é: otalgia, otorreia, hipoacusia, plenitude, zumbido, prurido.",
+        "clinical_rationale": "N/A"
+      },
+      "implementation_effort": {
+        "effort": "baixo",
+        "estimated_time": "30min",
+        "complexity": "simples"
+      }
+    },
+    {
+      "id": "sug_003",
+      "category": "usabilidade",
+      "priority": "media",
+      "title": "Adicionar campo de texto livre para 'Outras Alergias'",
+      "description": "No nó 'node-alergias-contraindicacoes', permitir que o usuário especifique 'Outras alergias medicamentosas' (outras_alergias) em um campo de texto livre, em vez de apenas marcar a opção.",
+      "rationale": "A especificação da alergia é vital para a segurança e permite a escolha de antibióticos ou outros medicamentos alternativos.",
+      "impact_scores": {
+        "seguranca": 7,
+        "economia": "L",
+        "eficiencia": "M",
+        "usabilidade": 9
+      },
+      "evidence": {
+        "playbook_reference": "Q-alergias-medicamentos: id: outras_alergias, label: Outras alergias medicamentosas",
+        "context": "Atualmente, apenas a presença da alergia é registrada, não o agente específico.",
+        "clinical_rationale": "A identificação do agente alergênico é fundamental para evitar reações cruzadas e selecionar o tratamento seguro."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_010",
+      "category": "eficiencia",
+      "priority": "media",
+      "title": "Adicionar opção de 'Otite Média Aguda' na conduta",
+      "description": "Criar uma mensagem específica (msg) e uma lógica de prescrição para Otite Média Aguda (OMA), diferenciando-a da Otite Externa (OE), especialmente em crianças, onde a Amoxicilina é a primeira linha.",
+      "rationale": "O protocolo atual foca em OE (gotas otológicas) e não aborda explicitamente o tratamento sistêmico da OMA, que é comum em ORL pediátrica.",
+      "impact_scores": {
+        "seguranca": 7,
+        "economia": "L",
+        "eficiencia": "A",
+        "usabilidade": 5
+      },
+      "evidence": {
+        "playbook_reference": "msg-otite-media-pediatrica: MANEJO PEDIÁTRICO - OMA",
+        "context": "A mensagem existe, mas a prescrição de Amoxicilina simples (sem Clavulanato) para OMA não está mapeada, apenas a Amoxicilina + Clavulanato para Sinusite.",
+        "clinical_rationale": "Garantir o tratamento adequado para OMA, que requer antibiótico sistêmico e não tópico."
+      },
+      "implementation_effort": {
+        "effort": "alto",
+        "estimated_time": "4h",
+        "complexity": "complexa"
+      }
+    },
+    {
+      "id": "sug_023",
+      "category": "seguranca",
+      "priority": "media",
+      "title": "Adicionar verificação de Hipertensão/Glaucoma antes de Descongestionantes",
+      "description": "Embora não haja descongestionantes nasais prescritos, se o protocolo for expandido, deve-se incluir a verificação de hipertensão e glaucoma, pois descongestionantes tópicos/orais são contraindicados ou devem ser usados com extrema cautela.",
+      "rationale": "Preparação para expansão futura do protocolo e prevenção de crises hipertensivas ou de glaucoma agudo.",
+      "impact_scores": {
+        "seguranca": 7,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 3
+      },
+      "evidence": {
+        "playbook_reference": "comorbidades_relevantes: Lista de comorbidades",
+        "context": "Hipertensão e glaucoma não estão listados nas comorbidades relevantes, mas são cruciais para ORL.",
+        "clinical_rationale": "Prevenção de eventos cardiovasculares e oftalmológicos graves."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_040",
+      "category": "eficiencia",
+      "priority": "media",
+      "title": "Adicionar indicação de Audiometria para Hipoacusia Súbita",
+      "description": "Criar uma condição de alta prioridade para Audiometria se 'hipoacusia' for selecionada e 'duracao_sintomas' for 'agudo', pois a perda auditiva neurossensorial súbita é uma emergência ORL.",
+      "rationale": "A perda auditiva súbita requer tratamento imediato (corticoides) e diagnóstico rápido (audiometria) para maximizar as chances de recuperação.",
+      "impact_scores": {
+        "seguranca": 7,
+        "economia": "M",
+        "eficiencia": "A",
+        "usabilidade": 6
+      },
+      "evidence": {
+        "playbook_reference": "audiometria-tonal-vocal: Indicacao: Quantificação da perda auditiva",
+        "context": "A indicação atual é genérica. A urgência da hipoacusia súbita não está mapeada.",
+        "clinical_rationale": "Garantir o diagnóstico e tratamento oportuno da perda auditiva súbita."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_043",
+      "category": "eficiencia",
+      "priority": "media",
+      "title": "Criar lógica de prescrição de Corticoide Oral para Hipoacusia Súbita",
+      "description": "Se 'hipoacusia' for selecionada e 'duracao_sintomas' for 'agudo', prescrever Prednisolona (ou equivalente) imediatamente, com alerta de urgência, mesmo antes da audiometria (se não houver contraindicação).",
+      "rationale": "O tratamento da perda auditiva súbita é uma emergência e deve ser iniciado o mais rápido possível (idealmente em 72h).",
+      "impact_scores": {
+        "seguranca": 7,
+        "economia": "M",
+        "eficiencia": "A",
+        "usabilidade": 6
+      },
+      "evidence": {
+        "playbook_reference": "prednisolona-corticoide-sistemico: Categoria: Corticosteroide sistêmico",
+        "context": "A Prednisolona é atualmente condicionada apenas a RSC refratária ou vertigem aguda.",
+        "clinical_rationale": "Melhora o prognóstico da perda auditiva súbita."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "2h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_049",
+      "category": "eficiencia",
+      "priority": "media",
+      "title": "Adicionar indicação de Encaminhamento para Cirurgia de Cabeça e Pescoço",
+      "description": "Criar um encaminhamento específico para Cirurgia de Cabeça e Pescoço condicionado à presença de 'rouquidão' crônica (duracao_sintomas == 'cronico') ou 'globo_faringeo' persistente, após falha de tratamento clínico.",
+      "rationale": "A rouquidão crônica pode ser sinal de lesão laríngea (nódulo, pólipo, câncer) e requer avaliação especializada.",
+      "impact_scores": {
+        "seguranca": 7,
+        "economia": "L",
+        "eficiencia": "M",
+        "usabilidade": 5
+      },
+      "evidence": {
+        "playbook_reference": "orientacoes-higiene-vocal: PROCURE AJUDA se a rouquidão durar mais de 2 semanas.",
+        "context": "O protocolo não tem um encaminhamento específico para disfonia crônica.",
+        "clinical_rationale": "Detecção precoce de câncer de laringe ou outras lesões estruturais."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_014",
+      "category": "seguranca",
+      "priority": "media",
+      "title": "Adicionar verificação de uso de Betabloqueadores antes de Betaistina",
+      "description": "Incluir uma verificação de comorbidades ou medicamentos para uso de betabloqueadores, pois eles podem interagir com a Betaistina ou mascarar sintomas vestibulares.",
+      "rationale": "Embora a interação não seja crítica, a Betaistina é um agonista H1/antagonista H3 e o uso de betabloqueadores deve ser considerado no manejo da vertigem.",
+      "impact_scores": {
+        "seguranca": 6,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 4
+      },
+      "evidence": {
+        "playbook_reference": "betaistina-vertigem: Categoria: Vasodilatador labiríntico",
+        "context": "O protocolo não verifica medicamentos em uso que possam afetar o sistema cardiovascular ou vestibular.",
+        "clinical_rationale": "Otimização do tratamento da vertigem e prevenção de interações medicamentosas."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_024",
+      "category": "eficiencia",
+      "priority": "media",
+      "title": "Criar um nó de 'Exame Físico Simplificado'",
+      "description": "Adicionar um nó de 'Exame Físico Simplificado' após os sintomas, com campos de escolha rápida (e.g., 'Otoscopia: Normal/Alterada', 'Rinoscopia: Normal/Edema/Secreção Purulenta', 'Orofaringe: Normal/Hiperemia/Exsudato').",
+      "rationale": "O protocolo atual foca apenas na anamnese. A inclusão de achados de exame físico é crucial para o diagnóstico diferencial (e.g., diferenciar OMA de OE, ou rinite de sinusite).",
+      "impact_scores": {
+        "seguranca": 6,
+        "economia": "L",
+        "eficiencia": "A",
+        "usabilidade": 7
+      },
+      "evidence": {
+        "playbook_reference": "N/A (Lacuna no protocolo)",
+        "context": "O protocolo salta da anamnese para a conduta, sem registrar achados objetivos.",
+        "clinical_rationale": "A conduta ORL é altamente dependente do exame físico (otoscopia, rinoscopia)."
+      },
+      "implementation_effort": {
+        "effort": "alto",
+        "estimated_time": "1 dia",
+        "complexity": "complexa"
+      }
+    },
+    {
+      "id": "sug_029",
+      "category": "seguranca",
+      "priority": "media",
+      "title": "Adicionar alerta de risco de sangramento nasal com Corticoides Intranasais",
+      "description": "Incluir na orientação 'orientacoes-uso-medicamentos' um alerta sobre o risco de epistaxe (sangramento nasal) com o uso de sprays nasais, e a importância da técnica correta (apontar para a parede lateral).",
+      "rationale": "A epistaxe é o efeito colateral mais comum dos corticoides nasais, geralmente devido à aplicação incorreta no septo.",
+      "impact_scores": {
+        "seguranca": 6,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 5
+      },
+      "evidence": {
+        "playbook_reference": "orientacoes-uso-medicamentos: Conteúdo: TÉCNICA CORRETA PARA SPRAYS NASAIS",
+        "context": "A orientação já menciona a técnica, mas o alerta de sangramento deve ser explícito.",
+        "clinical_rationale": "Prevenção de epistaxe e melhora da adesão ao tratamento."
+      },
+      "implementation_effort": {
+        "effort": "baixo",
+        "estimated_time": "30min",
+        "complexity": "simples"
+      }
+    },
+    {
+      "id": "sug_032",
+      "category": "seguranca",
+      "priority": "media",
+      "title": "Reforçar a necessidade de jejum para VNG",
+      "description": "Na descrição do exame VNG, destacar a importância do jejum de 3h e a suspensão de medicamentos vestibulossupressores 48h antes, pois o não cumprimento invalida o exame.",
+      "rationale": "O não cumprimento das instruções pré-exame leva a resultados falsos e atrasa o diagnóstico.",
+      "impact_scores": {
+        "seguranca": 6,
+        "economia": "M",
+        "eficiencia": "M",
+        "usabilidade": 5
+      },
+      "evidence": {
+        "playbook_reference": "vng-vestibular: Alerta: Suspender medicações vestibulossupressoras 48h antes. Jejum de 3h",
+        "context": "O alerta é breve. Deve ser reforçado na orientação ao paciente.",
+        "clinical_rationale": "Garantir a validade do teste vestibular."
+      },
+      "implementation_effort": {
+        "effort": "baixo",
+        "estimated_time": "30min",
+        "complexity": "simples"
+      }
+    },
+    {
+      "id": "sug_005",
+      "category": "eficiencia",
+      "priority": "media",
+      "title": "Otimizar a indicação de TC de Seios da Face",
+      "description": "A condição para solicitar TC de Seios da Face é complexa. Simplificar a lógica para focar em 'RSC refratária' (duração crônica + falha de tratamento otimizado) ou 'sinais de complicação' (febre + dor facial intensa + sintomas neurológicos).",
+      "rationale": "A TC não é indicada para rinossinusite aguda não complicada. A condição atual é funcional, mas pode ser mais clara e menos propensa a erros.",
+      "impact_scores": {
+        "seguranca": 5,
+        "economia": "M",
+        "eficiencia": "A",
+        "usabilidade": 6
+      },
+      "evidence": {
+        "playbook_reference": "tc-seios-face-solicitacao: Alerta: Realizar apenas após falha de tratamento clínico adequado (mínimo 8-12 semanas). Não indicado em rinossinusite aguda não complicada",
+        "context": "A condição atual mistura critérios de cronicidade e agudização.",
+        "clinical_rationale": "Evitar exames de imagem desnecessários em casos de RSC não refratária ou RSA simples."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_018",
+      "category": "eficiencia",
+      "priority": "media",
+      "title": "Adicionar indicação de VNG para Zumbido associado à Vertigem",
+      "description": "Ajustar a condição de solicitação de VNG para incluir pacientes com 'vertigem_rotatoria' E 'zumbido', pois a associação sugere Doença de Ménière, que requer investigação otoneurológica.",
+      "rationale": "O zumbido é um sintoma chave na Doença de Ménière. A inclusão na lógica de VNG garante a investigação completa.",
+      "impact_scores": {
+        "seguranca": 5,
+        "economia": "M",
+        "eficiencia": "A",
+        "usabilidade": 5
+      },
+      "evidence": {
+        "playbook_reference": "vng-vestibular: Indicacao: Registro e análise objetiva do nistagmo em síndromes vestibulares periféricas e centrais",
+        "context": "A condição atual foca apenas na vertigem e desequilíbrio.",
+        "clinical_rationale": "Melhoria do diagnóstico diferencial de vestibulopatias."
+      },
+      "implementation_effort": {
+        "effort": "baixo",
+        "estimated_time": "30min",
+        "complexity": "simples"
+      }
+    },
+    {
+      "id": "sug_046",
+      "category": "eficiencia",
+      "priority": "media",
+      "title": "Adicionar indicação de Timpanometria para Hipoacusia Infantil",
+      "description": "Incluir a Timpanometria como exame obrigatório em crianças (age <= 12) com 'hipoacusia' ou 'plenitude_auricular', pois a Otite Média com Efusão (OME) é uma causa comum e requer confirmação objetiva.",
+      "rationale": "A OME é a principal causa de perda auditiva condutiva em crianças e a Timpanometria é o exame de escolha para o diagnóstico.",
+      "impact_scores": {
+        "seguranca": 5,
+        "economia": "M",
+        "eficiencia": "A",
+        "usabilidade": 6
+      },
+      "evidence": {
+        "playbook_reference": "timpanometria-impedanciometria: Indicacao: Diagnóstico de efusão da orelha média, disfunção tubária",
+        "context": "A condição atual foca em plenitude/otalgia, mas deve ser mais forte para hipoacusia infantil.",
+        "clinical_rationale": "Diagnóstico rápido de OME para evitar atrasos no desenvolvimento da fala."
+      },
+      "implementation_effort": {
+        "effort": "baixo",
+        "estimated_time": "30min",
+        "complexity": "simples"
+      }
+    },
+    {
+      "id": "sug_015",
+      "category": "eficiencia",
+      "priority": "media",
+      "title": "Criar lógica de retorno para 'Exames Alterados'",
+      "description": "Se 'resultados_exames' for 'alterados', o protocolo deve sugerir automaticamente o retorno para discussão dos resultados, mesmo que o paciente não esteja sintomático hoje.",
+      "rationale": "Garante que a avaliação dos exames alterados seja concluída, independentemente da presença de sintomas no dia da consulta.",
+      "impact_scores": {
+        "seguranca": 4,
+        "economia": "L",
+        "eficiencia": "A",
+        "usabilidade": 7
+      },
+      "evidence": {
+        "playbook_reference": "Q-motivo-consulta: id: retorno_consulta",
+        "context": "O nó 'Resultados de Exames' só aparece se 'retorno_consulta' for selecionado, mas a conduta final não força o seguimento se os exames estiverem alterados.",
+        "clinical_rationale": "Fechamento do ciclo diagnóstico e terapêutico."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "2h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_030",
+      "category": "eficiencia",
+      "priority": "media",
+      "title": "Criar lógica de prescrição de Analgésicos/Antitérmicos",
+      "description": "Adicionar um medicamento de suporte (e.g., Paracetamol ou Dipirona) condicionado à presença de 'febre', 'mal_estar', 'cefaleia' ou 'otalgia', pois são sintomas comuns que requerem alívio imediato.",
+      "rationale": "O protocolo foca em tratamento específico, mas o manejo sintomático é essencial para o conforto do paciente.",
+      "impact_scores": {
+        "seguranca": 3,
+        "economia": "L",
+        "eficiencia": "A",
+        "usabilidade": 7
+      },
+      "evidence": {
+        "playbook_reference": "Q-sintomas-associados: febre, mal_estar, cefaleia",
+        "context": "Nenhum analgésico/antitérmico está listado nos medicamentos.",
+        "clinical_rationale": "Melhora do manejo da dor e febre em infecções ORL."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "2h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_036",
+      "category": "economia",
+      "priority": "media",
+      "title": "Condicionar Budesonida Irrigação à falha de Spray Nasal",
+      "description": "Reforçar a condição de prescrição de Budesonida para irrigação nasal, garantindo que ela só seja solicitada após a falha do tratamento com corticoide spray nasal (corticoide_spray_nasal in tratamento_atual).",
+      "rationale": "A irrigação com Budesonida é mais cara e complexa de preparar. Deve ser reservada para casos refratários, conforme a diretriz.",
+      "impact_scores": {
+        "seguranca": 3,
+        "economia": "A",
+        "eficiencia": "M",
+        "usabilidade": 3
+      },
+      "evidence": {
+        "playbook_reference": "budesonida-irrigacao-nasal: Indicada para casos refratários ao spray",
+        "context": "A condição atual já inclui 'corticoide_spray_nasal' in tratamento_atual, mas a lógica deve ser estrita para evitar o uso desnecessário.",
+        "clinical_rationale": "Adesão ao tratamento escalonado de RSC."
+      },
+      "implementation_effort": {
+        "effort": "baixo",
+        "estimated_time": "30min",
+        "complexity": "simples"
+      }
+    },
+    {
+      "id": "sug_027",
+      "category": "eficiencia",
+      "priority": "media",
+      "title": "Criar lógica de prescrição de Pantoprazol em dose única diária",
+      "description": "Ajustar a posologia do Pantoprazol para 40mg 1x/dia, que é a dose padrão para DRGE-LF, e simplificar a posologia para evitar confusão com a dose de 2x/dia, que é reservada para casos mais graves ou refratários.",
+      "rationale": "O tratamento de DRGE-LF geralmente começa com dose única diária, aumentando para 2x/dia se necessário. A posologia atual sugere 1-2x/dia, o que pode ser otimizado.",
+      "impact_scores": {
+        "seguranca": 2,
+        "economia": "M",
+        "eficiencia": "M",
+        "usabilidade": 6
+      },
+      "evidence": {
+        "playbook_reference": "pantoprazol-ibp: Posologia: 40mg via oral, 1-2 vezes ao dia em jejum",
+        "context": "A dose de 2x/dia deve ser reservada para falha terapêutica inicial.",
+        "clinical_rationale": "Otimização da dose e redução de custos/efeitos colaterais."
+      },
+      "implementation_effort": {
+        "effort": "baixo",
+        "estimated_time": "30min",
+        "complexity": "simples"
+      }
+    },
+    {
+      "id": "sug_037",
+      "category": "eficiencia",
+      "priority": "media",
+      "title": "Adicionar opção de 'Exames Solicitados Anteriormente' no retorno",
+      "description": "No nó 'Tipo de Consulta', se for 'retorno_consulta', adicionar uma pergunta sobre se o paciente está retornando para discutir exames solicitados na consulta anterior, mesmo que não os tenha trazido hoje.",
+      "rationale": "Ajuda a direcionar o foco da consulta de retorno e a planejar a próxima etapa, caso os exames ainda não estejam prontos.",
+      "impact_scores": {
+        "seguranca": 2,
+        "economia": "L",
+        "eficiencia": "A",
+        "usabilidade": 7
+      },
+      "evidence": {
+        "playbook_reference": "Q-motivo-consulta: id: retorno_consulta",
+        "context": "Apenas a presença de exames hoje é verificada (Q-exames-avaliacao).",
+        "clinical_rationale": "Melhora a gestão do fluxo de trabalho em consultas de seguimento."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_008",
+      "category": "economia",
+      "priority": "media",
+      "title": "Priorizar Loratadina sobre Fexofenadina em casos leves/sazonais",
+      "description": "Ajustar a lógica de prescrição para priorizar Loratadina (mais econômica) em rinite alérgica leve e sazonal, reservando Fexofenadina para casos mais graves ou persistentes, ou quando a Loratadina falhar.",
+      "rationale": "O custo da Loratadina é geralmente menor, otimizando o recurso sem comprometer a eficácia em casos leves.",
+      "impact_scores": {
+        "seguranca": 1,
+        "economia": "A",
+        "eficiencia": "L",
+        "usabilidade": 1
+      },
+      "evidence": {
+        "playbook_reference": "loratadina-anthistaminico: Alternativa econômica para rinite alérgica leve sazonal",
+        "context": "Ambos são prescritos com condições sobrepostas. A Loratadina deve ter prioridade econômica.",
+        "clinical_rationale": "Ambos são anti-histamínicos de segunda geração com eficácia comparável em rinite leve."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_017",
+      "category": "economia",
+      "priority": "media",
+      "title": "Adicionar opção de Corticoide Tópico de baixo custo (Fluticasona Propionato)",
+      "description": "Incluir a Fluticasona Propionato (mais antiga e geralmente mais barata) como alternativa à Budesonida e Mometasona, condicionada a casos de rinite alérgica pura.",
+      "rationale": "Oferecer uma opção de tratamento eficaz e de menor custo para rinite alérgica não complicada.",
+      "impact_scores": {
+        "seguranca": 1,
+        "economia": "A",
+        "eficiencia": "L",
+        "usabilidade": 2
+      },
+      "evidence": {
+        "playbook_reference": "budesonida-nasal-spray: Primeira linha para rinite alérgica e rinossinusite crônica.",
+        "context": "O protocolo já inclui Fluticasona Furoato, mas a Propionato é uma alternativa de custo mais baixo.",
+        "clinical_rationale": "Manter a eficácia clínica com otimização de custos."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_002",
+      "category": "eficiencia",
+      "priority": "media",
+      "title": "Simplificar a condição de visibilidade do nó 'Cronologia e Fatores'",
+      "description": "Criar uma variável de resumo (e.g., 'sintomas_presentes') para simplificar a longa expressão condicional do nó 'node-cronologia-fatores', melhorando a performance e legibilidade.",
+      "rationale": "Expressões longas e complexas consomem mais tempo de processamento e são propensas a erros de digitação.",
+      "impact_scores": {
+        "seguranca": 0,
+        "economia": "L",
+        "eficiencia": "A",
+        "usabilidade": 5
+      },
+      "evidence": {
+        "playbook_reference": "node-cronologia-fatores: Condição: not('nenhum_sintoma_alergico' in sintomas_nasossinusais_alergicos and ...)",
+        "context": "A condição atual é excessivamente detalhada e repete a verificação de 'nenhum' em todos os grupos sintomáticos.",
+        "clinical_rationale": "Melhora a manutenção do protocolo e garante que o nó só apareça se houver queixa ativa."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_012",
+      "category": "eficiencia",
+      "priority": "media",
+      "title": "Automatizar a exclusão de 'Nenhum Sintoma' ao selecionar outro",
+      "description": "Implementar lógica de interface para que, ao selecionar qualquer sintoma em um campo multiChoice (e.g., sintomas_nasossinusais_alergicos), a opção 'Nenhum sintoma...' seja automaticamente desmarcada, e vice-versa.",
+      "rationale": "Evita inconsistências de dados (e.g., paciente com 'rinorreia_clara' E 'nenhum_sintoma_alergico' selecionados) e melhora a eficiência do preenchimento.",
+      "impact_scores": {
+        "seguranca": 0,
+        "economia": "L",
+        "eficiencia": "A",
+        "usabilidade": 8
+      },
+      "evidence": {
+        "playbook_reference": "node-sintomas-principais: Todas as listas de sintomas possuem a opção 'Nenhum...' com 'exclusive: true' (embora o tipo seja multiChoice).",
+        "context": "O atributo 'exclusive: true' em multiChoice é estruturalmente incorreto, mas a intenção é clara: exclusão mútua.",
+        "clinical_rationale": "Garante a integridade dos dados sintomáticos."
+      },
+      "implementation_effort": {
+        "effort": "alto",
+        "estimated_time": "1 dia",
+        "complexity": "complexa"
+      }
+    },
+    {
+      "id": "sug_001",
+      "category": "seguranca",
+      "priority": "alta",
+      "title": "Adicionar alerta de contraindicação de Prednisolona em Gravidez/Lactação",
+      "description": "Reforçar a contraindicação de Prednisolona (corticosteroide sistêmico) em gestantes e lactantes, mesmo que a condição já esteja na expressão condicional, para garantir a segurança em caso de erro de lógica ou preenchimento.",
+      "rationale": "A Prednisolona é Categoria C/D na gravidez e deve ser evitada, especialmente no primeiro trimestre. O alerta deve ser explícito.",
+      "impact_scores": {
+        "seguranca": 10,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 8
+      },
+      "evidence": {
+        "playbook_reference": "prednisolona-corticoide-sistemico: MUDANÇA V3: CONTRAINDICADO em gravidez - risco categoria C/D.",
+        "context": "A expressão condicional já exclui gestantes, mas um alerta de segurança explícito é crucial.",
+        "clinical_rationale": "Prevenção de malformações congênitas e efeitos adversos no feto/lactente."
+      },
+      "implementation_effort": {
+        "effort": "baixo",
+        "estimated_time": "30min",
+        "complexity": "simples"
+      }
+    },
+    {
+      "id": "sug_004",
+      "category": "seguranca",
+      "priority": "alta",
+      "title": "Incluir verificação de perfuração timpânica antes de gotas otológicas",
+      "description": "Adicionar uma pergunta de segurança no nó de sintomas otológicos ou na conduta, verificando se há perfuração timpânica conhecida, pois o uso de Ciprofloxacino + Dexametasona é contraindicado nesse caso (exceto em otite média crônica supurativa, que deve ser diferenciada).",
+      "rationale": "O uso de gotas otológicas contendo aminoglicosídeos ou álcool em perfuração timpânica pode causar ototoxicidade.",
+      "impact_scores": {
+        "seguranca": 9,
+        "economia": "L",
+        "eficiencia": "M",
+        "usabilidade": 7
+      },
+      "evidence": {
+        "playbook_reference": "ciprofloxacino-dexametasona-otico: Posologia: Não usar se houver perfuração timpânica conhecida",
+        "context": "A contraindicação está apenas na posologia, não na lógica de prescrição.",
+        "clinical_rationale": "Prevenção de ototoxicidade e perda auditiva permanente."
+      },
+      "implementation_effort": {
+        "effort": "alto",
+        "estimated_time": "2h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_011",
+      "category": "seguranca",
+      "priority": "alta",
+      "title": "Verificar uso de AINEs/AAS antes de prescrever Corticoide Sistêmico",
+      "description": "Adicionar uma pergunta sobre o uso concomitante de AINEs ou AAS no nó 'Alergias e Contraindicações', pois o uso de Prednisolona em pacientes com úlcera péptica ativa ou em uso de AINEs aumenta o risco de sangramento gastrointestinal.",
+      "rationale": "A comorbidade 'ulcera_peptica' já existe, mas a interação medicamentosa deve ser verificada ativamente antes da prescrição de Prednisolona.",
+      "impact_scores": {
+        "seguranca": 9,
+        "economia": "L",
+        "eficiencia": "M",
+        "usabilidade": 6
+      },
+      "evidence": {
+        "playbook_reference": "comorbidades_relevantes: ulcera_peptica",
+        "context": "A interação medicamentosa com AINEs é um risco de segurança não mapeado.",
+        "clinical_rationale": "Prevenção de sangramento gastrointestinal grave."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_020",
+      "category": "seguranca",
+      "priority": "alta",
+      "title": "Adicionar alerta de risco de ototoxicidade na orientação de proteção auditiva",
+      "description": "Incluir um alerta específico na orientação 'orientacoes-protecao-auditiva' sobre o risco de ototoxicidade por medicamentos (e.g., aminoglicosídeos, altas doses de AAS) para pacientes com hipoacusia ou zumbido.",
+      "rationale": "A ototoxicidade medicamentosa é uma causa evitável de perda auditiva e deve ser abordada nas orientações.",
+      "impact_scores": {
+        "seguranca": 9,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 5
+      },
+      "evidence": {
+        "playbook_reference": "orientacoes-protecao-auditiva: Conteúdo: Como cuidar corretamente dos seus ouvidos",
+        "context": "As orientações atuais focam em proteção contra ruído e água, mas não em medicamentos.",
+        "clinical_rationale": "Prevenção de perda auditiva induzida por drogas."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_039",
+      "category": "seguranca",
+      "priority": "alta",
+      "title": "Adicionar indicação de Encaminhamento para Oftalmologia em caso de Diplopia/Perda Visual",
+      "description": "Criar um encaminhamento específico para Oftalmologia condicionado à presença de sintomas visuais (diplopia, perda visual) listados em 'sintomas_neurologicos', devido ao risco de complicações orbitárias/intracranianas.",
+      "rationale": "A avaliação oftalmológica é urgente em casos de suspeita de celulite orbitária ou abscesso subperiosteal.",
+      "impact_scores": {
+        "seguranca": 9,
+        "economia": "L",
+        "eficiencia": "M",
+        "usabilidade": 5
+      },
+      "evidence": {
+        "playbook_reference": "Q-sintomas-associados: sintomas_neurologicos (inclui diplopia)",
+        "context": "O encaminhamento atual para sintomas neurológicos é apenas para Neurologia.",
+        "clinical_rationale": "Garantir a avaliação da visão em emergências ORL."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_007",
+      "category": "seguranca",
+      "priority": "alta",
+      "title": "Adicionar opção de 'Sintomas de Alarme' no nó de Sintomas Associados",
+      "description": "Incluir opções específicas de 'red flags' (e.g., perda visual, diplopia, edema periorbitário) no Q-sintomas-associados para garantir a detecção precoce de complicações de rinossinusite.",
+      "rationale": "Complicações orbitárias ou intracranianas de rinossinusite são raras, mas requerem intervenção imediata.",
+      "impact_scores": {
+        "seguranca": 8,
+        "economia": "L",
+        "eficiencia": "M",
+        "usabilidade": 6
+      },
+      "evidence": {
+        "playbook_reference": "msg-otite-externa-tratamento: Sinais de alerta: Dor intensa persistente, febre, edema periauricular, paralisia facial → encaminhar urgência.",
+        "context": "O campo atual 'sintomas_neurologicos' é genérico. É necessário detalhar os sinais de alarme ORL.",
+        "clinical_rationale": "Detecção precoce de celulite orbitária, abscesso ou trombose do seio cavernoso."
+      },
+      "implementation_effort": {
+        "effort": "medio",
+        "estimated_time": "1h",
+        "complexity": "moderada"
+      }
+    },
+    {
+      "id": "sug_016",
+      "category": "seguranca",
+      "priority": "alta",
+      "title": "Diferenciar Otite Externa de Otite Média Crônica Supurativa (OMCS)",
+      "description": "A prescrição de gotas otológicas (Ciprofloxacino + Dexametasona) deve ser condicionada à ausência de perfuração timpânica, exceto se for OMCS. Adicionar uma opção para diferenciar a otorreia (OE vs. OMCS) no nó de sintomas otológicos.",
+      "rationale": "A OMCS requer tratamento diferente e a otorreia é persistente. A distinção é crucial para a segurança e eficácia do tratamento tópico.",
+      "impact_scores": {
+        "seguranca": 8,
+        "economia": "L",
+        "eficiencia": "M",
+        "usabilidade": 5
+      },
+      "evidence": {
+        "playbook_reference": "ciprofloxacino-dexametasona-otico: Não usar se houver perfuração timpânica conhecida",
+        "context": "A otorreia é um sintoma genérico. É necessário refinar o diagnóstico diferencial.",
+        "clinical_rationale": "Evitar ototoxicidade e garantir o tratamento adequado para OMCS (que pode envolver cirurgia)."
+      },
+      "implementation_effort": {
+        "effort": "alto",
+        "estimated_time": "3h",
+        "complexity": "complexa"
+      }
+    },
+    {
+      "id": "sug_026",
+      "category": "seguranca",
+      "priority": "alta",
+      "title": "Adicionar alerta de risco de Síndrome de Reye para AAS em crianças",
+      "description": "Incluir uma orientação de segurança sobre a contraindicação de AAS em crianças com sintomas virais (febre, mal-estar), devido ao risco de Síndrome de Reye.",
+      "rationale": "Embora o AAS não seja prescrito, a orientação é crucial, pois os pais podem usar medicamentos de venda livre.",
+      "impact_scores": {
+        "seguranca": 8,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 5
+      },
+      "evidence": {
+        "playbook_reference": "orientacoes-quando-procurar-ajuda: Conteúdo: Sinais de Alerta",
+        "context": "O protocolo não aborda o uso de AAS em pediatria.",
+        "clinical_rationale": "Prevenção de Síndrome de Reye, uma condição rara, mas fatal."
+      },
+      "implementation_effort": {
+        "effort": "baixo",
+        "estimated_time": "30min",
+        "complexity": "simples"
+      }
+    },
+    {
+      "id": "sug_035",
+      "category": "seguranca",
+      "priority": "alta",
+      "title": "Adicionar verificação de Diabetes Mellitus nas Comorbidades",
+      "description": "Incluir Diabetes Mellitus (DM) na lista de comorbidades relevantes, pois pacientes diabéticos têm maior risco de otite externa maligna e rinossinusite fúngica invasiva.",
+      "rationale": "A presença de DM altera o limiar de suspeita para infecções graves e a escolha de antibióticos.",
+      "impact_scores": {
+        "seguranca": 8,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 4
+      },
+      "evidence": {
+        "playbook_reference": "Q-comorbidades-relevantes: Lista de comorbidades",
+        "context": "DM não está listado, mas é uma comorbidade crítica em ORL.",
+        "clinical_rationale": "Detecção de pacientes de alto risco para infecções invasivas."
+      },
+      "implementation_effort": {
+        "effort": "baixo",
+        "estimated_time": "30min",
+        "complexity": "simples"
+      }
+    },
+    {
+      "id": "sug_042",
+      "category": "seguranca",
+      "priority": "alta",
+      "title": "Adicionar verificação de uso de Anticoagulantes",
+      "description": "Incluir a verificação de uso de anticoagulantes (e.g., Varfarina, NOACs) no nó 'Alergias e Contraindicações', devido ao risco de epistaxe grave e complicações cirúrgicas.",
+      "rationale": "O uso de anticoagulantes é uma informação crítica para qualquer procedimento ORL e para o manejo da epistaxe.",
+      "impact_scores": {
+        "seguranca": 8,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 4
+      },
+      "evidence": {
+        "playbook_reference": "Q-comorbidades-relevantes: Lista de comorbidades",
+        "context": "O protocolo não verifica o uso de anticoagulantes.",
+        "clinical_rationale": "Prevenção de complicações hemorrágicas."
+      },
+      "implementation_effort": {
+        "effort": "baixo",
+        "estimated_time": "30min",
+        "complexity": "simples"
+      }
+    },
+    {
+      "id": "sug_045",
+      "category": "seguranca",
+      "priority": "alta",
+      "title": "Adicionar verificação de Alergia a Macrolídeos antes de Azitromicina",
+      "description": "A condição de prescrição da Azitromicina deve incluir explicitamente a verificação de 'alergia_macrolideos' (já listada nas alergias) para evitar reações alérgicas cruzadas.",
+      "rationale": "Embora a Azitromicina seja uma alternativa à penicilina, ela é contraindicada em caso de alergia a macrolídeos.",
+      "impact_scores": {
+        "seguranca": 8,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 5
+      },
+      "evidence": {
+        "playbook_reference": "azitromicina-antibiotico: Condição: 'alergia_penicilina' in alergias_medicamentos",
+        "context": "A condição atual só verifica alergia à penicilina, mas não ao próprio grupo macrolídeo.",
+        "clinical_rationale": "Prevenção de reações alérgicas graves."
+      },
+      "implementation_effort": {
+        "effort": "baixo",
+        "estimated_time": "30min",
+        "complexity": "simples"
+      }
+    },
+    {
+      "id": "sug_048",
+      "category": "seguranca",
+      "priority": "alta",
+      "title": "Adicionar alerta de risco de Torsades de Pointes com Azitromicina",
+      "description": "Incluir um alerta de segurança na prescrição de Azitromicina sobre o risco de prolongamento do intervalo QT, especialmente em pacientes com cardiopatia grave (já listada nas comorbidades).",
+      "rationale": "A Azitromicina pode causar arritmias cardíacas graves em pacientes predispostos.",
+      "impact_scores": {
+        "seguranca": 8,
+        "economia": "L",
+        "eficiencia": "L",
+        "usabilidade": 5
+      },
+      "evidence": {
+        "playbook_reference": "azitromicina-antibiotico: Categoria: Antibiótico macrolídeo",
+        "context": "O protocolo não verifica a interação entre Azitromicina e cardiopatia grave.",
+        "clinical_rationale": "Prevenção de arritmias fatais."
+      },
+      "implementation_effort": {
+        "effort": "baixo",
+        "estimated_time": "30min",
+        "complexity": "simples"
+      }
+    }
+  ],
+  "metadata": {
+    "protocol_path": "C:\\Users\\daanm\\AgenteV2\\models_json\\amil_ficha_orl_v1.0.0_FIXED_20251201_073725.json",
+    "playbook_path": "C:\\Users\\daanm\\AgenteV2\\models_json\\Sobre a ficha de atendimento em Otorrinolaringolog 29d6587d2ef5800ba358f9c1b2236875.md",
+    "model_used": "google/gemini-2.5-flash-preview-09-2025",
+    "timestamp": "2025-12-01T20:11:28.053893",
+    "version": "V3"
+  }
+}

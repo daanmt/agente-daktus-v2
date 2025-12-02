@@ -18,8 +18,8 @@ import time
 # CRITICAL: Load .env FIRST, before any other imports
 from dotenv import load_dotenv
 
-# Calculate project root: src/agent_v2/llm_client.py -> project root
-project_root = Path(__file__).resolve().parent.parent.parent
+# Calculate project root: src/agent/core/llm_client.py -> project root
+project_root = Path(__file__).resolve().parent.parent.parent.parent
 env_file = project_root / ".env"
 
 # Load .env from project root
@@ -47,7 +47,7 @@ except ImportError:
 
 # MVP: Direct OpenRouter API - no dependencies on legacy infrastructure
 
-# Logger - usar logger do agent_v2
+# Logger - usar logger do core
 from .logger import logger
 
 

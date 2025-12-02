@@ -1,15 +1,15 @@
 """
-Agent V3 - CorreÁ„o Automatizada de Protocolos ClÌnicos
+Agent V3 - Corre√ß√£o Automatizada de Protocolos Cl√≠nicos
 
-TransformaÁ„o de auditoria passiva (v2) para correÁ„o ativa (v3).
+Transforma√ß√£o de auditoria passiva (v2) para corre√ß√£o ativa (v3).
 
 Principais funcionalidades:
 - Auto-apply de melhorias no JSON do protocolo
 - Suporte a protocolos JSON massivos (>3k linhas)
 - Prompt caching agressivo (reduz custo em 50-70%)
-- PriorizaÁ„o de sugestıes por impacto
-- ValidaÁ„o estrutural autom·tica
-- Rastreabilidade completa de mudanÁas
+- Prioriza√ß√£o de sugest√µes por impacto
+- Valida√ß√£o estrutural autom√°tica
+- Rastreabilidade completa de mudan√ßas
 
 Uso:
     from agent_v3.pipeline import analyze_and_fix
@@ -25,5 +25,5 @@ Uso:
 __version__ = "3.0.0-alpha"
 __author__ = "Daktus QA Team"
 
-# Exports principais (ser„o implementados nas prÛximas fases)
+# Exports principais (ser√£o implementados nas pr√≥ximas fases)
 # from .pipeline import analyze_and_fix

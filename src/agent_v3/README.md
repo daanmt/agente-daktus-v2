@@ -27,7 +27,7 @@ Orquestrador principal do Agent V3. Integra v2 (análise) + v3 (correção).
 analyze_and_fix(
     protocol_path: str,
     playbook_path: str,
-    model: str = "anthropic/claude-sonnet-4.5",
+    model: str = "x-ai/grok-4.1-fast:free",
     auto_apply: bool = True,
     confidence_threshold: float = 0.90
 ) -> dict

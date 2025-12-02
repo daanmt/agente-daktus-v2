@@ -1,11 +1,12 @@
-# 🔍 Agente Daktus QA
+# 🔍 Agente Daktus | QA
 
-> Sistema de validação e correção automatizada de protocolos clínicos usando IA
+> Sistema unificado de validação e correção automatizada de protocolos clínicos usando IA
 
-**Versão Atual**: 2.3-production ✅  
-**Próxima Versão**: 3.0-alpha (em desenvolvimento)  
-**Status**: Pronto para Produção (v2) | Roadmap v3 Definido  
-**Última Atualização**: 2025-11-30
+**Versão Atual**: 3.0-alpha ✅  
+**Status**: Projeto Unificado - Todas as funcionalidades integradas  
+**Última Atualização**: 2025-12-01
+
+> **Nota**: Este projeto foi consolidado em um único repositório. O versionamento é feito via tags/branches Git, não via estrutura de pastas separadas.
 
 ---
 
@@ -96,7 +97,70 @@ pipeline.analyze() → Saída JSON unificada
 CLI Report Generator → reports/*.txt, reports/*.json
 ```
 
-### Agent V3: Arquitetura de Correção Automatizada (Roadmap)
+### 🔥 Agent V3: Arquitetura Moderna (Em Desenvolvimento)
+
+**Fluxo Unificado**: Análise → Feedback iterativo → Auto-apply assistido → Implementação automática
+
+#### Princípios Fundamentais
+
+1. **Transparência Total**: Usuário vê cada etapa do processo (thinking, tasks, progresso)
+2. **Controle do Usuário**: Nada acontece sem autorização explícita
+3. **Aprendizado Contínuo**: Sistema melhora com feedback de cada análise
+4. **Segurança Primeiro**: Validação rigorosa em cada etapa, zero tolerância a erros
+
+#### Diferenciais do Modo Enhanced
+
+**1. Relatórios Sofisticados**
+- **20-50 sugestões** por análise (vs 5-15 da V2)
+- Cada sugestão com **scores de impacto** (Segurança 0-10, Economia L/M/A)
+- **Rastreabilidade completa**: cada sugestão linkada à evidência do playbook
+- **Estimativa de custo** para aplicar cada sugestão
+
+**2. Human-in-the-Loop** (🆕)
+- Usuário revisa cada sugestão: Relevante | Irrelevante | Editar
+- Sistema **detecta padrões** de erro
+- **Refinamento automático** de prompts baseado em feedback
+- **Melhoria contínua**: sistema aprende com cada sessão
+
+**3. Controle de Custos Rigoroso** (🆕)
+- **Estimativa pré-execução** com 90%+ precisão
+- **Autorização obrigatória** antes de operações custosas
+- **Limites configuráveis** por usuário/sessão
+- **Rastreamento** real vs estimado
+
+**4. CLI Inspirada no Claude Code** (🆕)
+- **Onboarding interativo** claro e guiado
+- **Thinking visível**: usuário vê o que está acontecendo
+- **Tasks em tempo real**: progress bars, status updates
+- **Formatação rica**: tabelas, syntax highlighting, diff colorido
+
+#### Executar V3 (Quando Disponível)
+
+```bash
+# CLI interativa V3
+python run_v3_cli.py
+
+# Ou programaticamente
+from agent_v3.pipeline import analyze_and_fix
+
+result = analyze_and_fix(
+    protocol_path="models_json/protocolo.json",
+    playbook_path="models_json/playbook.md",
+    model="anthropic/claude-sonnet-4.5",
+    auto_apply=True,
+    confidence_threshold=0.90
+)
+```
+
+#### Documentação V3
+
+- **Plano de Implementação Completo**: `V3_IMPLEMENTATION_PLAN_REFINED.md`
+- **Visão Geral e Guia**: `docs/v3_overview.md`
+- **README do Módulo**: `src/agent_v3/README.md`
+
+---
+
+### Agent V3: Arquitetura de Correção Automatizada (Roadmap Legacy)
 
 **Evolução transformacional** em 3 etapas:
 
@@ -148,17 +212,24 @@ LLM_MODEL=anthropic/claude-sonnet-4.5  # Modelo padrão v3
 ### Modelos Suportados
 
 **Recomendados para v2/v3:**
-- `anthropic/claude-sonnet-4.5` ⭐ (recomendado v3 - auto-apply)
-- `anthropic/claude-sonnet-4-20250514` (alternativa)
-- `google/gemini-2.5-flash-preview-09-2025` 🔧 (v2 padrão)
+- `x-ai/grok-4.1-fast:free` ⭐ (padrão v3 - gratuito, contexto 2M tokens)
+- `google/gemini-2.5-flash-preview-09-2025` 🔧 (v2 padrão, baixo custo)
+- `anthropic/claude-sonnet-4.5` (alta qualidade, custo médio)
 
 **Outros modelos disponíveis:**
-- `anthropic/claude-3.5-haiku-20241022` (mais rápido, mais barato)
+- `x-ai/grok-code-fast-1` (rápido, baixo custo)
 - `google/gemini-2.5-flash`, `google/gemini-2.5-pro`
-- `openai/gpt-5-mini`, `openai/gpt-4.1-mini`, `openai/gpt-4o-mini`
-- `x-ai/grok-2-1212`
+- `anthropic/claude-opus-4.5` (máxima qualidade)
+- `openai/gpt-5-mini`
 
-**Total**: 12+ modelos disponíveis
+**Preços Atualizados (USD por milhão de tokens)**:
+- Grok 4.1 Fast (Free): $0/$0 (input/output)
+- Grok Code Fast 1: $0.20/$1.50
+- Gemini 2.5 Flash Preview: $0.30/$2.50
+- Gemini 2.5 Flash: $0.30/$2.50
+- Gemini 2.5 Pro: $1.25/$10
+- Claude Sonnet 4.5: $3/$15
+- Claude Opus 4.5: $5/$25
 
 ---
 
@@ -346,18 +417,17 @@ resultado = analyze_and_fix(
 
 ## 🎯 Próximos Passos
 
-### Para Usuários (v2)
-1. ✅ Use v2 em produção para validação de protocolos
-2. ✅ Colete feedback sobre qualidade das sugestões
-3. ⏳ Aguarde v3 para correção automatizada
+### Para Usuários
+1. ✅ Use o modo Standard para validação básica de protocolos
+2. ✅ Use o modo Enhanced para análise expandida e reconstrução automática
+3. ✅ Forneça feedback para melhorar continuamente o sistema
 
 ### Para Desenvolvedores
-1. 🔥 **Validar hipótese de auto-apply** (experimento 1 semana)
-2. 🔥 **Implementar ChunkingEngine** (MVP 2 semanas)
-3. 🔥 **Implementar ImprovementApplicator** (2-4 meses)
-4. ⏳ Ver roadmap completo em `roadmap.md`
+1. ⏳ Ver roadmap completo em `docs/roadmap.md`
+2. ⏳ Ver plano de implementação em `docs/V3_IMPLEMENTATION_PLAN_REFINED.md`
+3. ⏳ Contribuir com melhorias e novas funcionalidades
 
 ---
 
-**Para o roadmap detalhado v2 → v3, veja [`roadmap.md`](roadmap.md)**  
-**Para o histórico de desenvolvimento, veja [`dev_history.md`](dev_history.md)**
+**Para o roadmap detalhado, veja [`docs/roadmap.md`](docs/roadmap.md)**  
+**Para o histórico de desenvolvimento, veja [`docs/dev_history.md`](docs/dev_history.md)**

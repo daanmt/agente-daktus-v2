@@ -1,0 +1,56 @@
+============================================================
+AGENT V3 - PROTOCOL ANALYSIS REPORT
+============================================================
+
+METADATA
+------------------------------------------------------------
+Protocol: C:\Users\daanm\AgenteV2\models_json\athena_dor_no_ombro_v3.0.5_03-11-2025-1542.json
+Playbook: C:\Users\daanm\AgenteV2\models_json\Sobre o protocolo de Dor no Ombro - ambulatorial 2806587d2ef580199815cdf37c4a5bb4.md
+Model: x-ai/grok-4.1-fast:free
+Timestamp: 2025-12-01T23:04:43.097617
+Processing Time: 0ms
+
+IMPROVEMENT SUGGESTIONS
+------------------------------------------------------------
+Total: 30 suggestions
+
+ALTA PRIORIDADE:
+  1. Adicionar triagem de red flags no início
+  2. Screening para doença reumatológica
+  3. Verificar duração da dor >2 semanas
+  4. Sinais neurológicos: fraqueza/parestesia
+  5. Fibromialgia check
+  6. Cirurgia só falha 3-6 meses
+
+MÉDIA PRIORIDADE:
+  1. Adicionar check para dor referida (cardíaca/cervical)
+  2. Encaminhamento reumatologia para inflamatório
+  3. Adicionar check infecção local/sistêmica
+  4. Adicionar CID entrada/saída
+  5. Adicionar idade como fator (pico 45-65)
+  6. Encaminhamento dor crônica >12 semanas
+  7. Limitar infiltração a refratária
+  8. Paracetamol preferencial idosos
+  9. Condicionar RX apenas para trauma agudo
+  10. Estender posologia AINEs para 6-12 semanas
+  11. Priorizar USG sobre RM para manguito
+  12. Adicionar KPIs auditáveis no summary
+  13. Integração exames prévios melhor
+  14. Unificar paths primeira/retorno
+  15. Automação de mensagens baseadas em testes
+  16. Evitar TC/Artro-RM desnecessários
+  17. Auto-fill tratamento atual retorno
+
+BAIXA PRIORIDADE:
+  1. Labels mais claros para ruptura manguito
+  2. Adicionar tooltips em testes
+  3. Expandir orientações pós-cirurgia
+  4. Padronizar labels de testes manguito
+  5. Adicionar DASH/ASES score
+  6. Melhorar ciência/termo de compromisso
+  7. Reduzir multiChoice desnecessários
+
+
+============================================================
+Full JSON report saved to: C:\Users\daanm\AgenteV2\reports\athena_dor_no_ombro_v3.0.5_03-11-2025-1542_01-12-2025-2304.json
+============================================================

@@ -1,0 +1,74 @@
+============================================================
+AGENT V3 - PROTOCOL ANALYSIS REPORT
+============================================================
+
+METADATA
+------------------------------------------------------------
+Protocol: C:\Users\daanm\AgenteV2\models_json\amil_ficha_reumato_v0.2.0_FIXED_20251201_103057.json
+Playbook: C:\Users\daanm\AgenteV2\models_json\playbook reumato.md
+Model: google/gemini-2.5-flash-preview-09-2025
+Timestamp: 2025-12-01T20:20:16.504127
+Processing Time: 0ms
+
+IMPROVEMENT SUGGESTIONS
+------------------------------------------------------------
+Total: 48 suggestions
+
+ALTA PRIORIDADE:
+  1. Adicionar rastreio de TB latente (IGRA/PPD) como condição obrigatória para DMARDs/Biológicos
+  2. Reforçar alerta de Artrite Séptica e remover febre como requisito de ativação
+  3. Adicionar alerta de toxicidade hepática para Metotrexato e Leflunomida
+  4. Adicionar verificação de gravidez/lactação para DMARDs
+  5. Adicionar rastreio de Hepatite B e C antes de DMARDs/Biológicos
+  6. Adicionar alerta de risco de Síndrome de Stevens-Johnson para Alopurinol
+  7. Adicionar verificação de risco de sangramento para AINEs
+
+MÉDIA PRIORIDADE:
+  1. Adicionar alerta de contraindicação de AINEs em pacientes com úlcera péptica e DRC
+  2. Adicionar rastreio oftalmológico obrigatório para Hidroxicloroquina
+  3. Adicionar verificação de função renal para Colchicina na crise aguda de gota
+  4. Adicionar alerta de risco cardiovascular em pacientes com AR
+  5. Adicionar alerta de risco de tendinopatia/ruptura com infiltração de corticoide
+  6. Adicionar alerta de risco de tendinopatia/ruptura com Fluoroquinolonas
+  7. Adicionar alerta de risco de hipoglicemia para Duloxetina em diabéticos
+  8. Adicionar alerta de risco de osteonecrose com corticoides em altas doses
+  9. Adicionar alerta de risco de dependência para Tramadol
+  10. Adicionar nó de investigação para Lúpus Eritematoso Sistêmico (LES)
+  11. Adicionar nó de investigação para Polimialgia Reumática (PMR)
+  12. Adicionar a opção 'Artrite Psoriásica' na lista de encaminhamentos urgentes
+  13. Adicionar nó de investigação para Síndrome de Sjögren
+  14. Adicionar opção de 'Artrite Psoriásica' na triagem de sintomas sistêmicos
+  15. Adicionar a opção 'Monoartrite' na investigação de Espondiloartrite
+  16. Adicionar a opção 'Artrite Reumatoide' na lista de comorbidades
+  17. Adicionar a opção 'Artrite Psoriásica' na lista de comorbidades
+  18. Restringir RM de ombro/quadril apenas para falha de tratamento conservador
+  19. Adicionar a 1ª MTF como opção na triagem geral de localização
+  20. Adicionar opção de 'Artrite Reativa' na triagem de sintomas sistêmicos
+  21. Adicionar a opção 'Monoartrite' na investigação de Gota
+  22. Adicionar a opção 'Artrite Viral' como diagnóstico diferencial na triagem
+  23. Adicionar a opção 'Artrite por Pirofosfato de Cálcio (CPPD)' como diagnóstico diferencial
+  24. Restringir solicitação de TC Dupla Energia (Gota) apenas para casos refratários/atípicos
+  25. Adicionar opção 'Não' para 'Q-dor-articular-presente' e direcionar para 'node-sem-dor-articular'
+  26. Condicionar a solicitação de ANA (FAN) a sintomas sistêmicos mais específicos
+  27. Condicionar a solicitação de Polissonografia a sintomas de apneia do sono
+  28. Adicionar a opção 'Artrite Reumatoide' na lista de medicamentos em uso (DMARDs)
+  29. Otimizar a ativação de exames laboratoriais para AR
+  30. Remover solicitação de TSH/T4 em Fibromialgia se não houver sintomas atípicos
+
+BAIXA PRIORIDADE:
+  1. Padronizar a unidade de medida na posologia do Prednisolona
+  2. Adicionar opção 'Não se aplica' ou 'Não sei' em perguntas de sintomas específicos
+  3. Melhorar a descrição da posologia do Metotrexato
+  4. Melhorar a descrição da pergunta 'Q-caracteristica-inflamatoria'
+  5. Padronizar a nomenclatura de 'dor_difusa' na triagem
+  6. Revisar a descrição do nó 'node-investigacao-osteoartrite'
+  7. Simplificar a pergunta sobre comorbidades
+  8. Adicionar opção 'Não se aplica' para 'Q-duracao-corticoides'
+  9. Revisar a descrição do nó 'node-investigacao-septica'
+  10. Melhorar a descrição da pergunta 'Q-teste-finkelstein'
+  11. Adicionar a opção 'Não' para 'Q-lesoes-psoriaticas'
+
+
+============================================================
+Full JSON report saved to: C:\Users\daanm\AgenteV2\reports\amil_ficha_reumato_v0.2.0_FIXED_20251201_103057_20251201_202016.json
+============================================================

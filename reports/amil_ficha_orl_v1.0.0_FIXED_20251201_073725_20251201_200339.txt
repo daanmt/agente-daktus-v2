@@ -1,0 +1,23 @@
+============================================================
+AGENT V2 - PROTOCOL ANALYSIS REPORT
+============================================================
+
+METADATA
+------------------------------------------------------------
+Protocol: C:\Users\daanm\AgenteV2\models_json\amil_ficha_orl_v1.0.0_FIXED_20251201_073725.json
+Playbook: C:\Users\daanm\AgenteV2\models_json\Sobre a ficha de atendimento em Otorrinolaringolog 29d6587d2ef5800ba358f9c1b2236875.md
+Model: google/gemini-2.5-flash-preview-09-2025
+Timestamp: 
+Processing Time: 0ms
+
+IMPROVEMENT SUGGESTIONS
+------------------------------------------------------------
+1. [Critical] Revisar a lógica de exclusão de Budesonida e Mometasona na gravidez. Embora o protocolo atual as exclua, a Budesonida é frequentemente o corticoide nasal preferido (Categoria B) para rinite alérgica na gravidez. Adicionar uma exceção ou nota clínica para uso sob estrita indicação médica.
+2. [High] Ajustar a visibilidade do nó 'node-resultados-exames'. Se 'motivo_consulta' for 'primeira_consulta', 'exames_avaliacao' não é visível. A condição do nó deve ser ajustada para: 'motivo_consulta == 'retorno_consulta' and exames_avaliacao == true' para garantir que o nó só seja avaliado quando o campo de retorno for relevante e preenchido.
+3. [Medium] Adicionar um campo de 'Medicações em Uso Crônico' no nó 'node-alergias-contraindicacoes'. Isso é crucial para verificar interações medicamentosas (ex: IBP com Clopidogrel, Beta-bloqueadores com Vertigem) e otimizar a segurança da prescrição.
+4. [Medium] Simplificar a condição de visibilidade do nó 'node-cronologia-fatores' e 'node-alergias-contraindicacoes'. Em vez de negar a seleção de todos os 'nenhum', usar uma variável booleana calculada no nó anterior (e.g., 'sintomas_presentes = true') para melhorar a legibilidade e manutenção da lógica.
+5. [Low] Adicionar a opção de 'Otite Média Aguda' (OMA) no tratamento, especialmente para pacientes pediátricos (age <= 12), já que a mensagem 'msg-otite-media-pediatrica' está presente, mas o tratamento antibiótico específico para OMA (Amoxicilina em dose alta) não está explicitamente listado, apenas o para ABRS.
+
+============================================================
+Full JSON report saved to: C:\Users\daanm\AgenteV2\reports\amil_ficha_orl_v1.0.0_FIXED_20251201_073725_20251201_200339.json
+============================================================

@@ -4,6 +4,83 @@
 
 ---
 
+## [2025-12-01] ✅ CORREÇÕES CRÍTICAS: VERSIONAMENTO, TIMESTAMP E COMPATIBILIDADE GROK
+
+### Objetivo
+Corrigir problemas críticos identificados: versionamento incorreto, formato de timestamp inconsistente, e compatibilidade com modelos Grok.
+
+### Problemas Corrigidos
+
+**1. Versionamento MAJOR.MINOR.PATCH**
+- Problema: Protocolo reconstruído salvava com versão igual ou menor que o original (ex: 0.1.1 quando original era 0.1.2)
+- Causa: Falta de extração e incremento correto da versão do protocolo
+- Fix: Implementado `version_utils.py` com funções:
+  - `extract_version_from_protocol()`: Extrai versão do metadata
+  - `increment_version()`: Incrementa PATCH automaticamente (0.1.1 → 0.1.2)
+  - `update_protocol_version()`: Atualiza versão no metadata
+  - `generate_output_filename()`: Gera nome seguindo padrão Daktus Studio
+
+**2. Formato de Timestamp**
+- Problema: Reports usavam formato `YYYYMMDD_HHMMSS`, diferente do padrão Daktus Studio
+- Causa: Timestamp não padronizado com protocolos em `models_json/`
+- Fix: Implementado `generate_daktus_timestamp()` que retorna formato `DD-MM-YYYY-HHMM` (padrão Daktus Studio)
+- Aplicado em: `save_report()` e `generate_output_filename()`
+
+**3. Compatibilidade com Grok Models**
+- Problema: Grok 4.1 Fast (Free) não concluía análises, suspeita de incompatibilidade com formato estruturado
+- Causa: Grok não suporta formato de prompt estruturado com `system` como array (usado para prompt caching)
+- Fix: Implementado `_is_grok_model()` em `LLMClient` que detecta modelos Grok e converte prompt estruturado para string simples
+- Resultado: Grok 4.1 Fast (Free) agora funciona perfeitamente para análise e reconstrução
+
+**4. Atualização de Preços**
+- Problema: Preços hardcoded e desatualizados
+- Fix: Atualizado `MODEL_PRICING` com preços reais de mercado:
+  - Grok 4.1 Fast (Free): $0/M input, $0/M output (contexto: 2M tokens)
+  - Grok Code Fast 1: $0.20/M input, $1.50/M output (contexto: 256K tokens)
+  - Gemini 2.5 Flash Preview: $0.30/M input, $2.50/M output (contexto: 1.05M tokens)
+  - Gemini 2.5 Flash: $0.30/M input, $2.50/M output (contexto: 1.05M tokens)
+  - Gemini 2.5 Pro: $1.25/M input, $10/M output (contexto: 1.05M tokens)
+  - Claude Sonnet 4.5: $3/M input, $15/M output (contexto: 1M tokens)
+  - Claude Opus 4.5: $5/M input, $25/M output (contexto: 200K tokens)
+
+**5. Modelo Padrão**
+- Mudança: Grok 4.1 Fast (Free) definido como modelo padrão (gratuito, contexto 2M tokens)
+- Aplicado em: `LLMClient`, `EnhancedAnalyzer`, `ProtocolReconstructor`, `ImprovementApplicator`, CLI
+
+### Testes Realizados
+
+**Teste Completo com Grok 4.1 Fast (Free)**:
+- ✅ Análise: 30 sugestões geradas (dentro do range 20-50)
+- ✅ Reconstrução: Protocolo reconstruído com sucesso
+- ✅ Versionamento: 0.1.1 → 0.1.2 (correto)
+- ✅ Validação: JSON válido, estrutura preservada
+- ✅ Custo: $0.0000 (gratuito)
+
+### Arquivos Criados/Modificados
+
+**Novos Arquivos**:
+- ✅ `src/agent_v3/applicator/version_utils.py` - Utilitários de versionamento
+- ✅ `test_grok_reconstruction.py` - Script de teste para Grok
+
+**Arquivos Modificados**:
+- ✅ `src/agent_v3/applicator/protocol_reconstructor.py` - Integração com versionamento
+- ✅ `src/agent_v3/applicator/__init__.py` - Exporta funções de versionamento
+- ✅ `src/cli/run_qa_cli.py` - Usa `generate_output_filename()` e `generate_daktus_timestamp()`
+- ✅ `src/agent_v2/llm_client.py` - Suporte para Grok (conversão de prompt)
+- ✅ `src/agent_v3/cost_control/cost_estimator.py` - Preços atualizados
+- ✅ `src/agent_v3/analysis/enhanced_analyzer.py` - Modelo padrão atualizado
+- ✅ `src/agent_v3/applicator/protocol_reconstructor.py` - Modelo padrão atualizado
+- ✅ `src/agent_v3/applicator/improvement_applicator.py` - Modelo padrão atualizado
+- ✅ `src/cli/run_qa_cli.py` - Modelo padrão e lista de modelos atualizados
+
+### Próximos Passos
+
+1. ✅ Testar com múltiplos protocolos para validar versionamento
+2. ✅ Validar formato de timestamp em todos os outputs
+3. ⏳ Continuar implementação da FASE 2 (Feedback Loop) - já iniciada
+
+---
+
 ## [2025-12-01] ✅ VALIDAÇÃO CRÍTICA DIA 1: AUTO-APPLY BEM-SUCEDIDO - GO!
 
 ### Objetivo
@@ -546,6 +623,46 @@ Sistema multi-provider complexo estava gerando conflitos. Substituído por integ
 - Integração com parser tradicional (modo híbrido)
 - Fallback para parser tradicional se LLM falhar
 - Extrai: síndromes, sinais/sintomas, critérios, testes físicos, exames, condutas, red flags
+
+---
+
+## [2025-12-01] 🔄 Consolidação do Projeto - Estrutura Unificada
+
+### Objetivo
+Consolidar o projeto em um único repositório "Agente Daktus | QA", removendo a separação entre V2 e V3. O versionamento agora é feito via tags/branches Git, não via estrutura de pastas separadas.
+
+### Implementações
+- ✅ Reorganizada estrutura: `agent_v2/` e `agent_v3/` → `agent/`
+- ✅ Criado módulo `agent/core/` com componentes compartilhados
+- ✅ Reorganizados módulos por funcionalidade (analysis, applicator, feedback, cost_control)
+- ✅ Atualizados todos os imports de `agent_v2.*` e `agent_v3.*` → `agent.*`
+- ✅ Corrigido sistema de logging (imports e referências)
+- ✅ Atualizado CLI para usar estrutura unificada
+- ✅ Atualizado README.md e documentação
+- ✅ Atualizado roadmap.md com status atual das fases V3
+
+### Mudanças Principais
+- **Estrutura Antiga**: `src/agent_v2/` e `src/agent_v3/` separados
+- **Estrutura Nova**: `src/agent/` unificado com módulos:
+  - `core/` - Componentes compartilhados (LLM client, logger, loaders)
+  - `analysis/` - Análise (standard.py e enhanced.py)
+  - `applicator/` - Auto-apply (protocol_reconstructor.py, version_utils.py)
+  - `feedback/` - Sistema de feedback
+  - `cost_control/` - Controle de custos
+
+### Arquivos Modificados
+- Todos os arquivos em `src/agent/` (novos)
+- `src/cli/run_qa_cli.py` - Atualizado imports
+- `src/__init__.py` - Atualizado para estrutura unificada
+- `README.md` - Reflete projeto unificado
+- `docs/roadmap.md` - Atualizado com status das fases
+- `docs/V3_IMPLEMENTATION_PLAN_REFINED.md` - Atualizado caminhos de arquivos
+
+### Notas
+- As pastas `agent_v2/` e `agent_v3/` ainda existem temporariamente para referência
+- O sistema de logs agora usa nome "agent" em vez de "agent_v2"
+- Todos os imports foram corrigidos e testados
+- O CLI continua funcionando com seleção de modo (V2/V3), mas agora são modos, não versões separadas
 
 ---
 

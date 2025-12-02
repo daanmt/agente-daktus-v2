@@ -11,5 +11,10 @@ PyPDF2>=3.0.0
 pytest>=7.0.0
 pytest-cov>=4.0.0
 
+# Agent V3 - CLI and Display
+rich>=13.0.0
+questionary>=2.0.0
+prompt_toolkit>=3.0.0
+
 # Optional: Anthropic SDK (fallback se OpenRouter falhar)
 # anthropic>=0.18.0
