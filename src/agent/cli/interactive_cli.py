@@ -758,18 +758,18 @@ class InteractiveCLI:
             with self.display.create_progress_bar("Reconstrução em andamento", total=4) as progress:
                 pb_task = progress.add_task("Preparando reconstrução", total=4)
 
-            # Preparar sugestões editadas em memória (pós-feedback); fallback para originais
-            edited_report = getattr(self.session_state, "edited_report", None)
-            if edited_report:
-                suggestions_for_reconstruction = edited_report.get("improvement_suggestions", [])
-                rejected_count = len(edited_report.get("rejected_suggestions", []))
-                if rejected_count > 0:
-                    self.display.show_info(f"📝 Usando apenas sugestões aprovadas: {len(suggestions_for_reconstruction)} relevantes, {rejected_count} rejeitadas")
-            else:
-                if self.session_state.enhanced_result:
-                    suggestions_for_reconstruction = [s.to_dict() for s in self.session_state.enhanced_result.improvement_suggestions]
+                # Preparar sugestões editadas em memória (pós-feedback); fallback para originais
+                edited_report = getattr(self.session_state, "edited_report", None)
+                if edited_report:
+                    suggestions_for_reconstruction = edited_report.get("improvement_suggestions", [])
+                    rejected_count = len(edited_report.get("rejected_suggestions", []))
+                    if rejected_count > 0:
+                        self.display.show_info(f"📝 Usando apenas sugestões aprovadas: {len(suggestions_for_reconstruction)} relevantes, {rejected_count} rejeitadas")
                 else:
-                    suggestions_for_reconstruction = self.session_state.analysis_result.get('improvement_suggestions', [])
+                    if self.session_state.enhanced_result:
+                        suggestions_for_reconstruction = [s.to_dict() for s in self.session_state.enhanced_result.improvement_suggestions]
+                    else:
+                        suggestions_for_reconstruction = self.session_state.analysis_result.get('improvement_suggestions', [])
 
                 progress.update(pb_task, advance=1)
 
@@ -777,16 +777,11 @@ class InteractiveCLI:
                     self.display.show_warning("Nenhuma sugestão disponível para reconstrução")
                     return
 
-                # Carregar protocolo original (ou _EDITED se existir)
+                # Carregar protocolo original
                 if not load_protocol:
                     raise ImportError("load_protocol não disponível")
 
                 protocol_path_to_load = self.session_state.protocol_path
-                edited_path = Path(str(protocol_path_to_load).replace('.json', '_EDITED.json'))
-                if edited_path.exists():
-                    logger.info(f"Using EDITED protocol for reconstruction: {edited_path.name}")
-                    protocol_path_to_load = edited_path
-
                 with self.display.spinner("Carregando protocolo para reconstrução..."):
                     protocol_json = load_protocol(protocol_path_to_load)
 

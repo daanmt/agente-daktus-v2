@@ -1980,8 +1980,22 @@ Responda com APENAS o JSON editado:"""
                 lines.append("Feedback Incorporated: yes")
             lines.append("")
 
-            # Improvement suggestions
+            # Resumo de seções exigidas pela Fase 6
             suggestions = edited_result.get("improvement_suggestions", [])
+            rejected = edited_result.get("rejected_suggestions", [])
+            implemented = edited_result.get("implemented_suggestions", [])
+            total_suggested = metadata.get("suggestions_count", len(suggestions) + len(rejected))
+            total_implemented = len(implemented) if implemented else 0
+
+            lines.append("RESUMO (PÓS-FEEDBACK E RECONSTRUÇÃO)")
+            lines.append("-" * 60)
+            lines.append(f"SUGESTOES SUGERIDAS: {total_suggested}")
+            lines.append(f"SUGESTOES HOMOLOGADAS (aprovadas): {len(suggestions)}")
+            lines.append(f"SUGESTOES REJEITADAS: {len(rejected)}")
+            lines.append(f"SUGESTOES IMPLEMENTADAS: {total_implemented}")
+            lines.append("")
+
+            # Improvement suggestions
             lines.append(f"IMPROVEMENT SUGGESTIONS (APÓS FEEDBACK): {len(suggestions)}")
             lines.append("=" * 60)
             lines.append("")
@@ -2083,6 +2097,26 @@ Responda com APENAS o JSON editado:"""
                             desc_snippet += "..."
                         lines.append(f"   Descrição Original: {desc_snippet}")
 
+                    lines.append("")
+
+            # Implemented suggestions (opcional, se fornecido)
+            if implemented:
+                lines.append("")
+                lines.append("=" * 60)
+                lines.append(f"SUGESTÕES IMPLEMENTADAS: {len(implemented)}")
+                lines.append("=" * 60)
+                lines.append("")
+                for i, imp in enumerate(implemented, 1):
+                    sug_id = imp.get("id", f"IMP{i:02d}")
+                    title = imp.get("title", "N/A")
+                    category = imp.get("category", "N/A")
+                    lines.append(f"{i}. [{sug_id}] {title}")
+                    lines.append(f"   Categoria: {category}")
+                    if imp.get("description"):
+                        desc_snippet = imp["description"][:150]
+                        if len(imp["description"]) > 150:
+                            desc_snippet += "..."
+                        lines.append(f"   Descrição: {desc_snippet}")
                     lines.append("")
 
             return "\n".join(lines)
