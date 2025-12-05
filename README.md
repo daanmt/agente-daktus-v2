@@ -2,8 +2,8 @@
 
 > Sistema de validação e correção automatizada de protocolos clínicos usando IA
 
-**Versão Atual**: 3.0-beta  
-**Status**: Sistema de Aprendizado Contínuo Ativo  
+**Versão Atual**: 3.0.0  
+**Status**: Arquitetura Consolidada  
 **Última Atualização**: 2025-12-05
 
 ---
@@ -45,11 +45,11 @@ OPENROUTER_API_KEY=sk-or-v1-sua-chave-aqui
 ### 3. Executar
 
 ```bash
-# CLI Interativa V3 (recomendado)
-python run_v3_cli.py
+# CLI Interativa (recomendado)
+python run_agent.py
 
-# CLI Standard
-python run_qa_cli.py
+# Ajuda
+python run_agent.py --help
 ```
 
 ---
@@ -84,14 +84,15 @@ python run_qa_cli.py
 
 ```
 AgenteV2/
+├── run_agent.py            # Entry point unificado
 ├── src/
-│   ├── agent/              # Módulos principais
-│   │   ├── analysis/       # Análise expandida
-│   │   ├── feedback/       # Sistema de aprendizado
-│   │   ├── applicator/     # Reconstrução de protocolos
-│   │   └── cost_control/   # Controle de custos
-│   ├── agent_v3/           # CLI interativa avançada
-│   └── cli/                # CLI standard
+│   └── agent/              # Módulo principal unificado
+│       ├── analysis/       # Análise expandida
+│       ├── feedback/       # Sistema de aprendizado
+│       ├── applicator/     # Reconstrução de protocolos
+│       ├── cost_control/   # Controle de custos
+│       ├── cli/            # CLI interativa
+│       └── core/           # LLM client, logger, loaders
 ├── models_json/            # Protocolos e playbooks
 ├── reports/                # Relatórios gerados
 ├── memory_qa.md            # Memória de aprendizado

@@ -10,9 +10,10 @@ Componentes Principais:
 - applicator: Auto-apply de melhorias
 - feedback: Sistema de feedback e fine-tuning
 - cost_control: Controle de custos e autorização
+- cli: CLI interativa avançada
 """
 
-__version__ = "3.0.0-alpha"
+__version__ = "3.0.0"
 __author__ = "Daktus QA Team"
 
 # Core components
@@ -38,6 +39,9 @@ from .feedback import FeedbackCollector, MemoryQA
 # Cost control
 from .cost_control import CostEstimator
 
+# CLI
+from .cli import InteractiveCLI, DisplayManager, TaskManager
+
 __all__ = [
     # Core
     "LLMClient",
@@ -56,5 +60,9 @@ __all__ = [
     "MemoryQA",
     # Cost control
     "CostEstimator",
+    # CLI
+    "InteractiveCLI",
+    "DisplayManager",
+    "TaskManager",
 ]
 

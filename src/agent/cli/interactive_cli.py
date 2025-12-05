@@ -5,12 +5,9 @@ Responsabilidades:
 - Gerenciar estado da sessão (onboarding → análise → feedback → auto-apply)
 - Renderizar UI rica no terminal (progress bars, spinners, formatação)
 - Exibir "thinking" do sistema (o que está sendo feito e por quê)
-- Gerenciar tasks visíveis ao usuário (similar ao Claude Code)
+- Gerenciar tasks visíveis ao usuário
 - Capturar input do usuário de forma amigável
 
-INSPIRAÇÃO: Claude Code CLI - Transparência total, thinking visível, tasks organizadas
-
-Fase de Implementação: FASE 5 (Days 3-6)
 Status: ✅ IMPLEMENTADO (Core & Onboarding)
 """
 
@@ -33,7 +30,7 @@ env_file = current_dir / ".env"
 if env_file.exists():
     load_dotenv(env_file, override=True)
 
-# Import CLI components
+# Import CLI components (from same package)
 from .display_manager import DisplayManager
 from .task_manager import TaskManager, TaskStatus
 
@@ -45,15 +42,15 @@ except ImportError:
     QUESTIONARY_AVAILABLE = False
     questionary = None
 
-# Import agent components (optional, for later integration)
+# Import agent components
 try:
-    from agent.analysis.enhanced import EnhancedAnalyzer
-    from agent.analysis.standard import analyze as v2_analyze
-    from agent.core.logger import logger
-    from agent.core.protocol_loader import load_protocol, load_playbook
-    from agent.feedback import FeedbackCollector
-    from agent.feedback.memory_qa import MemoryQA
-    from agent.applicator import ProtocolReconstructor
+    from ..analysis.enhanced import EnhancedAnalyzer
+    from ..analysis.standard import analyze as v2_analyze
+    from ..core.logger import logger
+    from ..core.protocol_loader import load_protocol, load_playbook
+    from ..feedback import FeedbackCollector
+    from ..feedback.memory_qa import MemoryQA
+    from ..applicator import ProtocolReconstructor
     V3_AVAILABLE = True
 except ImportError:
     V3_AVAILABLE = False
@@ -96,7 +93,7 @@ class SessionState:
 
 class InteractiveCLI:
     """
-    CLI interativa inspirada no Claude Code.
+    CLI interativa para análise de protocolos clínicos.
 
     Características:
     - Onboarding amigável e guiado
@@ -440,12 +437,10 @@ class InteractiveCLI:
         try:
             # Task 1: Load protocol
             self.tasks.update_status("load_protocol", TaskStatus.IN_PROGRESS)
-            # Removido: show_thinking para reduzir spam
             if not load_protocol:
                 raise ImportError("load_protocol não disponível")
 
-            # CRITICAL FIX: Check for _EDITED version first (contains rejected_suggestions)
-            # This ensures learning from previous feedback cycles
+            # Check for _EDITED version first (contains rejected_suggestions)
             protocol_path_to_load = self.session_state.protocol_path
             edited_path = Path(str(protocol_path_to_load).replace('.json', '_EDITED.json'))
             if edited_path.exists():
@@ -461,7 +456,6 @@ class InteractiveCLI:
             playbook_content = ""
             if self.session_state.playbook_path:
                 self.tasks.update_status("load_playbook", TaskStatus.IN_PROGRESS)
-                # Removido: show_thinking para reduzir spam
                 if not load_playbook:
                     raise ImportError("load_playbook não disponível")
                 
@@ -474,7 +468,6 @@ class InteractiveCLI:
 
             # Task 3: Run analysis
             self.tasks.update_status("analyze", TaskStatus.IN_PROGRESS)
-            # Removido: show_thinking para reduzir spam
 
             if self.session_state.version == "V3" and V3_AVAILABLE and EnhancedAnalyzer:
                 # V3 Enhanced Analysis
@@ -703,7 +696,7 @@ class InteractiveCLI:
                             
                             self.display.show_success("Padrões adicionados ao memory_qa.md para refinar análises futuras!")
                             
-                            # PHASE 4: Atualizar relatório TXT usando função robusta com atomic operations
+                            # Atualizar relatório TXT usando função robusta com atomic operations
                             if report_path and report_path.exists():
                                 edited_path = report_path.parent / f"{report_path.stem}_EDITED{report_path.suffix}"
                                 txt_path = report_path.with_suffix('.txt')
@@ -774,8 +767,7 @@ class InteractiveCLI:
             return
 
         try:
-            # CRITICAL FIX: Preparar sugestões do relatório EDITADO (pós-feedback), não do original
-            # Se usuário deu feedback, devemos usar APENAS as sugestões marcadas como relevantes
+            # Preparar sugestões do relatório EDITADO (pós-feedback), não do original
             suggestions_for_reconstruction = None
 
             # Verificar se existe relatório editado (com feedback aplicado)
@@ -815,7 +807,7 @@ class InteractiveCLI:
             if not load_protocol:
                 raise ImportError("load_protocol não disponível")
 
-            # CRITICAL FIX: Check for _EDITED version first
+            # Check for _EDITED version first
             protocol_path_to_load = self.session_state.protocol_path
             edited_path = Path(str(protocol_path_to_load).replace('.json', '_EDITED.json'))
             if edited_path.exists():
@@ -825,7 +817,6 @@ class InteractiveCLI:
             protocol_json = load_protocol(protocol_path_to_load)
 
             # Reconstruir
-            # Removido: show_thinking para reduzir spam
             reconstructor = ProtocolReconstructor(model=self.session_state.model)
             reconstruction_result = reconstructor.reconstruct_protocol(
                 original_protocol=protocol_json,
@@ -835,7 +826,7 @@ class InteractiveCLI:
 
             if reconstruction_result:
                 # Salvar protocolo reconstruído
-                from agent.applicator.version_utils import (
+                from ..applicator.version_utils import (
                     generate_output_filename,
                     update_protocol_version
                 )
@@ -885,7 +876,7 @@ class InteractiveCLI:
     def _save_reports(self, result: Dict) -> None:
         """Salva relatórios JSON e texto."""
         try:
-            from agent.applicator.version_utils import generate_daktus_timestamp
+            from ..applicator.version_utils import generate_daktus_timestamp
             import json
 
             protocol_name = Path(self.session_state.protocol_path).stem
@@ -989,7 +980,7 @@ class InteractiveCLI:
     def _save_feedback_to_memory_qa(self, feedback_session: Any) -> None:
         """Salva feedback no memory_qa.md (sistema simples de memória)."""
         try:
-            from agent.feedback.memory_qa import MemoryQA
+            from ..feedback.memory_qa import MemoryQA
             
             memory_qa = MemoryQA()
             
@@ -1044,3 +1035,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

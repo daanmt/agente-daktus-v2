@@ -1,7 +1,7 @@
 """
-Agent V3 - CLI Module
+Agente Daktus | QA - CLI Module
 
-CLI interativa inspirada no Claude Code com UX excepcional.
+CLI interativa com UX rica para análise de protocolos clínicos.
 
 Módulos:
     - interactive_cli: Motor principal da CLI
@@ -10,7 +10,7 @@ Módulos:
 """
 
 from .interactive_cli import InteractiveCLI, SessionState
-from .task_manager import TaskManager, Task
+from .task_manager import TaskManager, Task, TaskStatus
 from .display_manager import DisplayManager
 
 __all__ = [
@@ -18,5 +18,7 @@ __all__ = [
     "SessionState",
     "TaskManager",
     "Task",
+    "TaskStatus",
     "DisplayManager"
 ]
+

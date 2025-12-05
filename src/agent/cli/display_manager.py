@@ -9,7 +9,6 @@ Responsabilidades:
 
 Usa biblioteca 'rich' para UI rica no terminal.
 
-Fase de Implementação: FASE 5 (Day 1-1.5)
 Status: ✅ IMPLEMENTADO
 """
 
@@ -470,3 +469,4 @@ class DisplayManager:
             print("-" * 60)
             for key, value in items.items():
                 print(f"{key}: {value}")
+

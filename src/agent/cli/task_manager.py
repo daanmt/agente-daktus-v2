@@ -6,9 +6,6 @@ Responsabilidades:
 - Atualizar status de tasks em tempo real
 - Exibir lista de tasks (pending, in_progress, completed)
 
-Inspiração: Claude Code - Tasks sempre visíveis durante execução
-
-Fase de Implementação: FASE 5 (Day 2)
 Status: ✅ IMPLEMENTADO
 """
 
@@ -304,3 +301,4 @@ class TaskManager:
             t.status in (TaskStatus.COMPLETED, TaskStatus.FAILED)
             for t in self.tasks
         )
+
