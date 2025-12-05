@@ -528,69 +528,171 @@ CRITICAL OUTPUT REQUIREMENTS:
         """
         Constrói instruções LLM a partir dos filtros ativos.
 
-        Traduz padrões de feedback em instruções acionáveis para o LLM.
+        CRITICAL: Traduz padrões de feedback em instruções CLARAS e ACIONÁVEIS para o LLM.
 
         Args:
             active_filters: Filtros ativos do memory_qa
 
         Returns:
-            String com instruções formatadas ou vazia se sem filtros
+            String com instruções formatadas
         """
-        if not active_filters or active_filters["priority_threshold"] == "baixa":
-            return ""
-
         instructions = []
-        instructions.append("CRITICAL FILTERS (Based on User Feedback Patterns):")
+        instructions.append("=" * 60)
+        instructions.append("⚠️  CRITICAL LEARNING FILTERS (FROM USER FEEDBACK)")
+        instructions.append("=" * 60)
+        instructions.append("")
+        instructions.append("The following rules were derived from EXPLICIT user rejection patterns.")
+        instructions.append("VIOLATING these rules will result in suggestion rejection.")
         instructions.append("")
 
+        rule_number = 1
+
         # Filtro de prioridade
-        if active_filters["priority_threshold"] != "baixa":
+        if active_filters.get("priority_threshold", "baixa") != "baixa":
             threshold_map = {"media": "MÉDIA", "alta": "ALTA"}
             threshold_upper = threshold_map.get(active_filters["priority_threshold"], "MÉDIA")
-
             instructions.append(
-                f"1. PRIORITY FILTER: Generate ONLY {threshold_upper} and ALTA priority suggestions. "
-                f"DO NOT generate BAIXA priority suggestions (user has consistently rejected these in feedback)."
+                f"{rule_number}. 🎯 PRIORITY FILTER: Generate ONLY {threshold_upper} and ALTA priority suggestions. "
+                f"DO NOT generate BAIXA priority suggestions."
             )
+            rule_number += 1
 
         # Filtros de categoria
         blocked_categories = [
-            cat for cat, enabled in active_filters["category_filters"].items()
+            cat for cat, enabled in active_filters.get("category_filters", {}).items()
             if not enabled
         ]
         if blocked_categories:
             cats_str = ", ".join(blocked_categories)
             instructions.append(
-                f"2. CATEGORY FILTER: MINIMIZE or AVOID suggestions in these categories: {cats_str} "
-                f"(user has frequently rejected these categories in feedback)."
+                f"{rule_number}. 🚫 CATEGORY FILTER: AVOID suggestions in: {cats_str}"
             )
+            rule_number += 1
+
+        # Regras baseadas em padrões (EXPANDIDO)
+        pattern_rules = active_filters.get("pattern_rules", [])
+        if pattern_rules:
+            instructions.append("")
+            instructions.append(f"{rule_number}. 📋 LEARNED REJECTION PATTERNS:")
+            instructions.append("")
+            
+            for rule in pattern_rules:
+                rule_type = rule.get("rule", "unknown")
+                action = rule.get("action", "")
+                reason = rule.get("reason", "")
+                blocked_phrases = rule.get("blocked_phrases", [])
+                
+                # Gerar instrução específica por tipo de regra
+                if rule_type == "medical_autonomy":
+                    instructions.append(
+                        "   ❌ AUTONOMIA MÉDICA: NÃO sugerir restrições à decisão clínica do médico."
+                    )
+                    instructions.append(
+                        "      • NÃO usar: 'priorizar X sobre Y', 'condicionar prescrição', 'substituir por'"
+                    )
+                    instructions.append(
+                        "      • O médico deve ter LIBERDADE de escolha entre opções válidas"
+                    )
+                    instructions.append("")
+                    
+                elif rule_type == "playbook_strict":
+                    instructions.append(
+                        "   ❌ PLAYBOOK COMO LIMITE: NÃO sugerir exames/medicamentos/procedimentos fora do playbook."
+                    )
+                    instructions.append(
+                        "      • Se não está explicitamente no playbook, NÃO sugerir"
+                    )
+                    instructions.append(
+                        "      • NÃO usar: 'adicionar exame X', 'incluir medicamento Y'"
+                    )
+                    instructions.append("")
+                    
+                elif rule_type == "existing_logic":
+                    instructions.append(
+                        "   ❌ LÓGICA FUNCIONAL: NÃO sugerir mudanças em lógica que já funciona corretamente."
+                    )
+                    instructions.append(
+                        "      • Condicionais existentes geralmente estão corretas"
+                    )
+                    instructions.append(
+                        "      • 'exclusive' e 'preselected' já funcionam - não otimizar"
+                    )
+                    instructions.append("")
+                    
+                elif rule_type == "complexity_filter":
+                    instructions.append(
+                        "   ❌ COMPLEXIDADE: NÃO adicionar etapas/perguntas que aumentam tempo sem retorno."
+                    )
+                    instructions.append(
+                        "      • Preferir SIMPLICIDADE sobre completude"
+                    )
+                    instructions.append(
+                        "      • Cada pergunta adicional = mais tempo de atendimento"
+                    )
+                    instructions.append("")
+                    
+                elif rule_type == "tech_restriction":
+                    instructions.append(
+                        "   ❌ RESTRIÇÃO TÉCNICA: NÃO sugerir funcionalidades não disponíveis no sistema."
+                    )
+                    instructions.append(
+                        "      • Tooltips, funções customizadas = NÃO DISPONÍVEIS"
+                    )
+                    instructions.append("")
+                    
+                elif rule_type == "context_scope":
+                    instructions.append(
+                        "   ❌ CONTEXTO AMBULATORIAL: Foco nos 99% de casos comuns, não em corner cases."
+                    )
+                    instructions.append(
+                        "      • NÃO sugerir investigação de emergências/neoplasias"
+                    )
+                    instructions.append(
+                        "      • Desfechos raros são tratados pelo especialista"
+                    )
+                    instructions.append("")
+                    
+                elif rule_type == "priority_filter":
+                    # Já coberto acima
+                    pass
+                    
+                else:
+                    # Regra genérica
+                    if blocked_phrases:
+                        phrases_str = ", ".join(f'"{p}"' for p in blocked_phrases[:3])
+                        instructions.append(f"   ❌ {action}: Evitar {phrases_str}")
+                        instructions.append(f"      Motivo: {reason}")
+                        instructions.append("")
+
+            rule_number += 1
 
         # Keyword blocklist
-        if active_filters["keyword_blocklist"]:
-            keywords = ", ".join(f'"{kw}"' for kw in active_filters["keyword_blocklist"][:5])
+        keyword_blocklist = active_filters.get("keyword_blocklist", [])
+        if keyword_blocklist:
+            keywords = ", ".join(f'"{kw}"' for kw in keyword_blocklist[:8])
             instructions.append(
-                f"3. KEYWORD FILTER: AVOID suggestions containing these rejection indicators: {keywords}"
+                f"{rule_number}. 🔍 KEYWORDS TO AVOID: {keywords}"
             )
-
-        # Regras baseadas em padrões
-        if active_filters["pattern_rules"]:
-            instructions.append(f"4. PATTERN-BASED RULES:")
-            for i, rule in enumerate(active_filters["pattern_rules"][:5], 1):
-                action = rule.get("action", "unknown")
-                reason = rule.get("reason", "")
-                instructions.append(f"   {i}. {action}: {reason}")
+            rule_number += 1
 
         # Indicador de força
-        if active_filters["rule_strength"] == "hard":
+        if active_filters.get("rule_strength") == "hard":
             instructions.append("")
+            instructions.append("=" * 60)
             instructions.append(
-                "⚠️  HARD FILTERS ACTIVE: Violating these filters will likely result in suggestion rejection. "
-                "Follow these rules strictly to improve suggestion quality."
+                "⚠️  HARD FILTERS ACTIVE: These rules are MANDATORY."
             )
+            instructions.append(
+                "Suggestions violating these patterns WILL BE REJECTED by the user."
+            )
+            instructions.append("=" * 60)
+
+        # Se não há regras, ainda assim informar
+        if rule_number == 1:
+            instructions.append("No active filters from previous feedback.")
+            instructions.append("Generate suggestions based on playbook content only.")
 
         instructions.append("")
-        instructions.append("These filters are derived from previous user feedback to improve suggestion relevance.")
-
         return "\n".join(instructions)
 
     def _apply_post_filters(
@@ -601,7 +703,8 @@ CRITICAL OUTPUT REQUIREMENTS:
         """
         Aplica filtros pós-geração como rede de segurança.
 
-        Captura sugestões que o LLM gerou apesar das instruções de filtro.
+        CRITICAL: Esta função é a última linha de defesa contra sugestões
+        que violam os padrões de feedback aprendidos.
 
         Args:
             suggestions: Lista de sugestões geradas
@@ -616,68 +719,130 @@ CRITICAL OUTPUT REQUIREMENTS:
         filtered = []
         removed = []
 
+        # Extrair blocked_phrases de todas as regras de padrão
+        all_blocked_phrases = []
+        for rule in active_filters.get("pattern_rules", []):
+            phrases = rule.get("blocked_phrases", [])
+            all_blocked_phrases.extend(phrases)
+
         for sug in suggestions:
             should_keep = True
             removal_reason = None
 
+            # Texto completo para verificação
+            text_to_check = f"{sug.title} {sug.description} {sug.rationale}".lower()
+
             # Filtro 1: Priority threshold
-            if active_filters["priority_threshold"] == "media":
+            if active_filters.get("priority_threshold") == "media":
                 if sug.priority.lower() in ("baixa", "low"):
                     should_keep = False
                     removal_reason = f"Priority filter (threshold: media, got: {sug.priority})"
 
             # Filtro 2: Category filters
-            if should_keep and sug.category in active_filters["category_filters"]:
+            if should_keep and sug.category in active_filters.get("category_filters", {}):
                 if not active_filters["category_filters"][sug.category]:
                     should_keep = False
                     removal_reason = f"Category filter (blocked: {sug.category})"
 
             # Filtro 3: Keyword blocklist
-            if should_keep and active_filters["keyword_blocklist"]:
-                text_to_check = f"{sug.title} {sug.description}".lower()
+            if should_keep and active_filters.get("keyword_blocklist"):
                 for keyword in active_filters["keyword_blocklist"]:
                     if keyword.lower() in text_to_check:
                         should_keep = False
                         removal_reason = f"Keyword filter (blocked: {keyword})"
                         break
 
-            # Filtro 4: Pattern-based rules (context validation)
+            # Filtro 4: Blocked phrases from pattern rules
+            if should_keep and all_blocked_phrases:
+                for phrase in all_blocked_phrases:
+                    if phrase.lower() in text_to_check:
+                        should_keep = False
+                        removal_reason = f"Pattern rule blocked phrase: '{phrase}'"
+                        break
+
+            # Filtro 5: Pattern-based rules específicas
             if should_keep:
-                for rule in active_filters["pattern_rules"]:
-                    if rule["rule"] == "context_validation":
+                for rule in active_filters.get("pattern_rules", []):
+                    rule_type = rule.get("rule")
+                    
+                    # Context validation
+                    if rule_type == "context_validation":
                         min_length = rule.get("min_length", 50)
                         if len(sug.rationale) < min_length:
                             should_keep = False
                             removal_reason = f"Context validation (rationale too short: {len(sug.rationale)} < {min_length})"
                             break
+                    
+                    # Medical autonomy - detectar restrições à autonomia médica
+                    if rule_type == "medical_autonomy" and should_keep:
+                        autonomy_patterns = [
+                            "priorizar", "deve ser preferido", "substituir por",
+                            "ao invés de", "sempre usar", "nunca prescrever",
+                            "obrigatoriamente", "condicionar prescrição"
+                        ]
+                        if any(p in text_to_check for p in autonomy_patterns):
+                            should_keep = False
+                            removal_reason = f"Medical autonomy: suggestion restricts clinical decision"
+                            break
+                    
+                    # Playbook strict - detectar sugestões fora do playbook
+                    if rule_type == "playbook_strict" and should_keep:
+                        out_of_playbook_patterns = [
+                            "adicionar exame", "incluir medicamento", "novo procedimento",
+                            "introduzir", "acrescentar tratamento", "não mencionado no playbook"
+                        ]
+                        if any(p in text_to_check for p in out_of_playbook_patterns):
+                            should_keep = False
+                            removal_reason = f"Playbook strict: suggests content outside playbook"
+                            break
+                    
+                    # Existing logic - detectar tentativas de mudar lógica funcional
+                    if rule_type == "existing_logic" and should_keep:
+                        existing_logic_patterns = [
+                            "otimizar condicional", "refinar condição", "ajustar lógica",
+                            "modificar exclusive", "alterar preselected"
+                        ]
+                        if any(p in text_to_check for p in existing_logic_patterns):
+                            should_keep = False
+                            removal_reason = f"Existing logic: suggests changing working logic"
+                            break
+                    
+                    # Complexity filter - detectar complexidade desnecessária
+                    if rule_type == "complexity_filter" and should_keep:
+                        complexity_patterns = [
+                            "adicionar pergunta", "nova etapa", "verificação adicional",
+                            "campo extra", "validação complementar"
+                        ]
+                        if any(p in text_to_check for p in complexity_patterns):
+                            # Apenas bloquear se for baixa prioridade
+                            if sug.priority.lower() in ("baixa", "low"):
+                                should_keep = False
+                                removal_reason = f"Complexity filter: low-priority suggestion adds complexity"
+                                break
 
-            # Filtro 5: Semantic pattern matching (CRITICAL FIX for Issue #2)
-            # Detects rejection patterns beyond exact keywords
+            # Filtro 6: Semantic pattern matching (padrões detectados automaticamente)
             if should_keep:
-                text_to_check = f"{sug.title} {sug.description} {sug.rationale}".lower()
-
                 # Pattern: Invasão da Autonomia Médica
                 autonomy_invasion_patterns = ["priorizar", "deve ser", "preferir", "em vez de", "substituir por", "ao invés de"]
                 if any(pattern in text_to_check for pattern in autonomy_invasion_patterns):
-                    # Check if it's actually restricting medical autonomy
                     restrictive_terms = ["sempre", "obrigatório", "nunca", "proibido", "não pode"]
                     if any(term in text_to_check for term in restrictive_terms):
                         should_keep = False
-                        removal_reason = f"Semantic pattern: autonomy_invasion (detected restrictive medical guidance)"
+                        removal_reason = f"Semantic: autonomy_invasion (restrictive medical guidance)"
 
-                # Pattern: Out of scope (adding content not in playbook)
+                # Pattern: Out of scope
                 if should_keep:
-                    out_of_scope_patterns = ["introduzir", "adicionar medicamento", "incluir novo", "criar opção", "não está no playbook", "não mencionado"]
+                    out_of_scope_patterns = ["introduzir", "adicionar medicamento", "incluir novo", "criar opção", "não está no playbook"]
                     if any(pattern in text_to_check for pattern in out_of_scope_patterns):
                         should_keep = False
-                        removal_reason = f"Semantic pattern: out_of_scope (suggests adding content not in playbook)"
+                        removal_reason = f"Semantic: out_of_scope (content outside playbook)"
 
                 # Pattern: Already implemented
                 if should_keep:
                     already_implemented_patterns = ["já existe", "já implementado", "já tem", "já está", "já contempla"]
                     if any(pattern in text_to_check for pattern in already_implemented_patterns):
                         should_keep = False
-                        removal_reason = f"Semantic pattern: already_implemented (suggests feature already exists)"
+                        removal_reason = f"Semantic: already_implemented"
 
             if should_keep:
                 filtered.append(sug)
@@ -685,21 +850,30 @@ CRITICAL OUTPUT REQUIREMENTS:
                 removed.append({"suggestion": sug, "reason": removal_reason})
                 logger.info(f"Post-filter removed: {sug.id} - {removal_reason}")
 
-        # Safety check: se filtrou demais, relaxar filtros
+        # Safety check: se filtrou demais, relaxar filtros (mas manter os críticos)
         if len(filtered) < 5 and len(suggestions) >= 5:
             logger.warning(
                 f"Post-filtering resulted in only {len(filtered)} suggestions (started with {len(suggestions)}). "
-                f"This might be too aggressive. Applying relaxed filters..."
+                f"Applying relaxed filters..."
             )
 
-            # Relaxar: apenas aplicar filtros HARD (prioridade e categoria)
+            # Relaxar: apenas aplicar filtros CRÍTICOS
             filtered = []
             for sug in suggestions:
                 should_keep = True
+                text_to_check = f"{sug.title} {sug.description} {sug.rationale}".lower()
 
-                # Apenas filtro de prioridade se strength == "hard"
-                if active_filters["rule_strength"] == "hard":
-                    if active_filters["priority_threshold"] == "media":
+                # Manter apenas filtro de playbook strict (crítico)
+                out_of_playbook = any(p in text_to_check for p in [
+                    "adicionar exame", "incluir medicamento", "novo procedimento",
+                    "não mencionado no playbook"
+                ])
+                if out_of_playbook:
+                    should_keep = False
+
+                # Manter filtro de prioridade se strength == "hard"
+                if should_keep and active_filters.get("rule_strength") == "hard":
+                    if active_filters.get("priority_threshold") == "media":
                         if sug.priority.lower() in ("baixa", "low"):
                             should_keep = False
 
@@ -718,11 +892,10 @@ CRITICAL OUTPUT REQUIREMENTS:
         if removed:
             logger.warning(
                 f"Post-filtering removed {len(removed)} suggestions. "
-                f"This indicates LLM didn't follow filter instructions completely."
+                f"LLM didn't follow filter instructions completely."
             )
-            # Log primeiras 3 remoções para análise
-            for item in removed[:3]:
-                logger.debug(f"  - {item['suggestion'].id}: {item['reason']}")
+            for item in removed[:5]:
+                logger.info(f"  - {item['suggestion'].id}: {item['reason']}")
 
         return filtered
 

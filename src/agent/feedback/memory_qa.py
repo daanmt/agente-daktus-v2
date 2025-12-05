@@ -140,11 +140,13 @@ Antes de cada análise, o agente revisa este documento para entender:
         """
         Retorna o conteúdo do memory_qa.md para inclusão no prompt.
         
+        CRITICAL: Esta função prioriza APRENDIZADOS e PADRÕES sobre feedback bruto.
+        
         Args:
             max_length: Tamanho máximo do conteúdo (para não exceder tokens)
         
         Returns:
-            Conteúdo do memory_qa.md (limitado se necessário)
+            Conteúdo estruturado com foco em aprendizados
         """
         if not self.memory_file.exists():
             return "Nenhum feedback histórico disponível."
@@ -153,17 +155,87 @@ Antes de cada análise, o agente revisa este documento para entender:
             with open(self.memory_file, 'r', encoding='utf-8') as f:
                 content = f.read()
             
-            # Se o conteúdo for muito longo, pegar apenas as seções mais recentes
-            if len(content) > max_length:
-                # Dividir por seções (---)
-                sections = content.split('\n---\n')
-                # Manter a introdução e as últimas seções
-                intro = sections[0] if sections else ""
-                recent_sections = sections[-3:] if len(sections) > 1 else []
-                content = intro + '\n---\n' + '\n---\n'.join(recent_sections)
-                content += "\n\n*(Conteúdo truncado - apenas feedbacks mais recentes)*"
+            # Estratégia: Priorizar APRENDIZADOS > INSIGHTS > FEEDBACK recente
+            output_parts = []
             
-            return content
+            # 1. Extrair todos os Aprendizados (### Padrão:)
+            learnings = []
+            lines = content.split('\n')
+            current_learning = []
+            in_learning = False
+            
+            for line in lines:
+                if line.startswith("### Padrão:"):
+                    if current_learning:
+                        learnings.append('\n'.join(current_learning))
+                    current_learning = [line]
+                    in_learning = True
+                elif in_learning:
+                    if line.startswith("---") or line.startswith("## "):
+                        learnings.append('\n'.join(current_learning))
+                        current_learning = []
+                        in_learning = False
+                    else:
+                        current_learning.append(line)
+            
+            if current_learning:
+                learnings.append('\n'.join(current_learning))
+            
+            # 2. Extrair Insights LLM (mais recentes - últimos 3)
+            insights = []
+            insight_blocks = content.split("## Insight LLM")
+            for block in insight_blocks[1:]:  # Skip first (before any insight)
+                end_idx = block.find("---")
+                if end_idx > 0:
+                    insights.append("## Insight LLM" + block[:end_idx].strip())
+            
+            # 3. Construir output priorizado
+            output_parts.append("# APRENDIZADOS DO FEEDBACK (CRÍTICO - LER ANTES DE GERAR SUGESTÕES)")
+            output_parts.append("")
+            output_parts.append("Os padrões abaixo foram identificados em feedback de usuários anteriores.")
+            output_parts.append("VOCÊ DEVE EVITAR sugestões que se enquadrem nesses padrões de rejeição.")
+            output_parts.append("")
+            
+            # Adicionar aprendizados (priorizando os mais frequentes/severos)
+            if learnings:
+                output_parts.append("## PADRÕES DE REJEIÇÃO IDENTIFICADOS")
+                output_parts.append("")
+                
+                # Pegar aprendizados únicos (deduplica por nome)
+                seen_patterns = set()
+                unique_learnings = []
+                for learning in learnings:
+                    # Extrair nome do padrão
+                    first_line = learning.split('\n')[0]
+                    pattern_name = first_line.replace("### Padrão:", "").strip()
+                    if pattern_name not in seen_patterns:
+                        seen_patterns.add(pattern_name)
+                        unique_learnings.append(learning)
+                
+                # Limitar a 10 padrões mais recentes
+                for learning in unique_learnings[-10:]:
+                    output_parts.append(learning)
+                    output_parts.append("")
+            
+            # Adicionar insights mais recentes (últimos 2)
+            if insights:
+                output_parts.append("## INSIGHTS DE ANÁLISES ANTERIORES")
+                output_parts.append("")
+                for insight in insights[-2:]:
+                    # Extrair apenas as recomendações
+                    if "**Recomendações:**" in insight:
+                        rec_start = insight.find("**Recomendações:**")
+                        output_parts.append(insight[rec_start:])
+                        output_parts.append("")
+            
+            result = '\n'.join(output_parts)
+            
+            # Truncar se ainda muito longo
+            if len(result) > max_length:
+                result = result[:max_length] + "\n\n*(Conteúdo truncado)*"
+            
+            return result
+            
         except Exception as e:
             logger.error(f"Error reading memory_qa.md: {e}")
             return "Erro ao carregar feedback histórico."
@@ -310,17 +382,29 @@ Antes de cada análise, o agente revisa este documento para entender:
         """
         Aplica regras de filtragem específicas baseadas no tipo de padrão.
 
+        CRITICAL: Esta função foi expandida para detectar padrões REAIS do feedback,
+        não apenas palavras-chave genéricas.
+
         Args:
-            pattern: Padrão identificado com name, frequency, severity
+            pattern: Padrão identificado com name, frequency, severity, description
             filters: Dict de filtros a ser modificado
         """
         pattern_name = pattern["name"].lower()
+        pattern_desc = pattern.get("description", "").lower()
         freq = pattern["frequency"]
         severity = pattern["severity"]
 
+        # ====================================================================
+        # PADRÕES CRÍTICOS DETECTADOS DO FEEDBACK REAL
+        # ====================================================================
+
         # Regra 1: Low priority rejection → aumentar threshold
-        if "low_priority" in pattern_name or "baixa prioridade" in pattern_name or "baixa_prioridade" in pattern_name:
-            if freq >= 5 and severity == "alta":
+        low_priority_keywords = [
+            "low_priority", "baixa prioridade", "baixa_prioridade",
+            "baixo impacto", "baixo retorno", "pouco valor"
+        ]
+        if any(kw in pattern_name or kw in pattern_desc for kw in low_priority_keywords):
+            if freq >= 2 or severity == "alta":
                 filters["priority_threshold"] = "media"
                 filters["pattern_rules"].append({
                     "rule": "priority_filter",
@@ -330,23 +414,104 @@ Antes de cada análise, o agente revisa este documento para entender:
                 })
                 logger.info(f"Activated priority filter: blocking 'baixa' priority (pattern: {pattern['name']})")
 
-        # Regra 2: Category rejection → desabilitar categoria
-        if "category_rejection" in pattern_name or "rejeição_categoria" in pattern_name:
-            # Extrair categoria do nome do padrão (ex: "category_rejection_economia" → "economia")
-            parts = pattern_name.replace("rejeição_categoria_", "category_rejection_").split("_")
-            if len(parts) >= 3:
-                category = parts[-1]
-                if category in filters["category_filters"]:
-                    filters["category_filters"][category] = False
-                    filters["pattern_rules"].append({
-                        "rule": "category_filter",
-                        "action": f"block_{category}",
-                        "reason": f"Pattern '{pattern['name']}' (freq={freq})",
-                        "pattern": pattern["name"]
-                    })
-                    logger.info(f"Activated category filter: blocking '{category}' (pattern: {pattern['name']})")
+        # Regra 2: Autonomia Médica - NÃO restringir decisões clínicas
+        autonomy_keywords = [
+            "autonomia médica", "autonomia do médico", "invasão", "autonomia",
+            "critério médico", "decisão clínica", "julgamento médico",
+            "médico deve ter a opção", "priorizar", "condicionar"
+        ]
+        if any(kw in pattern_name or kw in pattern_desc for kw in autonomy_keywords):
+            filters["pattern_rules"].append({
+                "rule": "medical_autonomy",
+                "action": "avoid_restricting_clinical_decisions",
+                "reason": f"Pattern '{pattern['name']}' - Não restringir autonomia médica",
+                "pattern": pattern["name"],
+                "blocked_phrases": ["priorizar", "condicionar prescrição", "substituir por", "em vez de"]
+            })
+            logger.info(f"Activated medical autonomy rule (pattern: {pattern['name']})")
 
-        # Regra 3: Redundancy → adicionar regra de deduplicação
+        # Regra 3: Fora do Playbook - NÃO sugerir conteúdo fora do playbook
+        playbook_keywords = [
+            "fora do playbook", "não está no playbook", "fora do escopo",
+            "playbook/protocolo", "adesão estrita", "não coberto",
+            "exames fora", "medicamentos fora", "terapêutica fora"
+        ]
+        if any(kw in pattern_name or kw in pattern_desc for kw in playbook_keywords):
+            filters["pattern_rules"].append({
+                "rule": "playbook_strict",
+                "action": "only_suggest_playbook_content",
+                "reason": f"Pattern '{pattern['name']}' - Apenas conteúdo do playbook",
+                "pattern": pattern["name"],
+                "blocked_phrases": ["adicionar exame", "incluir medicamento", "introduzir terapêutica"]
+            })
+            logger.info(f"Activated playbook strict rule (pattern: {pattern['name']})")
+
+        # Regra 4: Lógica Existente Funciona - NÃO mexer no que funciona
+        existing_logic_keywords = [
+            "lógica existente", "já implementado", "funciona corretamente",
+            "já está correto", "condicional funcional", "exclusive funciona",
+            "otimização de lógica existente"
+        ]
+        if any(kw in pattern_name or kw in pattern_desc for kw in existing_logic_keywords):
+            filters["pattern_rules"].append({
+                "rule": "existing_logic",
+                "action": "avoid_changing_working_logic",
+                "reason": f"Pattern '{pattern['name']}' - Não alterar lógica funcional",
+                "pattern": pattern["name"],
+                "blocked_phrases": ["otimizar condicional", "refinar condição", "ajustar lógica"]
+            })
+            logger.info(f"Activated existing logic rule (pattern: {pattern['name']})")
+
+        # Regra 5: Complexidade vs Retorno - Evitar complexidade desnecessária
+        complexity_keywords = [
+            "complexidade", "baixo retorno", "aumenta complexidade",
+            "desnecessário", "tempo de atendimento", "over-engineering"
+        ]
+        if any(kw in pattern_name or kw in pattern_desc for kw in complexity_keywords):
+            filters["pattern_rules"].append({
+                "rule": "complexity_filter",
+                "action": "avoid_unnecessary_complexity",
+                "reason": f"Pattern '{pattern['name']}' - Evitar complexidade",
+                "pattern": pattern["name"],
+                "blocked_phrases": ["adicionar pergunta", "nova etapa", "verificação adicional"]
+            })
+            logger.info(f"Activated complexity filter rule (pattern: {pattern['name']})")
+
+        # Regra 6: Restrições Tecnológicas - NÃO sugerir o que não é possível
+        tech_restriction_keywords = [
+            "restrição tecnológica", "daktus studio", "não temos essa funcionalidade",
+            "fora da autonomia", "não podemos criar", "funcionalidade não disponível"
+        ]
+        if any(kw in pattern_name or kw in pattern_desc for kw in tech_restriction_keywords):
+            filters["pattern_rules"].append({
+                "rule": "tech_restriction",
+                "action": "avoid_unsupported_features",
+                "reason": f"Pattern '{pattern['name']}' - Restrição tecnológica",
+                "pattern": pattern["name"],
+                "blocked_phrases": ["tooltip", "função customizada", "nova funcionalidade"]
+            })
+            logger.info(f"Activated tech restriction rule (pattern: {pattern['name']})")
+
+        # Regra 7: Contexto Ambulatorial - Foco em casos comuns
+        context_keywords = [
+            "contexto do protocolo", "fora do contexto", "ambulatorial",
+            "desfecho raro", "corner case", "99% dos casos"
+        ]
+        if any(kw in pattern_name or kw in pattern_desc for kw in context_keywords):
+            filters["pattern_rules"].append({
+                "rule": "context_scope",
+                "action": "focus_on_common_cases",
+                "reason": f"Pattern '{pattern['name']}' - Focar em casos comuns",
+                "pattern": pattern["name"],
+                "blocked_phrases": ["caso raro", "neoplasia", "emergência"]
+            })
+            logger.info(f"Activated context scope rule (pattern: {pattern['name']})")
+
+        # ====================================================================
+        # PADRÕES GENÉRICOS (mantidos para compatibilidade)
+        # ====================================================================
+
+        # Regra genérica de redundância
         if "redundant" in pattern_name or "redundância" in pattern_name or "redundante" in pattern_name:
             filters["pattern_rules"].append({
                 "rule": "deduplication",
@@ -357,7 +522,7 @@ Antes de cada análise, o agente revisa este documento para entender:
             })
             logger.info(f"Activated deduplication rule (pattern: {pattern['name']})")
 
-        # Regra 4: Missing context → adicionar requisito de contexto
+        # Regra genérica de contexto faltante
         if "missing_context" in pattern_name or "falta_contexto" in pattern_name or "falta contexto" in pattern_name:
             filters["pattern_rules"].append({
                 "rule": "context_validation",
