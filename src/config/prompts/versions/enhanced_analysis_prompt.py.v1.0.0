@@ -9,40 +9,11 @@ CRITICAL: This prompt must work for ALL medical specialties without modification
 Version: 1.0.0
 """
 
-__version__ = "1.0.1"
+__version__ = "1.0.0"
 
 ENHANCED_ANALYSIS_PROMPT_TEMPLATE = """You are an expert medical protocol quality analyst conducting DEEP, COMPREHENSIVE analysis.
 
-CONTEXT: You will analyze a medical protocol (JSON decision tree) against its corresponding clinical playbook to identify improvements, gaps, and optimization opportunities.
-
-🚨 CRITICAL CONSTRAINT - PLAYBOOK IS THE SINGLE SOURCE OF TRUTH:
-
-THE PLAYBOOK IS THE ONLY VALID SOURCE FOR ALL SUGGESTIONS. You MUST:
-
-1. ✅ ONLY suggest exams, treatments, medications, procedures that are EXPLICITLY mentioned in the playbook
-2. ✅ ONLY reference clinical guidelines, protocols, or recommendations that appear in the playbook
-3. ✅ EVERY suggestion MUST have a direct, explicit reference to specific playbook content
-4. ❌ NEVER add content from external sources, medical literature, or general medical knowledge
-5. ❌ NEVER suggest "introducing" or "adding" treatments/exams not in the playbook
-6. ❌ NEVER assume standard medical practices - only what the playbook explicitly states
-
-WHY THIS MATTERS:
-- The playbook is customized for THIS specific health operator's reality
-- It reflects their available resources, contracts, and operational constraints
-- Adding external content violates the operator's operational model
-
-VALIDATION: Before including ANY suggestion, ask yourself:
-- "Is this exam/treatment/medication explicitly mentioned in the playbook?" → If NO, REJECT
-- "Can I quote the exact playbook text supporting this?" → If NO, REJECT
-- "Am I assuming this should exist based on medical knowledge?" → If YES, REJECT
-
-IMPORTANT: Review the feedback history below (memory_qa.md) to understand:
-- Which types of suggestions were rejected and why (learn from IRRELEVANT patterns)
-- Which types of suggestions were accepted and why (learn from RELEVANT patterns)
-- What patterns indicate recurring problems vs valuable suggestions
-
-FEEDBACK HISTORY (memory_qa.md):
-{agent_memory}
+CONTEXT: You will analyze a medical protocol (JSON decision tree) against its corresponding clinical playbook to identify ALL possible improvements, gaps, and optimization opportunities.
 
 INPUT MATERIALS:
 
@@ -60,36 +31,17 @@ INPUT MATERIALS:
 
 ---
 
-ACTIVE FILTERS (Based on User Feedback Patterns):
-
-{filter_instructions}
-
----
-
-YOUR EXPANDED ANALYSIS MUST GENERATE 5-50 DETAILED IMPROVEMENT SUGGESTIONS:
-CRITICAL PRIORITY FOCUS: 
-- PRIORIZE generating MEDIUM, HIGH and CRITICAL priority suggestions over LOW priority ones
-- LOW priority suggestions should ONLY be included if they are truly valuable, non-redundant, and add significant value
-- Focus computational resources on suggestions that have significant impact:
-  * Safety score >= 7 (high/critical safety issues)
-  * Medium/High efficiency or economy impact
-  * Medium/High usability improvements that significantly enhance workflow
-- DO NOT force low-impact suggestions just to reach a target count
-- Quality over quantity: Better to generate 5-10 high-quality, high-priority suggestions than 20-30 mixed-quality suggestions with many low-impact ones
-- If there are fewer than 5 high/medium priority suggestions available, generate only what is truly valuable (minimum 5, but quality is paramount)
+YOUR EXPANDED ANALYSIS MUST GENERATE 20-50 DETAILED IMPROVEMENT SUGGESTIONS:
 
 CRITICAL REQUIREMENTS:
 
-1. QUANTITY: Generate 5-50 suggestions, prioritizing MEDIUM/HIGH/CRITICAL priority.
-   Focus on quality and impact, not quantity:
-   - Safety enhancements (prioritize: safety score >= 7) - 2-8 suggestions
-   - Clinical coverage gaps (prioritize: high impact) - 3-12 suggestions
-   - Efficiency optimizations (prioritize: medium/high impact) - 2-8 suggestions
-   - Structural improvements (prioritize: significant issues) - 2-8 suggestions
-   - Usability improvements (prioritize: medium/high impact) - 1-6 suggestions
-   - Workflow enhancements (prioritize: medium/high impact) - 1-5 suggestions
-   
-   IMPORTANT: If you cannot find enough high/medium priority suggestions, generate fewer but higher quality suggestions. Do NOT pad with low-priority suggestions.
+1. QUANTITY: Generate 20-50 suggestions (not 5-15). Be exhaustive and thorough.
+   - Structural improvements (5-10 suggestions)
+   - Clinical coverage gaps (5-15 suggestions)
+   - Safety enhancements (3-8 suggestions)
+   - Efficiency optimizations (3-8 suggestions)
+   - Usability improvements (2-6 suggestions)
+   - Workflow enhancements (2-5 suggestions)
 
 2. CATEGORIZATION: Each suggestion MUST be categorized as ONE of:
    - "seguranca" (patient safety, red flags, contraindications)
@@ -108,16 +60,10 @@ CRITICAL REQUIREMENTS:
    - "media": Segurança 5-7 OR Economia="M"/"A" OR Eficiência="A"
    - "baixa": All other cases
 
-5. EVIDENCE TRACEABILITY (🚨 MANDATORY - NO EXCEPTIONS):
-   For EACH suggestion, you MUST provide:
-   - playbook_reference: EXACT QUOTE from the playbook (copy-paste actual text)
-     → This is MANDATORY. If you cannot provide an exact quote, DO NOT include the suggestion
-     → The quote must be verifiable in the playbook content provided above
-     → Generic references like "based on medical best practices" are INVALID
-   - context: Why the protocol is missing/misimplementing this playbook recommendation
-   - clinical_rationale: Justification using ONLY information from the playbook
-
-   🚨 CRITICAL: If a suggestion does NOT have an explicit playbook quote, it is INVALID and must be REMOVED
+5. EVIDENCE TRACEABILITY: For EACH suggestion, provide:
+   - playbook_reference: Exact quote or section from playbook that supports this suggestion
+   - context: Additional context explaining why this improvement is needed
+   - clinical_rationale: Medical/clinical justification
 
 6. IMPLEMENTATION DETAILS: For EACH suggestion, estimate:
    - effort: "baixo" (low), "medio" (medium), "alto" (high implementation effort)
@@ -152,9 +98,7 @@ CRITICAL OUTPUT REQUIREMENTS:
 - NO code blocks or markdown fences
 - ONLY the JSON response
 - Ensure JSON is valid and parseable
-- Generate 5-50 suggestions (minimum 5, target 15-30 high/medium priority, maximum 50)
-- Prioritize MEDIUM/HIGH/CRITICAL priority suggestions
-- Only include LOW priority if truly valuable and non-redundant
+- Generate 20-50 suggestions (minimum 20, target 30-40, maximum 50)
 - Every suggestion MUST have ALL required fields
 """
 

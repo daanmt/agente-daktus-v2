@@ -20,6 +20,7 @@ from pathlib import Path
 
 from ..core.logger import logger
 from .feedback_storage import FeedbackStorage
+from .memory_qa import MemoryQA
 
 
 @dataclass
@@ -91,7 +92,8 @@ class FeedbackCollector:
         Args:
             auto_save: Se True, salva automaticamente após coleta
         """
-        self.storage = FeedbackStorage()
+        self.memory_qa = MemoryQA()
+        self.storage = FeedbackStorage()  # Mantido para backup opcional
         self.auto_save = auto_save
         logger.info("FeedbackCollector initialized")
 
@@ -139,7 +141,9 @@ class FeedbackCollector:
         print("=" * 60 + "\n")
         
         # Gerar session ID
-        session_id = self.storage._generate_session_id()
+        from .feedback_storage import FeedbackStorage
+        temp_storage = FeedbackStorage()
+        session_id = temp_storage._generate_session_id()
         suggestions_feedback = []
         
         # Coletar feedback para cada sugestão
@@ -151,15 +155,59 @@ class FeedbackCollector:
                 feedback = self.capture_user_verdict(suggestion, idx, len(suggestions))
                 if feedback is None:  # Usuário saiu
                     print("\n⚠️  Feedback interrompido pelo usuário")
-                    print("Retornando ao pipeline principal...")
+                    print("Salvando feedback parcial coletado até agora...")
                     logger.info(f"Feedback collection interrupted by user at suggestion {idx}/{len(suggestions)}")
-                    return None  # Retornar None para indicar que feedback foi cancelado
+                    
+                    # Salvar feedback parcial se houver algum
+                    if suggestions_feedback:
+                        session = FeedbackSession(
+                            session_id=session_id,
+                            timestamp=datetime.now(),
+                            protocol_name=protocol_name,
+                            model_used=model_used,
+                            suggestions_feedback=suggestions_feedback,
+                            general_feedback=None,
+                            quality_rating=None
+                        )
+                        if self.auto_save:
+                            session_dict = asdict(session)
+                            if isinstance(session_dict.get('timestamp'), datetime):
+                                session_dict['timestamp'] = session_dict['timestamp'].isoformat()
+                            self.memory_qa.add_feedback_session(session_dict)
+                            self.storage.save_feedback_session(session_dict)  # Backup
+                            print(f"✅ Feedback parcial salvo: {len(suggestions_feedback)} sugestões revisadas")
+                        logger.info(f"Partial feedback saved: {session_id}, {len(suggestions_feedback)} suggestions")
+                        return session
+                    else:
+                        print("Nenhum feedback coletado até agora.")
+                        return None
                 suggestions_feedback.append(feedback)
             except KeyboardInterrupt:
                 print("\n\n⚠️  Feedback interrompido (Ctrl+C)")
-                print("Retornando ao pipeline principal...")
+                print("Salvando feedback parcial coletado até agora...")
                 logger.info(f"Feedback collection interrupted by keyboard interrupt")
-                return None  # Retornar None para indicar que feedback foi cancelado
+                
+                # Salvar feedback parcial se houver algum
+                if suggestions_feedback:
+                    session = FeedbackSession(
+                        session_id=session_id,
+                        timestamp=datetime.now(),
+                        protocol_name=protocol_name,
+                        model_used=model_used,
+                        suggestions_feedback=suggestions_feedback,
+                        general_feedback=None,
+                        quality_rating=None
+                    )
+                    if self.auto_save:
+                        session_dict = asdict(session)
+                        if isinstance(session_dict.get('timestamp'), datetime):
+                            session_dict['timestamp'] = session_dict['timestamp'].isoformat()
+                        self.memory_qa.add_feedback_session(session_dict)
+                        self.storage.save_feedback_session(session_dict)  # Backup
+                        print(f"✅ Feedback parcial salvo: {len(suggestions_feedback)} sugestões revisadas")
+                    logger.info(f"Partial feedback saved: {session_id}, {len(suggestions_feedback)} suggestions")
+                    return session
+                return None
         
         # Coletar feedback geral
         print("\n" + "=" * 60)
@@ -180,7 +228,15 @@ class FeedbackCollector:
         
         # Salvar se auto_save
         if self.auto_save:
-            self.storage.save_feedback_session(asdict(session))
+            # Salvar no memory_qa.md (principal)
+            session_dict = asdict(session)
+            # Converter datetime para string se necessário
+            if isinstance(session_dict.get('timestamp'), datetime):
+                session_dict['timestamp'] = session_dict['timestamp'].isoformat()
+            self.memory_qa.add_feedback_session(session_dict)
+            
+            # Salvar no FeedbackStorage (backup opcional)
+            self.storage.save_feedback_session(session_dict)
             print(f"\n✅ Feedback salvo: {session_id}")
         
         logger.info(f"Feedback collection completed: {session_id}, {len(suggestions_feedback)} suggestions")
@@ -301,20 +357,6 @@ class FeedbackCollector:
                 bar = "█" * usab + "░" * (10 - usab)
                 print(f"   Usabilidade: {bar} {usab}/10")
         
-        # Implementation effort (se disponível)
-        implementation = suggestion.get("implementation_effort", {})
-        if implementation:
-            print(f"\n⚙️  ESFORÇO DE IMPLEMENTAÇÃO:")
-            effort = implementation.get("effort", "")
-            time_est = implementation.get("estimated_time", "")
-            complexity = implementation.get("complexity", "")
-            if effort:
-                print(f"   Esforço: {effort}")
-            if time_est:
-                print(f"   Tempo estimado: {time_est}")
-            if complexity:
-                print(f"   Complexidade: {complexity}")
-        
         # Location (se disponível)
         location = suggestion.get("specific_location", {})
         if location:
@@ -368,77 +410,44 @@ class FeedbackCollector:
         
         while True:
             try:
+                # CRITICAL FIX: Simplified UX from 7 options to 3 (user request)
                 print(f"\nEsta sugestão é relevante?")
-                print("  S - Sim (Relevante)")
-                print("  N - Não (Irrelevante)")
-                print("  E - Editar sugestão")
-                print("  C - Adicionar comentário")
-                print("  P - Pular (marcar como relevante)")
-                print("  Q - Sair do feedback (retornar ao pipeline)")
-                
-                response = input("\nEscolha (S/N/E/C/P/Q): ").strip().upper()
-                
+                print("  S - Relevante")
+                print("  N - Irrelevante (com opção de comentar)")
+                print("  Q - Sair do feedback")
+
+                response = input("\nEscolha (S/N/Q): ").strip().upper()
+
                 if response in ("Q", "SAIR", "QUIT", "EXIT"):
                     # Usuário quer sair
                     return None
-                
-                if response in ("S", "SIM", "Y", "YES", "P", "PULAR"):
+
+                elif response in ("S", "SIM", "Y", "YES"):
                     # Relevante
-                    verdict = "relevant"
-                    comment = None
-                    
-                    # Perguntar comentário opcional
-                    if response == "C" or input("Adicionar comentário? (S/N): ").strip().upper() in ("S", "SIM", "Y", "YES"):
-                        comment = self.capture_comment(suggestion)
-                    
-                    return SuggestionFeedback(
-                        suggestion_id=suggestion_id,
-                        user_verdict=verdict,
-                        user_comment=comment,
-                        edited=False
-                    )
-                
-                elif response in ("N", "NAO", "NO"):
-                    # Irrelevante
-                    verdict = "irrelevant"
-                    comment = input("Motivo da rejeição (opcional): ").strip()
-                    if not comment:
-                        comment = None
-                    
-                    return SuggestionFeedback(
-                        suggestion_id=suggestion_id,
-                        user_verdict=verdict,
-                        user_comment=comment,
-                        edited=False
-                    )
-                
-                elif response in ("E", "EDITAR", "EDIT"):
-                    # Editar
-                    edited_version = self.allow_edit_suggestion(suggestion)
-                    comment = input("Comentário sobre a edição (opcional): ").strip()
-                    if not comment:
-                        comment = None
-                    
-                    return SuggestionFeedback(
-                        suggestion_id=suggestion_id,
-                        user_verdict="edited",
-                        user_comment=comment,
-                        edited=True,
-                        edited_version=edited_version
-                    )
-                
-                elif response in ("C", "COMENTAR", "COMMENT"):
-                    # Apenas comentar (mantém como relevante)
-                    comment = self.capture_comment(suggestion)
                     return SuggestionFeedback(
                         suggestion_id=suggestion_id,
                         user_verdict="relevant",
+                        user_comment=None,
+                        edited=False
+                    )
+
+                elif response in ("N", "NAO", "NO"):
+                    # Irrelevante - sempre oferecer opção de comentar
+                    print("\nPor favor, explique por que esta sugestão é irrelevante.")
+                    print("Isso ajudará o sistema a aprender e evitar sugestões similares.")
+                    comment = input("Motivo da rejeição (opcional, Enter para pular): ").strip()
+                    if not comment:
+                        comment = None
+
+                    return SuggestionFeedback(
+                        suggestion_id=suggestion_id,
+                        user_verdict="irrelevant",
                         user_comment=comment,
                         edited=False
                     )
                 
                 else:
-                    print("❌ Opção inválida. Por favor, escolha S, N, E, C ou P.")
+                    print("❌ Opção inválida. Por favor, escolha S (Relevante), N (Irrelevante) ou Q (Sair).")
             
             except KeyboardInterrupt:
                 print("\n\n⚠️  Coleta de feedback cancelada pelo usuário.")

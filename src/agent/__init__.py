@@ -33,7 +33,7 @@ from .analysis.enhanced import EnhancedAnalyzer
 from .applicator import ProtocolReconstructor
 
 # Feedback
-from .feedback import FeedbackCollector, PromptRefiner
+from .feedback import FeedbackCollector, MemoryQA
 
 # Cost control
 from .cost_control import CostEstimator
@@ -53,7 +53,7 @@ __all__ = [
     "ProtocolReconstructor",
     # Feedback
     "FeedbackCollector",
-    "PromptRefiner",
+    "MemoryQA",
     # Cost control
     "CostEstimator",
 ]

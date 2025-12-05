@@ -197,6 +197,7 @@ def select_model() -> str:
     # Available models
     models = [
         ("x-ai/grok-4.1-fast:free", "Grok 4.1 Fast (Free) - Default - Recommended"),
+        ("x-ai/grok-4.1-fast", "Grok 4.1 Fast"),
         ("x-ai/grok-code-fast-1", "Grok Code Fast 1"),
         ("google/gemini-2.5-flash-preview-09-2025", "Gemini 2.5 Flash Preview"),
         ("google/gemini-2.5-flash", "Gemini 2.5 Flash"),

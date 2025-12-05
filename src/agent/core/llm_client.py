@@ -210,9 +210,11 @@ class LLMClient:
                 
                 # Check if response was truncated
                 if finish_reason == "length":
+                    is_grok = self._is_grok_model(self.model)
                     logger.warning(
                         f"LLM response truncated (attempt {attempt + 1}/{max_retries}). "
                         f"Content length: {len(response_text)} chars. "
+                        f"Model: {self.model} (Grok: {is_grok}). "
                         f"Attempting to repair incomplete JSON..."
                     )
                     
@@ -227,22 +229,38 @@ class LLMClient:
                         )
                         return repaired_result
                     
-                    # If repair failed and not last attempt, retry with higher max_tokens
+                    # If repair failed and not last attempt, retry
                     if attempt < max_retries - 1:
                         wait_time = 2 ** attempt  # Exponential backoff
-                        logger.warning(
-                            f"Retrying with increased max_tokens after {wait_time}s "
-                            f"(attempt {attempt + 2}/{max_retries})"
-                        )
+                        if is_grok:
+                            logger.warning(
+                                f"Retrying Grok model after {wait_time}s "
+                                f"(attempt {attempt + 2}/{max_retries}). "
+                                f"Note: Grok models don't use max_tokens parameter."
+                            )
+                        else:
+                            logger.warning(
+                                f"Retrying with increased max_tokens after {wait_time}s "
+                                f"(attempt {attempt + 2}/{max_retries})"
+                            )
                         time.sleep(wait_time)
                         continue
                     else:
-                        logger.error("Failed to repair truncated JSON after all retries")
-                        raise ValueError(
+                        error_msg = (
                             f"LLM response was truncated and could not be repaired. "
                             f"Response length: {len(response_text)} chars. "
-                            f"Consider using a model with larger context window or chunking strategy."
                         )
+                        if is_grok:
+                            error_msg += (
+                                f"Model: {self.model} (Grok). "
+                                f"Grok models don't use max_tokens - truncation may be due to API limits or prompt size."
+                            )
+                        else:
+                            error_msg += (
+                                f"Consider using a model with larger context window or chunking strategy."
+                            )
+                        logger.error(error_msg)
+                        raise ValueError(error_msg)
                 
                 # Extract and parse JSON from response
                 analysis_result = self._extract_json_from_response(response_text)
@@ -361,17 +379,64 @@ class LLMClient:
         # Grok models não suportam formato estruturado com cache, usar string prompt
         if isinstance(prompt, dict) and "system" in prompt and not is_grok_model:
             # Structured prompt with caching support (apenas para modelos que suportam)
-            payload = {
-                "model": self.model,
-                "system": prompt["system"],
-                "messages": prompt["messages"],
-                "temperature": 0.1,
-                "response_format": {"type": "json_object"}  # Request JSON if supported
-            }
-            # Apenas adicionar max_tokens se não for modelo gratuito
-            if not is_free_model:
+            # Converter system array para formato que a API aceita
+            system_content = prompt["system"]
+            if isinstance(system_content, list):
+                # Se system é array, converter para string ou formato de mensagens
+                system_parts = []
+                for item in system_content:
+                    if isinstance(item, dict):
+                        if "text" in item:
+                            system_parts.append(item["text"])
+                        elif "type" in item and item["type"] == "text" and "text" in item:
+                            system_parts.append(item["text"])
+                    elif isinstance(item, str):
+                        system_parts.append(item)
+                # Combinar todas as partes do system em uma string
+                system_str = "\n\n".join(system_parts)
+            else:
+                system_str = system_content if isinstance(system_content, str) else str(system_content)
+            
+            # Converter messages para formato correto
+            messages = []
+            for msg in prompt["messages"]:
+                if isinstance(msg, dict):
+                    if "role" in msg and "content" in msg:
+                        messages.append({"role": msg["role"], "content": msg["content"]})
+                    elif "content" in msg:
+                        messages.append({"role": "user", "content": msg["content"]})
+                elif isinstance(msg, str):
+                    messages.append({"role": "user", "content": msg})
+            
+            # Verificar se é modelo Claude (pode não suportar response_format ou system separado)
+            is_claude = "claude" in self.model.lower() or "anthropic" in self.model.lower()
+            
+            # Para Claude, usar formato de mensagens (system como role="system")
+            if is_claude:
+                # Claude usa system como mensagem com role="system"
+                if system_str:
+                    messages.insert(0, {"role": "system", "content": system_str})
+                
+                payload = {
+                    "model": self.model,
+                    "messages": messages,
+                    "temperature": 0.1
+                    # Claude não suporta response_format={"type": "json_object"}
+                }
+            else:
+                # Outros modelos podem usar system separado e response_format
+                payload = {
+                    "model": self.model,
+                    "system": system_str,
+                    "messages": messages,
+                    "temperature": 0.1,
+                    "response_format": {"type": "json_object"}
+                }
+            # Adicionar max_tokens apenas se não for modelo gratuito E não for Grok
+            # Grok (free ou pago) não deve ter max_tokens para evitar truncamento
+            if not is_free_model and not is_grok_model:
                 payload["max_tokens"] = min(32000 + (attempt * 8000), 128000)  # Increase on retry, max 128k
-            logger.debug(f"Using structured prompt with caching support (attempt {attempt + 1}, free_model={is_free_model})")
+            logger.debug(f"Using structured prompt with caching support (attempt {attempt + 1}, free_model={is_free_model}, grok={is_grok_model})")
         else:
             # Legacy string prompt (no caching) - usado para Grok ou prompts simples
             if isinstance(prompt, dict) and "system" in prompt:
@@ -402,10 +467,11 @@ class LLMClient:
                 "temperature": 0.1,
                 "response_format": {"type": "json_object"}  # Request JSON if supported
             }
-            # Apenas adicionar max_tokens se não for modelo gratuito
-            if not is_free_model:
+            # NUNCA adicionar max_tokens para modelos Grok (free ou pago)
+            # Grok tem comportamento diferente e max_tokens pode causar truncamento
+            if not is_free_model and not is_grok_model:
                 payload["max_tokens"] = min(32000 + (attempt * 8000), 128000)  # Increase on retry
-            logger.debug(f"Using string prompt (no caching, attempt {attempt + 1}, free_model={is_free_model}, grok={is_grok_model})")
+            logger.debug(f"Using string prompt (no caching, attempt {attempt + 1}, free_model={is_free_model}, grok={is_grok_model}, max_tokens={'N/A' if is_grok_model else payload.get('max_tokens', 'N/A')})")
         
         response = requests.post(
             self.base_url,
@@ -413,6 +479,20 @@ class LLMClient:
             json=payload,
             timeout=120  # Increased timeout for large responses
         )
+        
+        # Melhor tratamento de erro 400
+        if response.status_code == 400:
+            try:
+                error_detail = response.json()
+                logger.error(f"API 400 Error Details: {json.dumps(error_detail, indent=2)}")
+                # Log do payload também (sem expor API key)
+                payload_debug = {k: v for k, v in payload.items() if k != "model"}
+                payload_debug["model"] = payload.get("model", "N/A")
+                if "system" in payload_debug and isinstance(payload_debug["system"], str):
+                    payload_debug["system"] = payload_debug["system"][:200] + "..." if len(payload_debug["system"]) > 200 else payload_debug["system"]
+                logger.error(f"Payload sent: {json.dumps(payload_debug, indent=2, ensure_ascii=False)}")
+            except:
+                logger.error(f"API 400 Error Response: {response.text[:500]}")
         
         response.raise_for_status()
         result = response.json()

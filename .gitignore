@@ -21,16 +21,30 @@ logs/
 # IDE
 .vscode/
 .idea/
+.cursor/
 *.swp
 *.swo
-
-# Claude AI - Local settings (machine-specific)
-.claude/settings.local.json
 
 # OS
 .DS_Store
 Thumbs.db
+nul
 
-# Large files or sensitive data (uncomment if needed)
+# Claude AI - Local settings (machine-specific)
+.claude/settings.local.json
+
+# Generated reports and outputs (keep structure, ignore files)
+reports/*.json
+reports/*.txt
+reports/*_EDITED.json
+reports/*_backup_*.txt
+
+# Feedback sessions (local data)
+feedback_sessions/
+
+# Agent V3 output (temporary)
+src/agent_v3/output/*.json
+src/agent_v3/output/*.txt
+
+# Large protocol files (optional - uncomment if needed)
 # models_json/*.json
-# reports/*.json

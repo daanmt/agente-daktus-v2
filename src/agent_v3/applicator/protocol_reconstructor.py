@@ -386,16 +386,29 @@ IMPORTANT: Return ONLY valid JSON. No markdown, no explanations, no code blocks.
             Lista de mudanças identificadas
         """
         changes = []
-        
-        # Por enquanto, apenas listar sugestões aplicadas
-        # Uma implementação completa compararia node por node
+
+        # CRITICAL FIX: Return data structure that matches show_diff() expectations
+        # show_diff() expects: {type, location, description}
         for sug in suggestions:
+            # Determine change type from priority or default to "modified"
+            priority = sug.get("priority", "media").lower()
+            change_type = "added" if priority in ("alta", "high", "crítica", "critical") else "modified"
+
+            # Build location string with category and ID
+            category = sug.get("category", "N/A")
+            sug_id = sug.get("id", "N/A")
+            location = f"{category} | ID: {sug_id}"
+
+            # Get description (truncate to 200 chars for display)
+            description = sug.get("description", sug.get("title", "N/A"))
+            if len(description) > 200:
+                description = description[:197] + "..."
+
             changes.append({
-                "suggestion_id": sug.get("id", "N/A"),
-                "title": sug.get("title", "N/A"),
-                "category": sug.get("category", "N/A"),
-                "status": "applied"
+                "type": change_type,
+                "location": location,
+                "description": description
             })
-        
+
         return changes
 

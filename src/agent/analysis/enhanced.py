@@ -31,6 +31,9 @@ from config.prompts.enhanced_analysis_prompt import (
     ENHANCED_OUTPUT_SCHEMA_JSON
 )
 
+# Import memory QA (simple markdown-based memory)
+from ..feedback.memory_qa import MemoryQA
+
 
 @dataclass
 class Suggestion:
@@ -125,6 +128,7 @@ class EnhancedAnalyzer:
         self.llm_client = LLMClient(model=model)
         self.impact_scorer = ImpactScorer()
         self.cost_estimator = CostEstimator()
+        self.memory_qa = MemoryQA()  # Sistema simples de memória via markdown
         logger.info(f"EnhancedAnalyzer initialized with model: {model}")
 
     def analyze_comprehensive(
@@ -195,7 +199,7 @@ class EnhancedAnalyzer:
         )
         
         # Step 3: Call LLM for enhanced analysis
-        logger.info("Step 3: Calling LLM for enhanced analysis (20-50 suggestions)...")
+        logger.info("Step 3: Calling LLM for enhanced analysis (5-50 suggestions, prioritizing medium/high/critical)...")
         try:
             llm_result = self.llm_client.analyze(prompt_structure)
         except Exception as e:
@@ -205,7 +209,32 @@ class EnhancedAnalyzer:
         # Step 4: Extract and process suggestions
         logger.info("Step 4: Extracting and processing suggestions...")
         suggestions = self._extract_suggestions(llm_result)
-        
+
+        # Step 4.5: Apply post-generation filters (NEW - Phase 2.2)
+        if hasattr(self, '_active_filters') and self._active_filters:
+            logger.info("Step 4.5: Applying post-generation filters...")
+            pre_filter_count = len(suggestions)
+            suggestions = self._apply_post_filters(suggestions, self._active_filters)
+            post_filter_count = len(suggestions)
+
+            if pre_filter_count != post_filter_count:
+                logger.info(
+                    f"Post-filtering: {pre_filter_count} → {post_filter_count} suggestions "
+                    f"({pre_filter_count - post_filter_count} removed)"
+                )
+
+        # Step 4.6: Validate playbook references (CRITICAL - prevent hallucinations)
+        logger.info("Step 4.6: Validating playbook references...")
+        pre_validation_count = len(suggestions)
+        suggestions = self._validate_playbook_references(suggestions, playbook_content)
+        post_validation_count = len(suggestions)
+
+        if pre_validation_count != post_validation_count:
+            logger.warning(
+                f"Playbook validation: {pre_validation_count} → {post_validation_count} suggestions "
+                f"({pre_validation_count - post_validation_count} removed - NO VALID PLAYBOOK REFERENCE)"
+            )
+
         # Step 5: Categorize and prioritize
         logger.info("Step 5: Categorizing and prioritizing suggestions...")
         categorized = self._categorize_suggestions(suggestions)
@@ -311,11 +340,25 @@ class EnhancedAnalyzer:
         # Format base analysis as JSON
         base_analysis_formatted = json.dumps(base_analysis, indent=2, ensure_ascii=False) if base_analysis else "{}"
         
+        # Carregar memória QA (memory_qa.md) - ANTES da análise
+        memory_qa_content = self.memory_qa.get_memory_content(max_length=3000)
+
+        # Carregar filtros ativos baseados em padrões de feedback (NEW - Phase 2.2)
+        # CRITICAL FIX: Lower threshold from 3 to 1 so patterns activate immediately
+        active_filters = self.memory_qa.get_active_filters(min_frequency=1)
+        filter_instructions = self._build_filter_instructions(active_filters)
+
+        # Armazenar filtros para pós-processamento
+        self._active_filters = active_filters
+
         # Build prompt with template
+        # CRITICAL FIX: Always include filter_instructions (was missing in non-cached path)
         prompt_text = ENHANCED_ANALYSIS_PROMPT_TEMPLATE.format(
+            agent_memory=memory_qa_content,
             playbook_content=playbook_content,
             protocol_json=protocol_formatted,
             base_analysis=base_analysis_formatted,
+            filter_instructions=filter_instructions,
             output_schema=ENHANCED_OUTPUT_SCHEMA_JSON
         )
         
@@ -324,9 +367,14 @@ class EnhancedAnalyzer:
         
         if use_cache:
             # Structure for prompt caching: playbook in system, protocol in messages
-            base_instructions = """You are an expert medical protocol quality analyst conducting DEEP, COMPREHENSIVE analysis.
+            # Carregar memória QA (memory_qa.md)
+            memory_qa_content = self.memory_qa.get_memory_content(max_length=3000)
+            
+            base_instructions = f"""You are an expert medical protocol quality analyst conducting DEEP, COMPREHENSIVE analysis.
 
 CONTEXT: You will analyze a medical protocol (JSON decision tree) against its corresponding clinical playbook to identify ALL possible improvements, gaps, and optimization opportunities.
+
+{memory_qa_content}
 
 INPUT MATERIALS:
 
@@ -345,17 +393,37 @@ INPUT MATERIALS:
 
 ---
 
-YOUR EXPANDED ANALYSIS MUST GENERATE 20-50 DETAILED IMPROVEMENT SUGGESTIONS:
+ACTIVE FILTERS (Based on User Feedback Patterns):
+
+{filter_instructions}
+
+---
+
+YOUR EXPANDED ANALYSIS MUST GENERATE 5-50 DETAILED IMPROVEMENT SUGGESTIONS:
+
+CRITICAL PRIORITY FOCUS: 
+- PRIORIZE generating MEDIUM, HIGH and CRITICAL priority suggestions over LOW priority ones
+- LOW priority suggestions should ONLY be included if they are truly valuable, non-redundant, and add significant value
+- Focus computational resources on suggestions that have significant impact:
+  * Safety score >= 7 (high/critical safety issues)
+  * Medium/High efficiency or economy impact
+  * Medium/High usability improvements that significantly enhance workflow
+- DO NOT force low-impact suggestions just to reach a target count
+- Quality over quantity: Better to generate 5-10 high-quality, high-priority suggestions than 20-30 mixed-quality suggestions with many low-impact ones
+- If there are fewer than 5 high/medium priority suggestions available, generate only what is truly valuable (minimum 5, but quality is paramount)
 
 CRITICAL REQUIREMENTS:
 
-1. QUANTITY: Generate 20-50 suggestions (not 5-15). Be exhaustive and thorough.
-   - Structural improvements (5-10 suggestions)
-   - Clinical coverage gaps (5-15 suggestions)
-   - Safety enhancements (3-8 suggestions)
-   - Efficiency optimizations (3-8 suggestions)
-   - Usability improvements (2-6 suggestions)
-   - Workflow enhancements (2-5 suggestions)
+1. QUANTITY: Generate 5-50 suggestions, prioritizing MEDIUM/HIGH/CRITICAL priority.
+   Focus on quality and impact, not quantity:
+   - Safety enhancements (prioritize: safety score >= 7) - 2-8 suggestions
+   - Clinical coverage gaps (prioritize: high impact) - 3-12 suggestions
+   - Efficiency optimizations (prioritize: medium/high impact) - 2-8 suggestions
+   - Structural improvements (prioritize: significant issues) - 2-8 suggestions
+   - Usability improvements (prioritize: medium/high impact) - 1-6 suggestions
+   - Workflow enhancements (prioritize: medium/high impact) - 1-5 suggestions
+   
+   IMPORTANT: If you cannot find enough high/medium priority suggestions, generate fewer but higher quality suggestions. Do NOT pad with low-priority suggestions.
 
 2. CATEGORIZATION: Each suggestion MUST be categorized as ONE of:
    - "seguranca" (patient safety, red flags, contraindications)
@@ -412,13 +480,16 @@ CRITICAL OUTPUT REQUIREMENTS:
 - NO code blocks or markdown fences
 - ONLY the JSON response
 - Ensure JSON is valid and parseable
-- Generate 20-50 suggestions (minimum 20, target 30-40, maximum 50)
+- Generate 5-50 suggestions (minimum 5, target 15-30 high/medium priority, maximum 50)
+- Prioritize MEDIUM/HIGH/CRITICAL priority suggestions
+- Only include LOW priority if truly valuable and non-redundant
 - Every suggestion MUST have ALL required fields
 """
             
             protocol_instructions = protocol_instructions_template.format(
                 protocol_json=protocol_formatted,
                 base_analysis=base_analysis_formatted,
+                filter_instructions=filter_instructions if filter_instructions else "No active filters",
                 output_schema=ENHANCED_OUTPUT_SCHEMA_JSON
             )
             
@@ -452,6 +523,312 @@ CRITICAL OUTPUT REQUIREMENTS:
             # No caching - return full prompt string
             logger.info(f"Built enhanced prompt (no caching): size={len(prompt_text)} chars")
             return {"prompt": prompt_text}
+
+    def _build_filter_instructions(self, active_filters: Dict) -> str:
+        """
+        Constrói instruções LLM a partir dos filtros ativos.
+
+        Traduz padrões de feedback em instruções acionáveis para o LLM.
+
+        Args:
+            active_filters: Filtros ativos do memory_qa
+
+        Returns:
+            String com instruções formatadas ou vazia se sem filtros
+        """
+        if not active_filters or active_filters["priority_threshold"] == "baixa":
+            return ""
+
+        instructions = []
+        instructions.append("CRITICAL FILTERS (Based on User Feedback Patterns):")
+        instructions.append("")
+
+        # Filtro de prioridade
+        if active_filters["priority_threshold"] != "baixa":
+            threshold_map = {"media": "MÉDIA", "alta": "ALTA"}
+            threshold_upper = threshold_map.get(active_filters["priority_threshold"], "MÉDIA")
+
+            instructions.append(
+                f"1. PRIORITY FILTER: Generate ONLY {threshold_upper} and ALTA priority suggestions. "
+                f"DO NOT generate BAIXA priority suggestions (user has consistently rejected these in feedback)."
+            )
+
+        # Filtros de categoria
+        blocked_categories = [
+            cat for cat, enabled in active_filters["category_filters"].items()
+            if not enabled
+        ]
+        if blocked_categories:
+            cats_str = ", ".join(blocked_categories)
+            instructions.append(
+                f"2. CATEGORY FILTER: MINIMIZE or AVOID suggestions in these categories: {cats_str} "
+                f"(user has frequently rejected these categories in feedback)."
+            )
+
+        # Keyword blocklist
+        if active_filters["keyword_blocklist"]:
+            keywords = ", ".join(f'"{kw}"' for kw in active_filters["keyword_blocklist"][:5])
+            instructions.append(
+                f"3. KEYWORD FILTER: AVOID suggestions containing these rejection indicators: {keywords}"
+            )
+
+        # Regras baseadas em padrões
+        if active_filters["pattern_rules"]:
+            instructions.append(f"4. PATTERN-BASED RULES:")
+            for i, rule in enumerate(active_filters["pattern_rules"][:5], 1):
+                action = rule.get("action", "unknown")
+                reason = rule.get("reason", "")
+                instructions.append(f"   {i}. {action}: {reason}")
+
+        # Indicador de força
+        if active_filters["rule_strength"] == "hard":
+            instructions.append("")
+            instructions.append(
+                "⚠️  HARD FILTERS ACTIVE: Violating these filters will likely result in suggestion rejection. "
+                "Follow these rules strictly to improve suggestion quality."
+            )
+
+        instructions.append("")
+        instructions.append("These filters are derived from previous user feedback to improve suggestion relevance.")
+
+        return "\n".join(instructions)
+
+    def _apply_post_filters(
+        self,
+        suggestions: List[Suggestion],
+        active_filters: Dict
+    ) -> List[Suggestion]:
+        """
+        Aplica filtros pós-geração como rede de segurança.
+
+        Captura sugestões que o LLM gerou apesar das instruções de filtro.
+
+        Args:
+            suggestions: Lista de sugestões geradas
+            active_filters: Filtros ativos do memory_qa
+
+        Returns:
+            Lista filtrada de sugestões
+        """
+        if not active_filters:
+            return suggestions
+
+        filtered = []
+        removed = []
+
+        for sug in suggestions:
+            should_keep = True
+            removal_reason = None
+
+            # Filtro 1: Priority threshold
+            if active_filters["priority_threshold"] == "media":
+                if sug.priority.lower() in ("baixa", "low"):
+                    should_keep = False
+                    removal_reason = f"Priority filter (threshold: media, got: {sug.priority})"
+
+            # Filtro 2: Category filters
+            if should_keep and sug.category in active_filters["category_filters"]:
+                if not active_filters["category_filters"][sug.category]:
+                    should_keep = False
+                    removal_reason = f"Category filter (blocked: {sug.category})"
+
+            # Filtro 3: Keyword blocklist
+            if should_keep and active_filters["keyword_blocklist"]:
+                text_to_check = f"{sug.title} {sug.description}".lower()
+                for keyword in active_filters["keyword_blocklist"]:
+                    if keyword.lower() in text_to_check:
+                        should_keep = False
+                        removal_reason = f"Keyword filter (blocked: {keyword})"
+                        break
+
+            # Filtro 4: Pattern-based rules (context validation)
+            if should_keep:
+                for rule in active_filters["pattern_rules"]:
+                    if rule["rule"] == "context_validation":
+                        min_length = rule.get("min_length", 50)
+                        if len(sug.rationale) < min_length:
+                            should_keep = False
+                            removal_reason = f"Context validation (rationale too short: {len(sug.rationale)} < {min_length})"
+                            break
+
+            # Filtro 5: Semantic pattern matching (CRITICAL FIX for Issue #2)
+            # Detects rejection patterns beyond exact keywords
+            if should_keep:
+                text_to_check = f"{sug.title} {sug.description} {sug.rationale}".lower()
+
+                # Pattern: Invasão da Autonomia Médica
+                autonomy_invasion_patterns = ["priorizar", "deve ser", "preferir", "em vez de", "substituir por", "ao invés de"]
+                if any(pattern in text_to_check for pattern in autonomy_invasion_patterns):
+                    # Check if it's actually restricting medical autonomy
+                    restrictive_terms = ["sempre", "obrigatório", "nunca", "proibido", "não pode"]
+                    if any(term in text_to_check for term in restrictive_terms):
+                        should_keep = False
+                        removal_reason = f"Semantic pattern: autonomy_invasion (detected restrictive medical guidance)"
+
+                # Pattern: Out of scope (adding content not in playbook)
+                if should_keep:
+                    out_of_scope_patterns = ["introduzir", "adicionar medicamento", "incluir novo", "criar opção", "não está no playbook", "não mencionado"]
+                    if any(pattern in text_to_check for pattern in out_of_scope_patterns):
+                        should_keep = False
+                        removal_reason = f"Semantic pattern: out_of_scope (suggests adding content not in playbook)"
+
+                # Pattern: Already implemented
+                if should_keep:
+                    already_implemented_patterns = ["já existe", "já implementado", "já tem", "já está", "já contempla"]
+                    if any(pattern in text_to_check for pattern in already_implemented_patterns):
+                        should_keep = False
+                        removal_reason = f"Semantic pattern: already_implemented (suggests feature already exists)"
+
+            if should_keep:
+                filtered.append(sug)
+            else:
+                removed.append({"suggestion": sug, "reason": removal_reason})
+                logger.info(f"Post-filter removed: {sug.id} - {removal_reason}")
+
+        # Safety check: se filtrou demais, relaxar filtros
+        if len(filtered) < 5 and len(suggestions) >= 5:
+            logger.warning(
+                f"Post-filtering resulted in only {len(filtered)} suggestions (started with {len(suggestions)}). "
+                f"This might be too aggressive. Applying relaxed filters..."
+            )
+
+            # Relaxar: apenas aplicar filtros HARD (prioridade e categoria)
+            filtered = []
+            for sug in suggestions:
+                should_keep = True
+
+                # Apenas filtro de prioridade se strength == "hard"
+                if active_filters["rule_strength"] == "hard":
+                    if active_filters["priority_threshold"] == "media":
+                        if sug.priority.lower() in ("baixa", "low"):
+                            should_keep = False
+
+                if should_keep:
+                    filtered.append(sug)
+
+            logger.info(f"Relaxed filtering: {len(suggestions)} → {len(filtered)} suggestions")
+
+            # Se ainda muito agressivo, retornar todas
+            if len(filtered) < 5:
+                logger.error(
+                    f"Even relaxed filters result in <5 suggestions. Disabling filters for this run."
+                )
+                return suggestions
+
+        if removed:
+            logger.warning(
+                f"Post-filtering removed {len(removed)} suggestions. "
+                f"This indicates LLM didn't follow filter instructions completely."
+            )
+            # Log primeiras 3 remoções para análise
+            for item in removed[:3]:
+                logger.debug(f"  - {item['suggestion'].id}: {item['reason']}")
+
+        return filtered
+
+    def _validate_playbook_references(
+        self,
+        suggestions: List[Suggestion],
+        playbook_content: str
+    ) -> List[Suggestion]:
+        """
+        Valida se sugestões têm referências válidas ao playbook.
+
+        CRITICAL: Previne hallucinations removendo sugestões que não têm
+        referência explícita ao conteúdo do playbook.
+
+        Args:
+            suggestions: Lista de sugestões geradas
+            playbook_content: Conteúdo completo do playbook
+
+        Returns:
+            Lista filtrada apenas com sugestões que têm referências válidas
+        """
+        if not playbook_content or not suggestions:
+            return suggestions
+
+        validated = []
+        removed = []
+
+        # Normalizar playbook para comparação (case-insensitive, remove espaços extras)
+        playbook_normalized = " ".join(playbook_content.lower().split())
+
+        for sug in suggestions:
+            should_keep = True
+            removal_reason = None
+
+            # Obter referência ao playbook da sugestão
+            playbook_ref = None
+            if hasattr(sug, 'evidence') and sug.evidence:
+                if isinstance(sug.evidence, dict):
+                    playbook_ref = sug.evidence.get('playbook_reference', '')
+                elif hasattr(sug.evidence, 'playbook_reference'):
+                    playbook_ref = sug.evidence.playbook_reference
+
+            # Validação 1: Referência existe?
+            if not playbook_ref or len(playbook_ref.strip()) < 10:
+                should_keep = False
+                removal_reason = "NO_PLAYBOOK_REFERENCE (reference missing or too short)"
+
+            # Validação 2: Referência é genérica/inválida?
+            elif should_keep:
+                generic_phrases = [
+                    "based on medical",
+                    "standard practice",
+                    "clinical guideline",
+                    "best practice",
+                    "according to literature",
+                    "medical consensus",
+                    "não especificado",
+                    "conforme literatura"
+                ]
+
+                ref_lower = playbook_ref.lower()
+                if any(phrase in ref_lower for phrase in generic_phrases):
+                    should_keep = False
+                    removal_reason = "GENERIC_REFERENCE (not specific to playbook)"
+
+            # Validação 3: Referência existe no playbook?
+            elif should_keep:
+                # Extrair trecho relevante da referência (primeiras 50 chars significativas)
+                ref_normalized = " ".join(playbook_ref.lower().split())
+
+                # Pegar snippet de 30+ caracteres consecutivos da referência
+                words = ref_normalized.split()
+                if len(words) >= 5:
+                    # Tentar encontrar snippet de 5 palavras consecutivas no playbook
+                    found = False
+                    for i in range(len(words) - 4):
+                        snippet = " ".join(words[i:i+5])
+                        if len(snippet) >= 20 and snippet in playbook_normalized:
+                            found = True
+                            break
+
+                    if not found:
+                        should_keep = False
+                        removal_reason = f"REFERENCE_NOT_IN_PLAYBOOK (cannot verify: '{playbook_ref[:60]}...')"
+                else:
+                    # Referência muito curta para validar
+                    should_keep = False
+                    removal_reason = f"REFERENCE_TOO_SHORT (cannot verify: '{playbook_ref}')"
+
+            if should_keep:
+                validated.append(sug)
+            else:
+                removed.append({"suggestion": sug, "reason": removal_reason})
+                logger.warning(f"Playbook validation removed: {sug.id} - {removal_reason}")
+
+        # Relatório de remoções
+        if removed:
+            logger.warning(
+                f"Playbook validation removed {len(removed)} suggestions that lack valid playbook references. "
+                f"This indicates the LLM generated content outside the playbook."
+            )
+            # Log detalhes das primeiras 5 remoções
+            for item in removed[:5]:
+                logger.info(f"  ❌ {item['suggestion'].id}: {item['reason']}")
+
+        return validated
 
     def _extract_suggestions(
         self,

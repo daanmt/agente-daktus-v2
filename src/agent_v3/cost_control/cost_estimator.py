@@ -60,6 +60,7 @@ class CostEstimator:
     MODEL_PRICING = {
         # Grok models (default: Grok 4.1 Fast Free)
         "x-ai/grok-4.1-fast:free": {"input": 0.0, "output": 0.0},  # Contexto: 2M tokens
+        "x-ai/grok-4.1-fast": {"input": 0.20, "output": 0.50},  # Contexto: 2M tokens
         "x-ai/grok-code-fast-1": {"input": 0.20, "output": 1.50},  # Contexto: 256K tokens
         
         # Gemini models
@@ -96,15 +97,33 @@ class CostEstimator:
         Raises:
             ValueError: Se modelo não encontrado na tabela
         """
-        # Tentar match exato primeiro
+        # Tentar match exato primeiro (prioridade máxima)
         if model in self.MODEL_PRICING:
             return self.MODEL_PRICING[model]
         
         # Tentar match parcial (para variações de versão)
+        # IMPORTANTE: Não fazer match entre modelos :free e pagos
+        model_is_free = ":free" in model
+        model_base = model.replace(":free", "").strip()
+        
         for model_key, pricing in self.MODEL_PRICING.items():
-            if model_key.split("/")[-1] in model or model in model_key:
-                logger.warning(f"Using approximate pricing for {model} (matched {model_key})")
+            key_is_free = ":free" in model_key
+            key_base = model_key.replace(":free", "").strip()
+            
+            # NUNCA fazer match entre free e pago
+            if model_is_free != key_is_free:
+                continue
+            
+            # Match mais restritivo: só se o base name for igual (sem sufixos)
+            if model_base == key_base:
+                logger.warning(f"Using approximate pricing for {model} (matched {model_key} by base name)")
                 return pricing
+            
+            # Match parcial apenas como último recurso (evitar para Grok)
+            if "grok" not in model.lower():
+                if model_key.split("/")[-1] in model or model in model_key:
+                    logger.warning(f"Using approximate pricing for {model} (matched {model_key})")
+                    return pricing
         
         # Default: usar preço médio (conservador)
         logger.warning(f"Model {model} not found in pricing table, using conservative default")

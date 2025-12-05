@@ -109,6 +109,48 @@ def generate_daktus_timestamp() -> str:
     return now.strftime("%d-%m-%Y-%H%M")
 
 
+def find_highest_version_in_directory(directory: str, company: str, name: str) -> Optional[str]:
+    """
+    Encontra a versão mais alta de um protocolo no diretório.
+
+    CRITICAL FIX: Evita pular versões verificando arquivos existentes.
+
+    Args:
+        directory: Diretório onde buscar arquivos
+        company: Nome da empresa (ex: "amil")
+        name: Nome do protocolo (ex: "ficha_orl")
+
+    Returns:
+        Versão mais alta encontrada ou None
+    """
+    from pathlib import Path
+
+    directory_path = Path(directory)
+    if not directory_path.exists():
+        return None
+
+    # Padrão: company_name_v*.json ou company_name_v*_EDITED.json
+    pattern = f"{company}_{name}_v*.json"
+    versions = []
+
+    for file_path in directory_path.glob(pattern):
+        version = extract_version_from_filename(file_path.stem)
+        if version:
+            versions.append(version)
+
+    if not versions:
+        return None
+
+    # Encontrar versão mais alta
+    # Converter para tuplas (major, minor, patch) para comparação correta
+    def version_tuple(v):
+        parts = v.split('.')
+        return (int(parts[0]), int(parts[1]), int(parts[2]))
+
+    highest = max(versions, key=version_tuple)
+    return highest
+
+
 def generate_output_filename(
     protocol_json: dict,
     protocol_path: str,
@@ -116,41 +158,64 @@ def generate_output_filename(
 ) -> Tuple[str, str]:
     """
     Gera nome de arquivo de saída seguindo padrão Daktus Studio.
-    
+
+    CRITICAL FIX: Verifica versões existentes para não pular versões.
+
     Formato: {company}_{name}_v{version}_{timestamp}.json
-    
+
     Args:
         protocol_json: Protocolo JSON (para extrair metadata)
         protocol_path: Caminho do protocolo original
         suffix: Sufixo para adicionar (ex: "RECONSTRUCTED") - não usado mais, mantido para compatibilidade
-        
+
     Returns:
         Tupla (nome_arquivo, versão_incrementada)
     """
     from pathlib import Path
-    
+
     metadata = protocol_json.get("metadata", {})
     company = metadata.get("company", "unknown")
     name = metadata.get("name", "protocol")
-    
-    # Extrair versão do protocolo
-    current_version = extract_version_from_protocol(protocol_json)
-    if not current_version:
-        # Tentar extrair do filename
-        current_version = extract_version_from_filename(Path(protocol_path).stem)
-    
-    if not current_version:
-        current_version = "0.1.1"  # Fallback
-    
-    # Incrementar versão (PATCH para reconstruções)
-    new_version = increment_version(current_version, increment_type="patch")
-    
+
+    # CRITICAL FIX: Verificar versões existentes no diretório
+    protocol_dir = Path(protocol_path).parent
+    highest_existing_version = find_highest_version_in_directory(
+        str(protocol_dir),
+        company,
+        name
+    )
+
+    if highest_existing_version:
+        # Incrementar a partir da versão mais alta existente
+        new_version = increment_version(highest_existing_version, increment_type="patch")
+        logger_msg = f"Found highest version {highest_existing_version} in directory, incrementing to {new_version}"
+    else:
+        # Extrair versão do protocolo atual
+        current_version = extract_version_from_protocol(protocol_json)
+        if not current_version:
+            # Tentar extrair do filename
+            current_version = extract_version_from_filename(Path(protocol_path).stem)
+
+        if not current_version:
+            current_version = "1.0.0"  # Fallback (seguir semantic versioning)
+
+        # Incrementar versão (PATCH para reconstruções)
+        new_version = increment_version(current_version, increment_type="patch")
+        logger_msg = f"No existing versions found, using {current_version} → {new_version}"
+
+    # Log da decisão de versionamento
+    try:
+        from agent.core.logger import logger
+        logger.info(f"Versioning: {logger_msg}")
+    except:
+        pass  # Logger opcional
+
     # Gerar timestamp no formato Daktus: DD-MM-YYYY-HHMM
     timestamp = generate_daktus_timestamp()
-    
+
     # Gerar nome do arquivo (sem sufixo RECONSTRUCTED, seguindo padrão Daktus)
     filename = f"{company}_{name}_v{new_version}_{timestamp}.json"
-    
+
     return filename, new_version
 
 

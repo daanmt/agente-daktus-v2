@@ -210,9 +210,11 @@ class LLMClient:
                 
                 # Check if response was truncated
                 if finish_reason == "length":
+                    is_grok = self._is_grok_model(self.model)
                     logger.warning(
                         f"LLM response truncated (attempt {attempt + 1}/{max_retries}). "
                         f"Content length: {len(response_text)} chars. "
+                        f"Model: {self.model} (Grok: {is_grok}). "
                         f"Attempting to repair incomplete JSON..."
                     )
                     
@@ -227,22 +229,38 @@ class LLMClient:
                         )
                         return repaired_result
                     
-                    # If repair failed and not last attempt, retry with higher max_tokens
+                    # If repair failed and not last attempt, retry
                     if attempt < max_retries - 1:
                         wait_time = 2 ** attempt  # Exponential backoff
-                        logger.warning(
-                            f"Retrying with increased max_tokens after {wait_time}s "
-                            f"(attempt {attempt + 2}/{max_retries})"
-                        )
+                        if is_grok:
+                            logger.warning(
+                                f"Retrying Grok model after {wait_time}s "
+                                f"(attempt {attempt + 2}/{max_retries}). "
+                                f"Note: Grok models don't use max_tokens parameter."
+                            )
+                        else:
+                            logger.warning(
+                                f"Retrying with increased max_tokens after {wait_time}s "
+                                f"(attempt {attempt + 2}/{max_retries})"
+                            )
                         time.sleep(wait_time)
                         continue
                     else:
-                        logger.error("Failed to repair truncated JSON after all retries")
-                        raise ValueError(
+                        error_msg = (
                             f"LLM response was truncated and could not be repaired. "
                             f"Response length: {len(response_text)} chars. "
-                            f"Consider using a model with larger context window or chunking strategy."
                         )
+                        if is_grok:
+                            error_msg += (
+                                f"Model: {self.model} (Grok). "
+                                f"Grok models don't use max_tokens - truncation may be due to API limits or prompt size."
+                            )
+                        else:
+                            error_msg += (
+                                f"Consider using a model with larger context window or chunking strategy."
+                            )
+                        logger.error(error_msg)
+                        raise ValueError(error_msg)
                 
                 # Extract and parse JSON from response
                 analysis_result = self._extract_json_from_response(response_text)
@@ -368,10 +386,11 @@ class LLMClient:
                 "temperature": 0.1,
                 "response_format": {"type": "json_object"}  # Request JSON if supported
             }
-            # Apenas adicionar max_tokens se não for modelo gratuito
-            if not is_free_model:
+            # Adicionar max_tokens apenas se não for modelo gratuito E não for Grok
+            # Grok (free ou pago) não deve ter max_tokens para evitar truncamento
+            if not is_free_model and not is_grok_model:
                 payload["max_tokens"] = min(32000 + (attempt * 8000), 128000)  # Increase on retry, max 128k
-            logger.debug(f"Using structured prompt with caching support (attempt {attempt + 1}, free_model={is_free_model})")
+            logger.debug(f"Using structured prompt with caching support (attempt {attempt + 1}, free_model={is_free_model}, grok={is_grok_model})")
         else:
             # Legacy string prompt (no caching) - usado para Grok ou prompts simples
             if isinstance(prompt, dict) and "system" in prompt:
@@ -402,10 +421,11 @@ class LLMClient:
                 "temperature": 0.1,
                 "response_format": {"type": "json_object"}  # Request JSON if supported
             }
-            # Apenas adicionar max_tokens se não for modelo gratuito
-            if not is_free_model:
+            # NUNCA adicionar max_tokens para modelos Grok (free ou pago)
+            # Grok tem comportamento diferente e max_tokens pode causar truncamento
+            if not is_free_model and not is_grok_model:
                 payload["max_tokens"] = min(32000 + (attempt * 8000), 128000)  # Increase on retry
-            logger.debug(f"Using string prompt (no caching, attempt {attempt + 1}, free_model={is_free_model}, grok={is_grok_model})")
+            logger.debug(f"Using string prompt (no caching, attempt {attempt + 1}, free_model={is_free_model}, grok={is_grok_model}, max_tokens={'N/A' if is_grok_model else payload.get('max_tokens', 'N/A')})")
         
         response = requests.post(
             self.base_url,
