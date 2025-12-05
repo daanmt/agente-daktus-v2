@@ -15,6 +15,7 @@ Status: ✅ IMPLEMENTADO
 from typing import List, Dict, Optional, Any, ContextManager
 from datetime import datetime
 import json
+from contextlib import contextmanager
 
 try:
     from rich.console import Console
@@ -427,16 +428,48 @@ class DisplayManager:
         else:
             # Fallback: context manager simples que não faz nada
             class SimpleProgress:
+                def __init__(self):
+                    self.task_id = 0
+
                 def __enter__(self):
                     print(f"Processando: {description}...")
                     return self
                 def __exit__(self, *args):
                     print("Concluído!")
                 def add_task(self, *args, **kwargs):
-                    return 0
-                def update(self, *args, **kwargs):
-                    pass
+                    return self.task_id
+                def update(self, task_id=None, advance: int = 0, **kwargs):
+                    return None
             return SimpleProgress()
+
+    @contextmanager
+    def spinner(self, message: str, transient: bool = True):
+        """
+        Context manager para exibir spinner durante operações de I/O.
+
+        Args:
+            message: Mensagem a exibir
+            transient: Se True, remove o spinner ao finalizar
+        """
+        if self.rich_available:
+            progress = Progress(
+                SpinnerColumn(),
+                TextColumn(f"[progress.description]{message}"),
+                transient=transient,
+                console=self.console,
+            )
+            progress.start()
+            task_id = progress.add_task(message, total=None)
+            try:
+                yield
+            finally:
+                progress.stop()
+        else:
+            try:
+                print(f"{message} ...")
+                yield
+            finally:
+                print("Concluído.")
 
     def show_summary_panel(
         self,

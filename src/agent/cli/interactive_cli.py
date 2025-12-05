@@ -435,103 +435,111 @@ class InteractiveCLI:
         print()
 
         try:
-            # Task 1: Load protocol
-            self.tasks.update_status("load_protocol", TaskStatus.IN_PROGRESS)
-            if not load_protocol:
-                raise ImportError("load_protocol não disponível")
+            with self.display.create_progress_bar("Análise em andamento", total=4) as progress:
+                pb_task = progress.add_task("Preparando análise", total=4)
 
-            # Check for _EDITED version first (contains rejected_suggestions)
-            protocol_path_to_load = self.session_state.protocol_path
-            edited_path = Path(str(protocol_path_to_load).replace('.json', '_EDITED.json'))
-            if edited_path.exists():
-                logger.info(f"Using EDITED protocol for analysis: {edited_path.name}")
-                protocol_path_to_load = edited_path
+                # Task 1: Load protocol
+                self.tasks.update_status("load_protocol", TaskStatus.IN_PROGRESS)
+                if not load_protocol:
+                    raise ImportError("load_protocol não disponível")
 
-            protocol_json = load_protocol(protocol_path_to_load)
-            self.tasks.mark_completed("load_protocol")
-            self.tasks.render_tasks(self.display)
-            print()
+                with self.display.spinner("Carregando protocolo..."):
+                    protocol_path_to_load = self.session_state.protocol_path
+                    edited_path = Path(str(protocol_path_to_load).replace('.json', '_EDITED.json'))
+                    if edited_path.exists():
+                        logger.info(f"Using EDITED protocol for analysis: {edited_path.name}")
+                        protocol_path_to_load = edited_path
+                    protocol_json = load_protocol(protocol_path_to_load)
 
-            # Task 2: Load playbook (se fornecido)
-            playbook_content = ""
-            if self.session_state.playbook_path:
+                progress.update(pb_task, advance=1)
+                self.tasks.mark_completed("load_protocol")
+                self.tasks.render_tasks(self.display)
+                print()
+
+                # Task 2: Load playbook (se fornecido)
+                playbook_content = ""
                 self.tasks.update_status("load_playbook", TaskStatus.IN_PROGRESS)
-                if not load_playbook:
-                    raise ImportError("load_playbook não disponível")
-                
-                playbook_content = load_playbook(self.session_state.playbook_path)
-                self.tasks.mark_completed("load_playbook")
-            else:
-                self.tasks.mark_completed("load_playbook")  # Skip
-            self.tasks.render_tasks(self.display)
-            print()
+                if self.session_state.playbook_path:
+                    if not load_playbook:
+                        raise ImportError("load_playbook não disponível")
+                    with self.display.spinner("Carregando playbook..."):
+                        playbook_content = load_playbook(self.session_state.playbook_path)
+                    self.tasks.mark_completed("load_playbook")
+                else:
+                    self.tasks.mark_completed("load_playbook")  # Skip
+                progress.update(pb_task, advance=1)
+                self.tasks.render_tasks(self.display)
+                print()
 
-            # Task 3: Run analysis
-            self.tasks.update_status("analyze", TaskStatus.IN_PROGRESS)
+                # Task 3: Run analysis
+                self.tasks.update_status("analyze", TaskStatus.IN_PROGRESS)
+                self.display.show_thinking("Executando análise expandida, isso pode levar até 90s...")
+                with self.display.spinner("Executando análise LLM..."):
+                    if self.session_state.version == "V3" and V3_AVAILABLE and EnhancedAnalyzer:
+                        analyzer = EnhancedAnalyzer(model=self.session_state.model)
+                        enhanced_result = analyzer.analyze_comprehensive(
+                            protocol_json=protocol_json,
+                            playbook_content=playbook_content,
+                            protocol_path=str(self.session_state.protocol_path)
+                        )
 
-            if self.session_state.version == "V3" and V3_AVAILABLE and EnhancedAnalyzer:
-                # V3 Enhanced Analysis
-                analyzer = EnhancedAnalyzer(model=self.session_state.model)
-                enhanced_result = analyzer.analyze_comprehensive(
-                    protocol_json=protocol_json,
-                    playbook_content=playbook_content,
-                    protocol_path=str(self.session_state.protocol_path)
-                )
+                        # Converter para formato dict (enxuto)
+                        suggestions_dict = [
+                            {
+                                "id": s.id,
+                                "category": s.category,
+                                "priority": s.priority,
+                                "title": s.title,
+                                "description": s.description,
+                                "impact_scores": {
+                                    "seguranca": s.impact_scores.seguranca if hasattr(s.impact_scores, 'seguranca') else 0,
+                                    "economia": s.impact_scores.economia if hasattr(s.impact_scores, 'economia') else "N/A",
+                                    "eficiencia": s.impact_scores.eficiencia if hasattr(s.impact_scores, 'eficiencia') else "N/A",
+                                    "usabilidade": s.impact_scores.usabilidade if hasattr(s.impact_scores, 'usabilidade') else 0,
+                                },
+                                "location": s.specific_location or {},
+                                "action": s.description[:150] if s.description else s.title
+                            }
+                            for s in enhanced_result.improvement_suggestions
+                        ]
 
-                # Converter para formato dict (enxuto)
-                suggestions_dict = [
-                    {
-                        "id": s.id,
-                        "category": s.category,
-                        "priority": s.priority,
-                        "title": s.title,
-                        "description": s.description,
-                        "impact_scores": {
-                            "seguranca": s.impact_scores.seguranca if hasattr(s.impact_scores, 'seguranca') else 0,
-                            "economia": s.impact_scores.economia if hasattr(s.impact_scores, 'economia') else "N/A",
-                            "eficiencia": s.impact_scores.eficiencia if hasattr(s.impact_scores, 'eficiencia') else "N/A",
-                            "usabilidade": s.impact_scores.usabilidade if hasattr(s.impact_scores, 'usabilidade') else 0,
-                        },
-                        "location": s.specific_location or {},
-                        "action": s.description[:150] if s.description else s.title
-                    }
-                    for s in enhanced_result.improvement_suggestions
-                ]
+                        result = {
+                            "improvement_suggestions": suggestions_dict,
+                            "metadata": {
+                                "protocol_path": self._normalize_path(str(self.session_state.protocol_path)),
+                                "playbook_path": self._normalize_path(str(self.session_state.playbook_path)) if self.session_state.playbook_path else None,
+                                "model_used": self.session_state.model,
+                                "timestamp": datetime.now().isoformat(),
+                                "version": "V3",
+                                "suggestions_count": len(enhanced_result.improvement_suggestions)
+                            }
+                        }
 
-                result = {
-                    "improvement_suggestions": suggestions_dict,
-                    "metadata": {
-                        "protocol_path": self._normalize_path(str(self.session_state.protocol_path)),
-                        "playbook_path": self._normalize_path(str(self.session_state.playbook_path)) if self.session_state.playbook_path else None,
-                        "model_used": self.session_state.model,
-                        "timestamp": datetime.now().isoformat(),
-                        "version": "V3",
-                        "suggestions_count": len(enhanced_result.improvement_suggestions)
-                    }
-                }
+                        self.session_state.enhanced_result = enhanced_result
+                        self.session_state.analysis_result = result
 
-                self.session_state.enhanced_result = enhanced_result
-                self.session_state.analysis_result = result
+                    else:
+                        # V2 Standard Analysis
+                        if not v2_analyze:
+                            raise ImportError("v2_analyze não disponível")
+                        
+                        result = v2_analyze(
+                            protocol_path=self.session_state.protocol_path,
+                            playbook_path=self.session_state.playbook_path,
+                            model=self.session_state.model
+                        )
+                        result["metadata"]["version"] = "V2"
+                        self.session_state.analysis_result = result
 
-            else:
-                # V2 Standard Analysis
-                if not v2_analyze:
-                    raise ImportError("v2_analyze não disponível")
-                
-                result = v2_analyze(
-                    protocol_path=self.session_state.protocol_path,
-                    playbook_path=self.session_state.playbook_path,
-                    model=self.session_state.model
-                )
-                result["metadata"]["version"] = "V2"
-                self.session_state.analysis_result = result
+                self.tasks.mark_completed("analyze")
+                progress.update(pb_task, advance=1)
+                self.tasks.render_tasks(self.display)
+                print()
 
-            self.tasks.mark_completed("analyze")
-            self.tasks.render_tasks(self.display)
-            print()
-
-            # Salvar relatórios
-            self._save_reports(result)
+                # Task 4: Salvar relatórios
+                with self.display.spinner("Salvando relatórios..."):
+                    self._save_reports(result)
+                progress.update(pb_task, advance=1)
 
             suggestions_count = len(result.get('improvement_suggestions', []))
             self.display.show_success(f"Análise concluída! {suggestions_count} sugestões geradas.")
@@ -659,34 +667,21 @@ class InteractiveCLI:
                             feedback_dict['timestamp'] = feedback_dict['timestamp'].isoformat()
                         
                         # Usar caminho do relatório salvo anteriormente
-                        report_path = self.session_state.report_json_path
-                        
-                        if not report_path or not report_path.exists():
-                            # Tentar encontrar o relatório mais recente se não estiver armazenado
-                            try:
-                                protocol_name = Path(self.session_state.protocol_path).stem
-                                reports_dir = self.project_root / "reports"
-                                # Buscar o arquivo mais recente com o nome do protocolo
-                                matching_files = sorted(
-                                    reports_dir.glob(f"{protocol_name}_*.json"),
-                                    key=lambda p: p.stat().st_mtime,
-                                    reverse=True
-                                )
-                                if matching_files:
-                                    report_path = matching_files[0]
-                                    logger.info(f"Using most recent report: {report_path.name}")
-                            except Exception as e:
-                                logger.warning(f"Could not find report path: {e}")
-                                report_path = None
-                        
+                        txt_report_path = getattr(self.session_state, "report_txt_path", None)
+
                         # Análise automática de padrões (simples + LLM) + edição do relatório
                         self.display.show_info("Analisando padrões de feedback e editando relatório...")
-                        
-                        patterns = memory_qa.analyze_feedback_patterns(
-                            feedback_sessions=[feedback_dict],
-                            analysis_report=self.session_state.analysis_result,
-                            report_path=report_path
-                        )
+                        with self.display.spinner("Processando feedback e editando relatório..."):
+                            patterns, edited_report = memory_qa.analyze_feedback_patterns(
+                                feedback_sessions=[feedback_dict],
+                                analysis_report=self.session_state.analysis_result,
+                                report_path=None,
+                                txt_report_path=txt_report_path
+                            )
+
+                        # Guardar relatório editado em memória para reconstrução
+                        if edited_report:
+                            self.session_state.edited_report = edited_report
                         
                         if patterns:
                             self.display.show_info(f"Identificados {len(patterns)} padrões de feedback")
@@ -697,30 +692,23 @@ class InteractiveCLI:
                             self.display.show_success("Padrões adicionados ao memory_qa.md para refinar análises futuras!")
                             
                             # Atualizar relatório TXT usando função robusta com atomic operations
-                            if report_path and report_path.exists():
-                                edited_path = report_path.parent / f"{report_path.stem}_EDITED{report_path.suffix}"
-                                txt_path = report_path.with_suffix('.txt')
-
-                                if edited_path.exists():
-                                    # Usar método robusto de atualização do MemoryQA
-                                    success = memory_qa.update_txt_report_from_edited_json(
-                                        edited_json_path=edited_path,
-                                        txt_report_path=txt_path,
-                                        version=self.session_state.version
-                                    )
-
-                                    if success:
-                                        self.display.show_success(f"✅ Relatório TXT atualizado com segurança: {txt_path.name}")
-                                        self.display.show_info("   • Backup criado automaticamente")
-                                        self.display.show_info("   • Operação atômica (sem corrupção de arquivo)")
-                                    else:
-                                        self.display.show_warning(f"⚠️  Falha ao atualizar relatório TXT (rollback aplicado se necessário)")
-                                        if logger:
-                                            logger.warning("TXT update failed, check logs for details")
+                            # Atualizar TXT com dados em memória (sem _EDITED.json)
+                            if edited_report and txt_report_path:
+                                success = memory_qa.update_txt_report_from_edited_data(
+                                    edited_report=edited_report,
+                                    txt_report_path=txt_report_path,
+                                    version=self.session_state.version
+                                )
+                                if success:
+                                    self.display.show_success(f"✅ Relatório TXT atualizado com segurança: {txt_report_path.name}")
+                                    self.display.show_info("   • Backup criado automaticamente")
+                                    self.display.show_info("   • Operação atômica (sem corrupção de arquivo)")
                                 else:
-                                    self.display.show_warning("Relatório editado em JSON não foi gerado")
-                            else:
-                                self.display.show_warning("Caminho do relatório não encontrado para edição")
+                                    self.display.show_warning("⚠️  Falha ao atualizar relatório TXT (rollback aplicado se necessário)")
+                                    if logger:
+                                        logger.warning("TXT update failed, check logs for details")
+                            elif not txt_report_path:
+                                self.display.show_warning("Caminho do relatório TXT não encontrado para edição")
                         else:
                             self.display.show_info("Nenhum padrão significativo identificado.")
                             
@@ -767,106 +755,101 @@ class InteractiveCLI:
             return
 
         try:
-            # Preparar sugestões do relatório EDITADO (pós-feedback), não do original
-            suggestions_for_reconstruction = None
+            with self.display.create_progress_bar("Reconstrução em andamento", total=4) as progress:
+                pb_task = progress.add_task("Preparando reconstrução", total=4)
 
-            # Verificar se existe relatório editado (com feedback aplicado)
-            report_path = getattr(self.session_state, 'report_path', None)
-            if report_path:
-                edited_report_path = Path(str(report_path).replace('.json', '_EDITED.json'))
-                if edited_report_path.exists():
-                    try:
-                        import json
-                        with open(edited_report_path, 'r', encoding='utf-8') as f:
-                            edited_report = json.load(f)
-
-                        suggestions_for_reconstruction = edited_report.get('improvement_suggestions', [])
-                        logger.info(f"Using {len(suggestions_for_reconstruction)} suggestions from EDITED report (post-feedback)")
-
-                        # Log rejected suggestions count
-                        rejected_count = len(edited_report.get('rejected_suggestions', []))
-                        if rejected_count > 0:
-                            logger.info(f"Skipping {rejected_count} rejected suggestions based on user feedback")
-                            self.display.show_info(f"📝 Usando apenas sugestões aprovadas: {len(suggestions_for_reconstruction)} relevantes, {rejected_count} rejeitadas")
-
-                    except Exception as e:
-                        logger.warning(f"Could not load edited report: {e}")
-
-            # Fallback: usar sugestões originais se não houver relatório editado
-            if suggestions_for_reconstruction is None:
+            # Preparar sugestões editadas em memória (pós-feedback); fallback para originais
+            edited_report = getattr(self.session_state, "edited_report", None)
+            if edited_report:
+                suggestions_for_reconstruction = edited_report.get("improvement_suggestions", [])
+                rejected_count = len(edited_report.get("rejected_suggestions", []))
+                if rejected_count > 0:
+                    self.display.show_info(f"📝 Usando apenas sugestões aprovadas: {len(suggestions_for_reconstruction)} relevantes, {rejected_count} rejeitadas")
+            else:
                 if self.session_state.enhanced_result:
                     suggestions_for_reconstruction = [s.to_dict() for s in self.session_state.enhanced_result.improvement_suggestions]
                 else:
                     suggestions_for_reconstruction = self.session_state.analysis_result.get('improvement_suggestions', [])
 
-            if not suggestions_for_reconstruction:
-                self.display.show_warning("Nenhuma sugestão disponível para reconstrução")
-                return
+                progress.update(pb_task, advance=1)
 
-            # Carregar protocolo original (ou _EDITED se existir)
-            if not load_protocol:
-                raise ImportError("load_protocol não disponível")
+                if not suggestions_for_reconstruction:
+                    self.display.show_warning("Nenhuma sugestão disponível para reconstrução")
+                    return
 
-            # Check for _EDITED version first
-            protocol_path_to_load = self.session_state.protocol_path
-            edited_path = Path(str(protocol_path_to_load).replace('.json', '_EDITED.json'))
-            if edited_path.exists():
-                logger.info(f"Using EDITED protocol for reconstruction: {edited_path.name}")
-                protocol_path_to_load = edited_path
+                # Carregar protocolo original (ou _EDITED se existir)
+                if not load_protocol:
+                    raise ImportError("load_protocol não disponível")
 
-            protocol_json = load_protocol(protocol_path_to_load)
+                protocol_path_to_load = self.session_state.protocol_path
+                edited_path = Path(str(protocol_path_to_load).replace('.json', '_EDITED.json'))
+                if edited_path.exists():
+                    logger.info(f"Using EDITED protocol for reconstruction: {edited_path.name}")
+                    protocol_path_to_load = edited_path
 
-            # Reconstruir
-            reconstructor = ProtocolReconstructor(model=self.session_state.model)
-            reconstruction_result = reconstructor.reconstruct_protocol(
-                original_protocol=protocol_json,
-                suggestions=suggestions_for_reconstruction,
-                analysis_result=self.session_state.enhanced_result
-            )
+                with self.display.spinner("Carregando protocolo para reconstrução..."):
+                    protocol_json = load_protocol(protocol_path_to_load)
 
-            if reconstruction_result:
-                # Salvar protocolo reconstruído
-                from ..applicator.version_utils import (
-                    generate_output_filename,
-                    update_protocol_version
-                )
+                progress.update(pb_task, advance=1)
 
-                reconstructed_protocol = reconstruction_result.reconstructed_protocol
-                output_filename, new_version = generate_output_filename(
-                    protocol_json=reconstructed_protocol,
-                    protocol_path=self.session_state.protocol_path,
-                    suffix="RECONSTRUCTED"
-                )
+                # Reconstruir
+                self.display.show_thinking("Aplicando sugestões aprovadas no protocolo...")
+                with self.display.spinner("Aplicando sugestões..."):
+                    reconstructor = ProtocolReconstructor(model=self.session_state.model)
+                    reconstruction_result = reconstructor.reconstruct_protocol(
+                        original_protocol=protocol_json,
+                        suggestions=suggestions_for_reconstruction,
+                        analysis_result=self.session_state.enhanced_result
+                    )
 
-                reconstructed_protocol = update_protocol_version(
-                    reconstructed_protocol,
-                    new_version
-                )
+                progress.update(pb_task, advance=1)
 
-                output_dir = self.project_root / "models_json"
-                output_path = output_dir / output_filename
+                if reconstruction_result:
+                    # Salvar protocolo reconstruído
+                    from ..applicator.version_utils import (
+                        generate_output_filename,
+                        update_protocol_version
+                    )
 
-                import json
-                with open(output_path, 'w', encoding='utf-8') as f:
-                    json.dump(reconstructed_protocol, f, ensure_ascii=False, indent=2)
+                    reconstructed_protocol = reconstruction_result.reconstructed_protocol
+                    output_filename, new_version = generate_output_filename(
+                        protocol_json=reconstructed_protocol,
+                        protocol_path=self.session_state.protocol_path,
+                        suffix="RECONSTRUCTED"
+                    )
 
-                # Exibir resultados
-                changes = reconstruction_result.changes_applied
-                if changes:
-                    self.display.show_diff(changes)
+                    reconstructed_protocol = update_protocol_version(
+                        reconstructed_protocol,
+                        new_version
+                    )
 
-                summary = {
-                    "Arquivo": str(output_path),
-                    "Versão": f"{reconstruction_result.metadata.get('original_version', 'N/A')} → {new_version}",
-                    "Sugestões Aplicadas": len(changes),
-                    "Validação": "✅ PASSOU" if reconstruction_result.validation_passed else "❌ FALHOU"
-                }
-                self.display.show_summary_panel("Reconstrução Concluída", summary)
+                    output_dir = self.project_root / "models_json"
+                    output_path = output_dir / output_filename
 
-                self.session_state.reconstruction_result = reconstruction_result
-                self.display.show_success("Protocolo reconstruído com sucesso!")
-            else:
-                self.display.show_warning("Reconstrução não concluída")
+                    with self.display.spinner("Gravando protocolo reconstruído..."):
+                        import json
+                        with open(output_path, 'w', encoding='utf-8') as f:
+                            json.dump(reconstructed_protocol, f, ensure_ascii=False, indent=2)
+
+                    progress.update(pb_task, advance=1)
+
+                    # Exibir resultados
+                    changes = reconstruction_result.changes_applied
+                    if changes:
+                        self.display.show_diff(changes)
+
+                    summary = {
+                        "Arquivo": str(output_path),
+                        "Versão": f"{reconstruction_result.metadata.get('original_version', 'N/A')} → {new_version}",
+                        "Sugestões Aplicadas": len(changes),
+                        "Validação": "✅ PASSOU" if reconstruction_result.validation_passed else "❌ FALHOU"
+                    }
+                    self.display.show_summary_panel("Reconstrução Concluída", summary)
+
+                    self.session_state.reconstruction_result = reconstruction_result
+                    self.display.show_success("Protocolo reconstruído com sucesso!")
+                else:
+                    self.display.show_warning("Reconstrução não concluída")
 
         except Exception as e:
             self.display.show_error(f"Erro ao reconstruir protocolo: {e}")
@@ -874,23 +857,14 @@ class InteractiveCLI:
                 logger.error(f"Reconstruction error: {e}", exc_info=True)
 
     def _save_reports(self, result: Dict) -> None:
-        """Salva relatórios JSON e texto."""
+        """Salva apenas relatório texto (JSON permanece em memória)."""
         try:
             from ..applicator.version_utils import generate_daktus_timestamp
-            import json
 
             protocol_name = Path(self.session_state.protocol_path).stem
             timestamp = generate_daktus_timestamp()
             reports_dir = self.project_root / "reports"
             reports_dir.mkdir(exist_ok=True)
-
-            # Salvar JSON (enxuto)
-            json_path = reports_dir / f"{protocol_name}_{timestamp}.json"
-            with open(json_path, 'w', encoding='utf-8') as f:
-                json.dump(result, f, ensure_ascii=False, separators=(',', ':'))
-            
-            # Armazenar caminho do relatório no estado da sessão
-            self.session_state.report_json_path = json_path
 
             # Salvar texto
             txt_path = reports_dir / f"{protocol_name}_{timestamp}.txt"
@@ -972,7 +946,10 @@ class InteractiveCLI:
                 else:
                     f.write("Nenhuma sugestão de melhoria gerada.\n")
 
-            self.display.show_info(f"Relatórios salvos: {json_path.name}, {txt_path.name}")
+            # Armazenar caminho do TXT para atualizações futuras
+            self.session_state.report_txt_path = txt_path
+
+            self.display.show_info(f"Relatório salvo: {txt_path.name}")
 
         except Exception as e:
             self.display.show_warning(f"Erro ao salvar relatórios: {e}")
