@@ -1,0 +1,28 @@
+======================================================================
+📋 RELATÓRIO DE AUDITORIA - RECONSTRUÇÃO DE PROTOCOLO
+======================================================================
+Data: 2025-12-07 21:35:06
+Protocolo: Unknown
+Sugestões Aplicadas: 5
+
+======================================================================
+MUDANÇAS DETECTADAS (COMPARAÇÃO)
+======================================================================
+
+======================================================================
+SUGESTÕES APLICADAS
+======================================================================
+1. [sug_012] Adicionar Alerta de Risco de Ototoxicidade para Zumbido/Hipoacusia
+   Categoria: seguranca
+2. [sug_019] Adicionar Opção de 'Otite Média Crônica' nos Sintomas Otológicos
+   Categoria: eficiencia
+3. [sug_013] Ajustar Posologia de Pantoprazol para RLF (Dose Dupla)
+   Categoria: eficiencia
+4. [sug_015] Adicionar Opção de 'Otite Externa' nos Sintomas Otológicos
+   Categoria: eficiencia
+5. [sug_002] Reforçar Alerta de Vertigem Central (HINTS+) para Encaminhamento Imediato
+   Categoria: seguranca
+
+======================================================================
+RESUMO: 5 sugestões | 2025-12-07 21:35:06
+======================================================================

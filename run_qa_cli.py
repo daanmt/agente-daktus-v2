@@ -1,8 +1,9 @@
 """
-Agent V2 CLI Entry Point
+DEPRECATED: Legacy CLI Entry Point
 
-This is the main entry point for the Agent V2 CLI.
-It simply delegates to the CLI module.
+This file is deprecated. Use run_agent.py instead.
+
+For backward compatibility, this file redirects to the main entry point.
 """
 
 import sys
@@ -14,14 +15,17 @@ src_dir = current_dir / "src"
 if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
 
-# Import and run CLI
+# Import and run CLI from correct consolidated location
 try:
-    from cli.run_qa_cli import main
+    from agent.cli.interactive_cli import main
+
     if __name__ == "__main__":
+        print("⚠️  WARNING: run_qa_cli.py is deprecated. Use run_agent.py instead.\n")
         main()
 except ImportError as e:
     print(f"❌ Error importing CLI: {e}")
-    print(f"Make sure src/cli/run_qa_cli.py exists")
+    print(f"\n💡 Please use run_agent.py as the main entry point:")
+    print(f"   python run_agent.py")
     sys.exit(1)
 except KeyboardInterrupt:
     print("\n\n❌ Cancelled by user")

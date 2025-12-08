@@ -183,10 +183,26 @@ class LLMClient:
         full_output = ""
         current_prompt = prompt
         continuation_count = 0
+        total_usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
 
         while True:
             # Call low-level API
+            call_start = time.time()
             content, finish_reason, usage = self._call_api(current_prompt, attempt=0, max_tokens=max_tokens)
+            call_latency = int((time.time() - call_start) * 1000)
+            
+            # Track usage (Wave 3)
+            try:
+                from ..cost_control.cost_tracker import get_cost_tracker
+                tracker = get_cost_tracker()
+                tracker.record_usage("llm_call", usage, call_latency, self.model)
+            except Exception:
+                pass  # Cost tracking is optional
+            
+            # Accumulate usage
+            total_usage["prompt_tokens"] += usage.get("prompt_tokens", 0)
+            total_usage["completion_tokens"] += usage.get("completion_tokens", 0)
+            total_usage["total_tokens"] += usage.get("total_tokens", 0)
 
             # Append chunk to full output
             full_output += content
@@ -485,14 +501,28 @@ class LLMClient:
         if response.status_code == 400:
             try:
                 error_detail = response.json()
-                logger.error(f"API 400 Error Details: {json.dumps(error_detail, indent=2)}")
-                # Log do payload também (sem expor API key)
-                payload_debug = {k: v for k, v in payload.items() if k != "model"}
-                payload_debug["model"] = payload.get("model", "N/A")
-                if "system" in payload_debug and isinstance(payload_debug["system"], str):
-                    payload_debug["system"] = payload_debug["system"][:200] + "..." if len(payload_debug["system"]) > 200 else payload_debug["system"]
-                logger.error(f"Payload sent: {json.dumps(payload_debug, indent=2, ensure_ascii=False)}")
-            except:
+                error_message = error_detail.get('error', {}).get('message', 'Unknown error')
+                logger.error(f"API 400 Error: {error_message}")
+                logger.error(f"Full error details: {json.dumps(error_detail, indent=2)}")
+                
+                # Log payload summary (without exposing full content)
+                payload_summary = {
+                    "model": payload.get("model"),
+                    "message_count": len(payload.get("messages", [])),
+                    "has_system": "system" in payload,
+                    "temperature": payload.get("temperature"),
+                    "max_tokens": payload.get("max_tokens", "N/A"),
+                    "has_response_format": "response_format" in payload
+                }
+                logger.error(f"Payload summary: {json.dumps(payload_summary, indent=2)}")
+                
+                # If it's a content length issue, log that
+                total_content_length = sum(
+                    len(str(m.get("content", ""))) 
+                    for m in payload.get("messages", [])
+                )
+                logger.error(f"Total message content length: {total_content_length} chars")
+            except Exception as e:
                 logger.error(f"API 400 Error Response: {response.text[:500]}")
         
         response.raise_for_status()

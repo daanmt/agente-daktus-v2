@@ -64,7 +64,7 @@ class CostEstimator:
         "google/gemini-2.5-pro": {"input": 1.25, "output": 10.0},  # Contexto: 1.05M tokens
         
         # Claude models
-        "anthropic/claude-sonnet-4-20250514": {"input": 3.0, "output": 15.0},  # Contexto: 1M tokens
+        "anthropic/claude-sonnet-4.5": {"input": 3.0, "output": 15.0},  # Contexto: 1M tokens
         "anthropic/claude-opus-4-20250514": {"input": 5.0, "output": 25.0},  # Contexto: 200K tokens
         
         # OpenAI models (mantido para compatibilidade)

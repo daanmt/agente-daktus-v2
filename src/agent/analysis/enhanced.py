@@ -236,6 +236,43 @@ class EnhancedAnalyzer:
                 f"({pre_validation_count - post_validation_count} removed - NO VALID PLAYBOOK REFERENCE)"
             )
 
+        # Step 4.6b: Strict reference verification (Wave 2 - fuzzy matching)
+        logger.info("Step 4.6b: Strict reference verification (Wave 2)...")
+        try:
+            from ..validators.reference_validator import validate_suggestions_references
+            
+            # Convert Suggestion objects to dicts for validator
+            suggestion_dicts = [
+                {
+                    'id': s.id,
+                    'title': s.title,
+                    'playbook_reference': s.evidence.get('playbook_reference', '')
+                }
+                for s in suggestions
+            ]
+            
+            valid_dicts, invalid_dicts = validate_suggestions_references(
+                suggestion_dicts,
+                playbook_content
+            )
+            
+            # Keep only suggestions that passed
+            valid_ids = {d['id'] for d in valid_dicts}
+            pre_strict_count = len(suggestions)
+            suggestions = [s for s in suggestions if s.id in valid_ids]
+            post_strict_count = len(suggestions)
+            
+            if pre_strict_count != post_strict_count:
+                logger.warning(
+                    f"🔍 Strict reference check: {pre_strict_count} → {post_strict_count} "
+                    f"({pre_strict_count - post_strict_count} failed verification)"
+                )
+        except ImportError as e:
+            logger.warning(f"Reference validator not available: {e}")
+        except Exception as e:
+            logger.warning(f"Reference validation error (continuing): {e}")
+
+
         # Step 4.7: Apply memory-based filtering (Memory Engine V2)
         logger.info("Step 4.7: Applying memory-based filtering...")
         memory_engine = MemoryEngine()
@@ -249,6 +286,45 @@ class EnhancedAnalyzer:
                 f"Memory filtering: {pre_memory_count} → {post_memory_count} suggestions "
                 f"({pre_memory_count - post_memory_count} filtered by memory rules)"
             )
+
+        # Step 4.8: Apply hard rules engine (CRITICAL - Wave 2)
+        logger.info("Step 4.8: Applying hard rules engine...")
+        try:
+            from ..learning.rules_engine import RulesEngine
+            
+            rules_engine = RulesEngine()
+            pre_rules_count = len(suggestions)
+            
+            # Convert Suggestion objects to dicts for rules engine
+            suggestion_dicts = [
+                {
+                    'id': s.id,
+                    'title': s.title,
+                    'description': s.description,
+                    'category': s.category,
+                    'playbook_reference': s.evidence.get('playbook_reference', ''),
+                    'priority': s.priority,
+                    'impact_scores': s.impact_scores
+                }
+                for s in suggestions
+            ]
+            
+            valid_dicts = rules_engine.validate_batch(suggestion_dicts)
+            valid_ids = {d['id'] for d in valid_dicts}
+            
+            # Keep only suggestions that passed rules
+            suggestions = [s for s in suggestions if s.id in valid_ids]
+            post_rules_count = len(suggestions)
+            
+            if pre_rules_count != post_rules_count:
+                logger.info(
+                    f"🛡️ Rules engine: {pre_rules_count} → {post_rules_count} suggestions "
+                    f"({pre_rules_count - post_rules_count} blocked by hard rules)"
+                )
+        except ImportError as e:
+            logger.warning(f"Rules engine not available: {e}")
+        except Exception as e:
+            logger.warning(f"Rules engine error (continuing): {e}")
 
         # Step 5: Categorize and prioritize
         logger.info("Step 5: Categorizing and prioritizing suggestions...")
@@ -1142,100 +1218,104 @@ CRITICAL OUTPUT REQUIREMENTS:
                 logger.warning(f"Playbook validation removed: {sug.id} - {removal_reason}")
 
         # Relatório de remoções
-        if removed:
-            logger.warning(
-                f"Playbook validation removed {len(removed)} suggestions that lack valid playbook references. "
-                f"This indicates the LLM generated content outside the playbook."
-            )
-            # Log detalhes das primeiras 5 remoções
-            for item in removed[:5]:
-                logger.info(f"  ❌ {item['suggestion'].id}: {item['reason']}")
-
+            if removed:
+                logger.warning(
+                    f"Playbook validation removed {len(removed)} suggestions that lack valid playbook references. "
+                    f"This indicates the LLM generated content outside the playbook."
+                )
+                # Log detalhes das primeiras 5 remoções
+                for i, rem in enumerate(removed[:5]):
+                    logger.warning(f"  Removed #{i+1}: {rem['suggestion'].id} - {rem['reason']}")
+        
         return validated
 
-    def _extract_suggestions(
-        self,
-        llm_result: Dict
-    ) -> List[Suggestion]:
+    def _extract_suggestions(self, llm_response) -> List[Suggestion]:
         """
-        Extrai sugestões estruturadas da resposta do LLM.
-
+        Extrai lista de objetos Suggestion da resposta do LLM.
+        
+        Inclui validação de contrato (Wave 1).
+        
         Args:
-            llm_result: Resposta do LLM (já parseada como dict)
-
-        Returns:
-            Lista de sugestões estruturadas
+            llm_response: Either a dict (already parsed) or a JSON string from LLM.
         """
         suggestions = []
-        suggestions_data = llm_result.get("improvement_suggestions", [])
-        
-        if not suggestions_data:
-            logger.warning("No suggestions found in LLM response")
-            return suggestions
-        
-        logger.info(f"Extracting {len(suggestions_data)} suggestions from LLM response...")
-        
-        for idx, sug_data in enumerate(suggestions_data):
+        try:
+            # 1. Handle both dict and string inputs
+            if isinstance(llm_response, dict):
+                data = llm_response
+            else:
+                # Limpar e parsear JSON string
+                cleaned_response = llm_response.strip()
+                if cleaned_response.startswith("```json"):
+                    cleaned_response = cleaned_response[7:]
+                if cleaned_response.endswith("```"):
+                    cleaned_response = cleaned_response[:-3]
+                
+                data = json.loads(cleaned_response.strip())
+            
+            # 2. Validar Contrato (Wave 1)
+            raw_suggestions = []
             try:
-                # Generate ID if missing
-                sug_id = sug_data.get("id", f"sug_{idx+1:03d}")
+                from ..validators.llm_contract import EnhancedAnalysisResponse
+                # Validate schema but don't crash analysis if valid data exists
+                # We want to catch Drift but be resilient in Wave 1
+                validated_response = EnhancedAnalysisResponse(**data)
                 
-                # Extract impact scores
-                impact_scores_raw = sug_data.get("impact_scores", {})
-                impact_scores = {
-                    "seguranca": impact_scores_raw.get("seguranca", 0),
-                    "economia": impact_scores_raw.get("economia", "L"),
-                    "eficiencia": impact_scores_raw.get("eficiencia", "L"),
-                    "usabilidade": impact_scores_raw.get("usabilidade", 0)
-                }
-                
-                # Extract evidence
-                evidence = sug_data.get("evidence", {})
-                if not isinstance(evidence, dict):
-                    evidence = {
-                        "playbook_reference": str(evidence) if evidence else "",
-                        "context": "",
-                        "clinical_rationale": ""
-                    }
-                
-                # Extract implementation effort
-                impl_effort = sug_data.get("implementation_effort", {})
-                if not isinstance(impl_effort, dict):
-                    impl_effort = {
-                        "effort": "medio",
-                        "estimated_time": "1h",
-                        "complexity": "moderada"
-                    }
-                
-                # Extract cost estimate (default to 0 if not provided)
-                cost_estimate = sug_data.get("auto_apply_cost_estimate", {
-                    "estimated_tokens": 0,
-                    "estimated_cost_usd": 0.0
-                })
-                
-                # Extract specific location
-                specific_location = sug_data.get("specific_location")
-                
-                suggestion = Suggestion(
-                    id=sug_id,
-                    category=sug_data.get("category", "eficiencia"),
-                    priority=sug_data.get("priority", "media"),
-                    title=sug_data.get("title", f"Suggestion {idx+1}"),
-                    description=sug_data.get("description", ""),
-                    rationale=sug_data.get("rationale", ""),
-                    impact_scores=impact_scores,
-                    evidence=evidence,
-                    implementation_effort=impl_effort,
-                    auto_apply_cost_estimate=cost_estimate,
-                    specific_location=specific_location
-                )
-                
-                suggestions.append(suggestion)
+                # Convert back to dicts for processing (to keep logic compatible)
+                # In future we can work with objects directly
+                raw_suggestions = [s.dict() for s in validated_response.improvement_suggestions]
+                logger.info("✅ LLM Output validated against Pydantic Contract")
                 
             except Exception as e:
-                logger.warning(f"Failed to extract suggestion {idx+1}: {e}. Skipping.")
-                continue
-        
+                # Soft block for Wave 1 - allow fallback but log error
+                logger.warning(f"⚠️ LLM Output Contract Violation: {e}")
+                logger.warning("Proceeding with raw extraction (Best Effort)...")
+                
+                # Fallback extraction
+                raw_suggestions = data.get("improvement_suggestions", [])
+                if not raw_suggestions and isinstance(data, list):
+                    raw_suggestions = data
+            
+            # 3. Processar sugestões
+            for idx, sug_data in enumerate(raw_suggestions):
+                try:
+                    sug_id = sug_data.get("id", f"sug_{idx+1}")
+                    
+                    # Extract nested objects safely
+                    impact_scores = ImpactScores(**sug_data.get("impact_scores", {}))
+                    
+                    evidence = sug_data.get("evidence", {})
+                    impl_effort = sug_data.get("implementation_effort", {})
+                    cost_estimate = sug_data.get("auto_apply_cost_estimate", {})
+                    
+                    specific_location = sug_data.get("specific_location")
+                    
+                    suggestion = Suggestion(
+                        id=sug_id,
+                        category=sug_data.get("category", "eficiencia"),
+                        priority=sug_data.get("priority", "media"),
+                        title=sug_data.get("title", f"Suggestion {idx+1}"),
+                        description=sug_data.get("description", ""),
+                        rationale=sug_data.get("rationale", ""),
+                        impact_scores=impact_scores,
+                        evidence=evidence,
+                        implementation_effort=impl_effort,
+                        auto_apply_cost_estimate=cost_estimate,
+                        specific_location=specific_location
+                    )
+                    
+                    suggestions.append(suggestion)
+                except Exception as e:
+                     logger.warning(f"Failed to create Suggestion object for {idx}: {e}")
+                     continue
+                
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse LLM response as JSON: {e}")
+            logger.debug(f"Raw response: {llm_response[:500]}...")
+            
+        except Exception as e:
+            logger.error(f"Unexpected error extracting suggestions: {e}")
+
         logger.info(f"Successfully extracted {len(suggestions)} suggestions")
         return suggestions
 
@@ -1289,9 +1369,9 @@ CRITICAL OUTPUT REQUIREMENTS:
             Sugestões priorizadas (alta, média, baixa)
         """
         for sug in suggestions:
-            seguranca = sug.impact_scores.get("seguranca", 0)
-            economia = sug.impact_scores.get("economia", "L")
-            eficiencia = sug.impact_scores.get("eficiencia", "L")
+            seguranca = getattr(sug.impact_scores, 'seguranca', 0)
+            economia = getattr(sug.impact_scores, 'economia', 'L')
+            eficiencia = getattr(sug.impact_scores, 'eficiencia', 'L')
             
             # Calculate priority based on algorithm
             if seguranca >= 8 or (economia == "A" and seguranca >= 5):
@@ -1305,7 +1385,7 @@ CRITICAL OUTPUT REQUIREMENTS:
         priority_order = {"alta": 0, "media": 1, "baixa": 2}
         suggestions_sorted = sorted(
             suggestions,
-            key=lambda s: (priority_order.get(s.priority, 3), s.impact_scores.get("seguranca", 0)),
+            key=lambda s: (priority_order.get(s.priority, 3), getattr(s.impact_scores, 'seguranca', 0)),
             reverse=True
         )
         
@@ -1339,10 +1419,10 @@ CRITICAL OUTPUT REQUIREMENTS:
                 "eficiencia_high_count": 0
             }
         
-        seguranca_scores = [s.impact_scores.get("seguranca", 0) for s in suggestions]
-        usabilidade_scores = [s.impact_scores.get("usabilidade", 0) for s in suggestions]
-        economia_high = sum(1 for s in suggestions if s.impact_scores.get("economia") == "A")
-        eficiencia_high = sum(1 for s in suggestions if s.impact_scores.get("eficiencia") == "A")
+        seguranca_scores = [getattr(s.impact_scores, 'seguranca', 0) for s in suggestions]
+        usabilidade_scores = [getattr(s.impact_scores, 'usabilidade', 0) for s in suggestions]
+        economia_high = sum(1 for s in suggestions if getattr(s.impact_scores, 'economia', None) == "A")
+        eficiencia_high = sum(1 for s in suggestions if getattr(s.impact_scores, 'eficiencia', None) == "A")
         
         return {
             "seguranca_avg": sum(seguranca_scores) / len(seguranca_scores) if seguranca_scores else 0.0,

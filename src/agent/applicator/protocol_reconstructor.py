@@ -34,6 +34,7 @@ class ReconstructionResult:
     validation_passed: bool
     cost_actual: Optional[Dict] = None
     metadata: Optional[Dict] = None
+    detailed_changelog: Optional[List[Dict]] = None  # LLM-generated detailed changes for audit
 
 
 @dataclass
@@ -155,6 +156,28 @@ class ProtocolReconstructor:
                     "new_version": new_version if current_version else None
                 }
             )
+            
+            # Step: Verify changes were actually applied (Wave 2)
+            try:
+                from .change_verifier import verify_reconstruction_changes
+                
+                verification = verify_reconstruction_changes(
+                    original_protocol,
+                    reconstructed,
+                    suggestions
+                )
+                
+                result.metadata["verification"] = verification
+                
+                if verification['failed'] > 0:
+                    logger.warning(
+                        f"⚠️ Change verification: {verification['verified']}/{verification['total']} verified "
+                        f"({verification['failed']} not applied)"
+                    )
+            except ImportError:
+                logger.debug("Change verifier not available")
+            except Exception as e:
+                logger.warning(f"Change verification error: {e}")
             
             logger.info("Protocol reconstruction completed successfully")
             return result
@@ -282,16 +305,86 @@ class ProtocolReconstructor:
 
         protocol_json_str = json.dumps(original_protocol, ensure_ascii=False, indent=2)
         
-        # Formatar sugestões
-        suggestions_text = "\n".join([
-            f"\n{i+1}. [{s.get('id', 'N/A')}] {s.get('category', 'N/A')} - {s.get('priority', 'N/A')}:\n"
-            f"   Título: {s.get('title', 'N/A')}\n"
-            f"   Descrição: {s.get('description', 'N/A')}\n"
-            f"   Localização: {s.get('specific_location', {})}\n"
-            for i, s in enumerate(suggestions)
-        ])
+        # Formatar sugestões com implementation_path para aplicação direta
+        suggestions_formatted = []
+        for i, s in enumerate(suggestions):
+            sug_text = f"\n{i+1}. [{s.get('id', 'N/A')}] {s.get('category', 'N/A')} - {s.get('priority', 'N/A')}:\n"
+            sug_text += f"   Título: {s.get('title', 'N/A')}\n"
+            sug_text += f"   Descrição: {s.get('description', 'N/A')}\n"
+            
+            # Include implementation_path if available (structured for easy application)
+            impl_path = s.get('implementation_path', {})
+            if impl_path and impl_path.get('json_path'):
+                sug_text += f"\n   🎯 IMPLEMENTATION PATH (USE THIS TO APPLY):\n"
+                sug_text += f"   - JSON Path: {impl_path.get('json_path', 'N/A')}\n"
+                sug_text += f"   - Modification Type: {impl_path.get('modification_type', 'N/A')}\n"
+                sug_text += f"   - Current Value: {impl_path.get('current_value', 'null')}\n"
+                sug_text += f"   - Proposed Value: {json.dumps(impl_path.get('proposed_value'), ensure_ascii=False) if impl_path.get('proposed_value') else 'N/A'}\n"
+            else:
+                # Fallback to specific_location
+                sug_text += f"   Localização: {s.get('specific_location', {})}\n"
+            
+            suggestions_formatted.append(sug_text)
         
-        prompt = f"""You are an expert medical protocol developer. Your task is to reconstruct a medical protocol JSON by applying improvement suggestions.
+        suggestions_text = "".join(suggestions_formatted)
+        
+        prompt = f"""You are an expert medical protocol developer for the Daktus Spider platform. Your task is to reconstruct a medical protocol JSON by applying improvement suggestions.
+
+🔴 CRITICAL: SPIDER/DAKTUS PROTOCOL STRUCTURE
+
+The protocol JSON uses this specific structure:
+
+NODE TYPES:
+- type: "custom" → Nodo de Coleta (questions for clinicians)
+- type: "conduct" → Nodo de Conduta (exams, medications, alerts)
+- type: "summary" → Nodo de Processamento (clinical expressions)
+
+ADDING A QUESTION TO A CUSTOM NODE:
+```json
+{{
+  "id": "q-NEW",
+  "uid": "nome_unico_sem_espacos",
+  "nome": "Texto da pergunta?",
+  "tipo": "multipla-escolha",
+  "options": [
+    {{"id": "opcao_sim", "label": "Sim"}},
+    {{"id": "opcao_nao", "label": "Não", "excludente": true}}
+  ],
+  "expressao": "",
+  "visibilidade": "visivel"
+}}
+```
+
+ADDING AN OPTION TO EXISTING QUESTION:
+Find the question by uid, add to its options array:
+```json
+{{"id": "nova_opcao_id", "label": "Texto da opção"}}
+```
+
+ADDING/MODIFYING mensagem_alerta IN CONDUCT NODE:
+```json
+{{
+  "type": "conduct",
+  "data": {{
+    "mensagem_alerta": "ATENÇÃO: Texto do alerta para o profissional..."
+  }}
+}}
+```
+
+ADDING/MODIFYING condicao (CONDITIONAL):
+```json
+{{
+  "nome": "Nome do exame",
+  "condicao": "(febre == True) and ('sintoma_x' in sintomas)"
+}}
+```
+
+CONDITIONAL SYNTAX (Python-like):
+- 'valor' in variavel → Check if selected
+- 'valor' not in variavel → Check if NOT selected
+- variavel == True/False → Boolean check
+- (cond1) and (cond2) → Both conditions
+- (cond1) or (cond2) → Either condition
 
 ORIGINAL PROTOCOL JSON:
 
@@ -353,10 +446,54 @@ OUTPUT FORMAT:
 You MUST return a JSON object with the following structure:
 
 {{
-  "reconstructed_protocol": <complete protocol JSON here>
+  "reconstructed_protocol": <complete protocol JSON here>,
+  "detailed_changelog": [
+    {{
+      "action": "modificação" | "adição" | "remoção",
+      "node_id": "id do nodo afetado",
+      "node_label": "nome legível do nodo",
+      "target_type": "pergunta" | "alternativa" | "condicional" | "mensagem_alerta" | "exame" | "medicamento" | "nodo",
+      "target_id": "id do item modificado (uid da pergunta, id da alternativa, etc)",
+      "description_before": "descrição breve do estado anterior (ou null se adição)",
+      "description_after": "descrição breve do novo estado",
+      "suggestion_id": "id da sugestão aplicada"
+    }}
+  ]
 }}
 
-The "reconstructed_protocol" field must contain the complete, valid protocol JSON with all improvements applied.
+EXEMPLO DE CHANGELOG DETALHADO:
+{{
+  "action": "modificação",
+  "node_id": "node-3",
+  "node_label": "Anamnese - inicial",
+  "target_type": "alternativa",
+  "target_id": "sintomas_febre",
+  "description_before": "label: 'Febre'",
+  "description_after": "label: 'Febre (≥37.8°C)'",
+  "suggestion_id": "sug_001"
+}}
+
+{{
+  "action": "adição",
+  "node_id": "node-5",
+  "node_label": "Conduta - avaliação",
+  "target_type": "mensagem_alerta",
+  "target_id": null,
+  "description_before": null,
+  "description_after": "ATENÇÃO: Pacientes idosos requerem avaliação renal antes de prescrição",
+  "suggestion_id": "sug_003"
+}}
+
+{{
+  "action": "modificação",
+  "node_id": "conduct-1",
+  "node_label": "Condutas",
+  "target_type": "condicional",
+  "target_id": "exame_hemograma",
+  "description_before": "condicao: 'febre == True'",
+  "description_after": "condicao: '(febre == True) and (idade >= 60)'",
+  "suggestion_id": "sug_007"
+}}
 
 IMPORTANT: Return ONLY valid JSON. No markdown, no explanations, no code blocks. Just the JSON object.
 """
@@ -532,25 +669,21 @@ IMPORTANT: Return ONLY valid JSON. No markdown, no explanations, no code blocks.
         edges = protocol.get("edges", [])
         metadata = protocol.get("metadata", {})
 
-        sections = []
+        sections = []  # Initialize sections list
 
-        # Section 0: Metadata only
+        # Create metadata section (Section 0)
         sections.append({
             "section_id": "section_0_metadata",
             "type": "metadata",
-            "metadata": metadata,
-            "edges_summary": edges,
-            "node_ids": []
+            "metadata": metadata
         })
 
-        # Sections 1+: Node groups
-        node_groups = [nodes[i:i+nodes_per_section]
-                      for i in range(0, len(nodes), nodes_per_section)]
+        # Create node sections
+        idx = 1
+        for i in range(0, len(nodes), nodes_per_section):
+            node_group = nodes[i:i + nodes_per_section]
+            node_ids = set(n["id"] for n in node_group)
 
-        for idx, node_group in enumerate(node_groups, start=1):
-            node_ids = [n["id"] for n in node_group]
-
-            # Filter edges relevant to this section
             section_edges = [
                 e for e in edges
                 if e.get("source") in node_ids or e.get("target") in node_ids
@@ -571,6 +704,7 @@ IMPORTANT: Return ONLY valid JSON. No markdown, no explanations, no code blocks.
                 "relevant_suggestions": section_suggestions,
                 "metadata_context": metadata  # Read-only context
             })
+            idx += 1
 
         logger.info(
             f"Enumerated {len(sections)} sections: "
@@ -954,7 +1088,6 @@ CRITICAL REQUIREMENTS:
                 f"Node count mismatch: original={original_node_count}, "
                 f"reconstructed={len(all_nodes)}"
             )
-
         # Step 5: Use original edges (validate targets exist)
         node_ids = set(n["id"] for n in all_nodes)
         edges = original_protocol.get("edges", [])
@@ -975,12 +1108,39 @@ CRITICAL REQUIREMENTS:
             "edges": edges
         }
 
-        logger.info(
-            f"Protocol assembled successfully: "
-            f"{len(all_nodes)} nodes, {len(edges)} edges"
-        )
-
-        return assembled
+        # Step 7: Validate with Pydantic Schema (CRITICAL SAFETY CHECK)
+        logger.info("Validating assembled protocol with Pydantic schema...")
+        try:
+            from ..models.protocol import Protocol
+            validated_protocol = Protocol.model_validate(assembled)
+            logger.info("✅ Protocol structure validation PASSED")
+            
+            # Return as dict to maintain compatibility
+            return validated_protocol.model_dump()
+            
+        except ImportError as e:
+            # Pydantic not available - skip validation but warn
+            logger.warning(f"⚠️ Pydantic validation skipped (import error): {e}")
+            logger.warning("Returning assembled protocol without schema validation")
+            return assembled
+            
+        except Exception as e:
+            # Check if it's a validation error
+            error_type = str(type(e).__name__)
+            if "ValidationError" in error_type:
+                logger.error(f"❌ Protocol validation FAILED: {e}")
+                # Log a snippet of the invalid protocol for debugging
+                logger.error(f"Invalid protocol snippet: {str(assembled)[:500]}...")
+                
+                raise ValueError(
+                    f"Reconstructed protocol failed structural validation:\n{e}\n\n"
+                    "This is a CRITICAL error. Protocol will NOT be saved."
+                )
+            else:
+                logger.error(f"❌ Unexpected validation error: {e}")
+                # For other errors, skip validation but warn
+                logger.warning("Returning assembled protocol without schema validation")
+                return assembled
 
     def _validate_cross_references(
         self,
@@ -1024,7 +1184,6 @@ CRITICAL REQUIREMENTS:
         # Step 2: Collect all option IDs from all questions
         # This allows us to validate option references in conditional expressions
         all_option_ids = set()
-        option_id_to_question_uid = {}  # Map option_id -> question_uid for context
         for node in nodes:
             for question in node.get("data", {}).get("questions", []):
                 uid = question.get("uid")
@@ -1034,44 +1193,21 @@ CRITICAL REQUIREMENTS:
                     option_id = option.get("id")
                     if option_id:
                         all_option_ids.add(option_id)
-                        option_id_to_question_uid[option_id] = uid
 
-        # Step 3: Validate conditional expressions with improved parsing
-        # We need to distinguish between:
-        # - Direct UID references (e.g., "tipos_exames_trazidos")
-        # - Option ID references in context (e.g., "'nenhum_exame' in tipos_exames_trazidos")
-        # - Literal values (e.g., "visivel", "invisivel")
-        
-        # Reserved keywords that are valid in expressions
-        reserved_keywords = {"visivel", "invisivel", "true", "false", "and", "or", "not", "in"}
-        
-        for node in nodes:
-            # Validate node-level condicao
-            condicao = node.get("data", {}).get("condicao", "")
-            if condicao:
-                self._validate_conditional_expression(
-                    condicao, 
-                    node["id"], 
-                    "node.condicao",
-                    all_uids, 
-                    all_option_ids,
-                    reserved_keywords,
-                    warnings
-                )
+        # Step 3: Validate Conditional Expressions (NEW - Safe AST)
+        try:
+            from ..validators.logic_validator import validate_protocol_conditionals
+            conditionals_valid, conditional_errors = validate_protocol_conditionals(protocol)
             
-            # Validate question-level expressao
-            for question in node.get("data", {}).get("questions", []):
-                expressao = question.get("expressao", "")
-                if expressao:
-                    self._validate_conditional_expression(
-                        expressao,
-                        question.get("id", "unknown"),
-                        f"question.expressao (uid: {question.get('uid', 'unknown')})",
-                        all_uids,
-                        all_option_ids,
-                        reserved_keywords,
-                        warnings
-                    )
+            if not conditionals_valid:
+                for err in conditional_errors:
+                    warnings.append(f"Conditional Logic Error: {err}")
+                logger.error(f"❌ Found {len(conditional_errors)} conditional logic errors")
+        except ImportError:
+            logger.warning("Components for logic validation missing, skipping AST check.")
+        except Exception as e:
+            logger.error(f"Error during logic validation: {e}")
+            warnings.append(f"Logic validation failed execution: {e}")
 
         # Step 4: Validate edges (critical - these must be valid)
         node_ids = set(n["id"] for n in nodes)
@@ -1086,69 +1222,3 @@ CRITICAL REQUIREMENTS:
         # For now, we return is_valid=True always, but log warnings for review
         is_valid = True
         return is_valid, warnings
-
-    def _validate_conditional_expression(
-        self,
-        expression: str,
-        context_id: str,
-        context_type: str,
-        all_uids: set,
-        all_option_ids: set,
-        reserved_keywords: set,
-        warnings: List[str]
-    ):
-        """
-        Valida uma expressão condicional, distinguindo entre UIDs e IDs de opções.
-
-        Args:
-            expression: Expressão condicional a validar
-            context_id: ID do contexto (node ou question)
-            context_type: Tipo de contexto (para mensagens de erro)
-            all_uids: Set de todos os UIDs válidos
-            all_option_ids: Set de todos os IDs de opções válidos
-            reserved_keywords: Set de palavras-chave reservadas
-            warnings: Lista de warnings (modificada in-place)
-        """
-        # Extract all quoted strings from the expression
-        # Pattern matches: 'string' or "string"
-        quoted_strings = re.findall(r"['\"](\w+)['\"]", expression)
-        
-        for quoted_str in quoted_strings:
-            # Skip reserved keywords
-            if quoted_str in reserved_keywords:
-                continue
-            
-            # Check if it's a valid UID
-            if quoted_str in all_uids:
-                continue  # Valid UID reference
-            
-            # Check if it's a valid option ID
-            if quoted_str in all_option_ids:
-                continue  # Valid option ID reference
-            
-            # Check for patterns like "'option_id' in uid" - this is valid
-            # We need to check if the expression contains "in" followed by a valid UID
-            # Pattern: 'option_id' in uid_name
-            in_pattern = re.search(rf"['\"]{re.escape(quoted_str)}['\"]\s+in\s+(\w+)", expression)
-            if in_pattern:
-                uid_after_in = in_pattern.group(1)
-                if uid_after_in in all_uids:
-                    # This is a valid pattern: 'option_id' in uid
-                    continue
-            
-            # Check for patterns like "uid == 'option_id'" or "uid != 'option_id'"
-            # Pattern: uid_name == 'option_id' or uid_name != 'option_id'
-            comparison_pattern = re.search(rf"(\w+)\s*[=!]=\s*['\"]{re.escape(quoted_str)}['\"]", expression)
-            if comparison_pattern:
-                uid_before_comparison = comparison_pattern.group(1)
-                if uid_before_comparison in all_uids:
-                    # This is a valid pattern: uid == 'option_id'
-                    continue
-            
-            # If we get here, it's an unknown reference
-            # But we'll only warn, not fail, as it might be a false positive
-            warnings.append(
-                f"{context_type} in {context_id} references unknown identifier: {quoted_str} "
-                f"(not found as UID or option ID)"
-            )
-

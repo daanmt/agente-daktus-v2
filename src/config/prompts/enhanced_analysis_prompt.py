@@ -119,16 +119,24 @@ CRITICAL REQUIREMENTS:
 
    🚨 CRITICAL: If a suggestion does NOT have an explicit playbook quote, it is INVALID and must be REMOVED
 
-6. IMPLEMENTATION DETAILS: For EACH suggestion, estimate:
+6. IMPLEMENTATION PATH (IMPORTANT FOR AUTO-APPLY):
+   For EACH suggestion, provide:
+   - json_path: Exact JSON path (e.g., "nodes[3].data.questions[0].options")
+   - modification_type: "add_option", "modify_option", "add_question", "modify_condition", "add_alert", "modify_text"
+   - proposed_value: The new value to apply (as string)
+
+7. IMPLEMENTATION EFFORT: For EACH suggestion, estimate:
    - effort: "baixo" (low), "medio" (medium), "alto" (high implementation effort)
    - estimated_time: Estimated time to implement (e.g., "30min", "2h", "1dia")
    - complexity: "simples" (simple), "moderada" (moderate), "complexa" (complex)
 
-7. SPECIFICITY: Each suggestion must be:
+8. SPECIFICITY: Each suggestion must be:
    - Actionable: Clear what needs to be changed
    - Specific: Exact location in protocol (node_id, field, etc.)
    - Measurable: How to verify the improvement
    - Evidence-based: Linked to playbook content
+
+
 
 ANALYSIS DEPTH:
 
@@ -235,6 +243,11 @@ ENHANCED_OUTPUT_SCHEMA_JSON = """{
                 "node_id": "string (if applicable)",
                 "field": "string (if applicable)",
                 "path": "string (JSON path if applicable)"
+            },
+            "implementation_path": {
+                "json_path": "string (e.g., 'nodes[3].data.questions[0].options')",
+                "modification_type": "string (add_option|modify_option|add_question|modify_condition|add_alert|modify_text)",
+                "proposed_value": "string (the new value to apply)"
             },
             "auto_apply_cost_estimate": {
                 "estimated_tokens": 0,

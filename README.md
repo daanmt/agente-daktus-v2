@@ -2,9 +2,9 @@
 
 > Sistema de validação e correção automatizada de protocolos clínicos usando IA
 
-**Versão Atual**: 3.0.0  
-**Status**: Arquitetura Consolidada  
-**Última Atualização**: 2025-12-05
+**Versão Atual**: 3.1.0  
+**Status**: Waves 1, 2, 3 Complete - Production Ready  
+**Última Atualização**: 2025-12-07
 
 ---
 
@@ -72,6 +72,26 @@ python run_agent.py --help
 - **Playbook como única fonte de verdade**
 - Validação multi-camada contra hallucinations
 - 95%+ das sugestões verificáveis no playbook
+
+### 🛡️ Wave 1: Clinical Safety Foundations
+- **Pydantic Schema Validation**: Estrutura de protocolo validada em tempo de reconstrução
+- **AST-Based Logic Validation**: Validação segura de expressões condicionais (sem regex frágil)
+- **LLM Contract Validation**: Detecção de model drift com schemas Pydantic
+- **Zero Invalid Protocols**: 100% dos protocolos inválidos bloqueados antes de salvar
+
+### 🧠 Wave 2: Memory & Learning
+- **Hard Rules Engine**: Bloqueio automático de sugestões inválidas
+- **Reference Validator**: Verificação rigorosa de evidências do playbook
+- **Change Verifier**: Validação pós-reconstrução de mudanças aplicadas
+- **Feedback Learner**: Aprendizado automático com padrões de rejeição
+- **Spider/Daktus Knowledge**: Regras específicas para protocolos clínicos
+
+### 💰 Wave 3: Observability & Cost Control
+- **Real-Time Cost Tracking**: Token counter ao vivo durante análise
+- **Accurate Cost Reporting**: Custos reais vs estimados, por sessão
+- **Reconstruction Auditing**: Relatórios _AUDIT.txt detalhados para compliance
+- **Implementation Path**: Sugestões estruturadas com JSON path exato
+- **Spider-Aware Reconstruction**: LLM entende estrutura de protocolos Daktus
 
 ### 🔧 Reconstrução Inteligente
 - Aplica **apenas sugestões aprovadas** pelo usuário

@@ -2,7 +2,7 @@
   "metadata": {
     "company": "amil",
     "name": "ficha_orl",
-    "version": "1.0.0"
+    "version": "1.0.3"
   },
   "nodes": [
     {
@@ -443,7 +443,7 @@
       "data": {
         "label": "Cronologia e Fatores Modificadores",
         "condicao": "not('nenhum_sintoma_nasal' in sintomas_nasossinusais) or not('nenhum_sintoma_otologico' in sintomas_otologicos) or not('nenhum_sintoma_vestibular' in sintomas_vestibulares) or not('nenhum_sintoma_laringofaringeo' in sintomas_laringofaringeos) or not('nenhum_sintoma_sono' in sintomas_sono)",
-        "descricao": "",
+        "descricao": "<p></p>",
         "condicional": "visivel",
         "questions": [
           {
@@ -460,6 +460,13 @@
                 "iid": "duracao-agudo-id",
                 "id": "agudo",
                 "label": "Menos de 4 semanas (agudo)",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "duracao-abrs-persistente-id",
+                "id": "abrs_persistente",
+                "label": ">10 dias persistente sem melhora",
                 "preselected": false,
                 "exclusive": true
               },
@@ -659,22 +666,29 @@
                 "label": "Sintomas neurológicos (diplopia, disartria, fraqueza)",
                 "preselected": false,
                 "exclusive": false
+              },
+              {
+                "iid": "head-impulse-id",
+                "id": "head_impulse_anormal",
+                "label": "Head Impulse anormal (HINTS)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "nistagmo-vertical-id",
+                "id": "nistagmo_vertical",
+                "label": "Nistagmo vertical (HINTS)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "test-skew-id",
+                "id": "test_skew_positivo",
+                "label": "Test of Skew positivo (HINTS)",
+                "preselected": false,
+                "exclusive": false
               }
             ]
-          },
-          {
-            "id": "Q-escala-epworth",
-            "nodeId": "node-cronologia-fatores",
-            "uid": "escala_epworth",
-            "titulo": "<p><strong>Escala de Sonolência de Epworth (0-3 para cada situação):</strong><br>0=Nunca; 1=Pouca chance; 2=Moderada chance; 3=Alta chance de cochilar</p>",
-            "descricao": "<p>Sentado lendo + Assistindo TV + Sentado inativo em local público + Passageiro de carro por 1h + Deitado à tarde + Sentado conversando + Sentado após almoço + No carro parado no trânsito</p>",
-            "condicional": "visivel",
-            "expressao": "selected_any(sintomas_sono, 'ronco_habitual', 'pausas_respiratorias', 'sonolencia_diurna')",
-            "select": "number",
-            "options": [],
-            "min": 0,
-            "max": 24,
-            "opcional": true
           }
         ]
       }
@@ -810,7 +824,7 @@
       },
       "data": {
         "label": "Alergias e Contraindicações",
-        "condicao": "not('nenhum_sintoma_nasal' in sintomas_nasossinusais) or not('nenhum_sintoma_otologico' in sintomas_otologicos) or not('nenhum_sintoma_vestibular' in sintomas_vestibulares) or not('nenhum_sintoma_laringofaringeo' in sintomas_laringofaringeos) or not('nenhum_sintoma_sono' in sintomas_sono)",
+        "condicao": "not('nenhum_sintoma_nasal' in sintomas_nasossinusais) or not('nenhum_sintoma_otologico' in sintomas_otologicos) or not('nenhum_sintoma_vestibular' in sintomas_vestibulares) or not('nenhum_sintoma_laringofaringeos' in sintomas_laringofaringeos) or not('nenhum_sintoma_sono' in sintomas_sono)",
         "descricao": "",
         "condicional": "visivel",
         "questions": [
@@ -951,7 +965,7 @@
       "data": {
         "label": "Condutas Otorrinolaringológicas",
         "condicao": "",
-        "descricao": "",
+        "descricao": "<p></p>",
         "condicional": "visivel",
         "conduta": "conclusao",
         "condutaDataNode": {
@@ -1053,6 +1067,7 @@
               "condicional": "visivel",
               "condicao": "selected_any(sintomas_otologicos, 'hipoacusia', 'plenitude_auricular', 'zumbido')",
               "condicionalExame": "intra-hospitalar",
+              "quantidade": 1,
               "codigo": [
                 {
                   "sistema": "TUSS",
@@ -1071,8 +1086,9 @@
               "nome": "Audiometria vocal - discriminação",
               "descricao": "",
               "condicional": "visivel",
-              "condicao": "selected_any(sintomas_otologicos, 'hipoacusia') and resultados_exames == 'alterados'",
+              "condicao": "'audiometria' in tipos_exames_trazidos and resultados_exames == 'alterados'",
               "condicionalExame": "intra-hospitalar",
+              "quantidade": 1,
               "codigo": [
                 {
                   "sistema": "TUSS",
@@ -1093,6 +1109,7 @@
               "condicional": "visivel",
               "condicao": "selected_any(sintomas_otologicos, 'hipoacusia', 'plenitude_auricular') and age >= 0.5 and age <= 4",
               "condicionalExame": "intra-hospitalar",
+              "quantidade": 1,
               "codigo": [
                 {
                   "sistema": "TUSS",
@@ -1113,6 +1130,7 @@
               "condicional": "visivel",
               "condicao": "selected_any(sintomas_otologicos, 'plenitude_auricular', 'otalgia') or (selected_any(sintomas_otologicos, 'otalgia') and age <= 12)",
               "condicionalExame": "intra-hospitalar",
+              "quantidade": 1,
               "codigo": [
                 {
                   "sistema": "TUSS",
@@ -1133,6 +1151,7 @@
               "condicional": "visivel",
               "condicao": "'vertigem_rotatoria' in sintomas_vestibulares or ('desequilibrio' in sintomas_vestibulares and 'tontura_instabilidade' in sintomas_vestibulares)",
               "condicionalExame": "intra-hospitalar",
+              "quantidade": 1,
               "codigo": [
                 {
                   "sistema": "TUSS",
@@ -1153,6 +1172,7 @@
               "condicional": "visivel",
               "condicao": "'vertigem_rotatoria' in sintomas_vestibulares and 'mudanca_posicao' in fatores_desencadeantes",
               "condicionalExame": "intra-hospitalar",
+              "quantidade": 1,
               "codigo": [
                 {
                   "sistema": "TUSS",
@@ -1163,7 +1183,7 @@
               "categoria": "Otoneurologia",
               "cid": "H81.1, H81.2",
               "indicacao": "Avaliação da função vestibular periférica em casos de vertigem unilateral ou suspeita de neurite vestibular",
-              "alerta": "Contraindicado em perfuração timpânica. Pode causar náusea intensa",
+              "alerta": "Contraindicado em otorreia recente ou perfuração timpânica conhecida. Pode causar náusea intensa",
               "material": "Exame funcional"
             },
             {
@@ -1171,8 +1191,9 @@
               "nome": "Vídeo-endoscopia nasal flexível",
               "descricao": "",
               "condicional": "visivel",
-              "condicao": "duracao_sintomas == 'cronico' or (selected_any(sintomas_nasossinusais, 'obstrucao_nasal', 'hiposmia_anosmia') and duracao_sintomas != 'agudo')",
+              "condicao": "duracao_sintomas == 'cronico' and selected_any(sintomas_nasossinusais, 'obstrucao_nasal', 'hiposmia_anosmia')",
               "condicionalExame": "intra-hospitalar",
+              "quantidade": 1,
               "codigo": [
                 {
                   "sistema": "TUSS",
@@ -1191,8 +1212,9 @@
               "nome": "Polissonografia de noite inteira",
               "descricao": "",
               "condicional": "visivel",
-              "condicao": "selected_any(sintomas_sono, 'ronco_habitual') and (selected_any(sintomas_sono, 'pausas_respiratorias', 'sonolencia_diurna') or escala_epworth >= 10)",
+              "condicao": "selected_any(sintomas_sono, 'pausas_respiratorias', 'sonolencia_diurna')",
               "condicionalExame": "intra-hospitalar",
+              "quantidade": 1,
               "codigo": [
                 {
                   "sistema": "TUSS",
@@ -1205,6 +1227,69 @@
               "indicacao": "Diagnóstico de síndrome da apneia obstrutiva do sono (SAHOS) em pacientes com ronco e sintomas sugestivos ou Escala de Epworth ≥10",
               "alerta": "Suspender sedativos. Higiene do sono adequada no dia do exame",
               "material": "Exame do sono"
+            },
+            {
+              "id": "rm-encefalo-central",
+              "nome": "RM encéfalo com e sem contraste",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "'vertigem_rotatoria' in sintomas_vestibulares and 'sintomas_neurologicos' in sintomas_associados",
+              "condicionalExame": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "TUSS",
+                  "valor": "40401015",
+                  "iid": "a1b2c3d4-1234-5678-9abc-def012345678"
+                }
+              ],
+              "categoria": "Imagem Neurológica",
+              "cid": "H81, G93",
+              "indicacao": "Suspeita de etiologia central em vertigem (AVC, tumor, etc.)",
+              "alerta": "Prioridade urgente se sintomas agudos. Avaliar alergia a gadolínio",
+              "material": "Imagem"
+            },
+            {
+              "id": "vemp-otolitos",
+              "nome": "VEMP - Potenciais Evocados Miogênicos Vestibulares",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "'mudanca_posicao' in fatores_desencadeantes",
+              "condicionalExame": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "TUSS",
+                  "valor": "40103756",
+                  "iid": "b2c3d4e5-2345-6789-abcd-ef1234567890"
+                }
+              ],
+              "categoria": "Otoneurologia",
+              "cid": "H81, H82",
+              "indicacao": "Avaliação função otólitos em suspeita VPPB ou desordens saculares",
+              "alerta": "Registro cervical ou ocular. Paciente relaxado",
+              "material": "Exame funcional"
+            },
+            {
+              "id": "tc-seios-refrataria",
+              "nome": "TC seios paranasais sem contraste (refratária)",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "duracao_sintomas == 'cronico' and ('corticoide_spray_nasal' in tratamento_atual or resultados_exames == 'alterados')",
+              "condicionalExame": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "TUSS",
+                  "valor": "40202047",
+                  "iid": "c3d4e5f6-3456-789a-bcde-f23456789012"
+                }
+              ],
+              "categoria": "Imagem",
+              "cid": "J32",
+              "indicacao": "Rinossinusite crônica refratária ao tratamento inicial",
+              "alerta": "Baixa dose para seguimento. Correlacionar com endoscopia",
+              "material": "Imagem"
             }
           ],
           "medicamento": [
@@ -1488,7 +1573,7 @@
               "nome": "Otorrinolaringologia",
               "descricao": "<p>Encaminhamento para avaliação especializada em otorrinolaringologia</p>",
               "condicional": "visivel",
-              "condicao": "duracao_sintomas == 'cronico' or ('vertigem_rotatoria' in sintomas_vestibulares and 'sintomas_neurologicos' in sintomas_associados) or (selected_any(sintomas_sono, 'ronco_habitual', 'pausas_respiratorias') and escala_epworth >= 15)",
+              "condicao": "duracao_sintomas == 'cronico' or ('vertigem_rotatoria' in sintomas_vestibulares and 'sintomas_neurologicos' in sintomas_associados) or (selected_any(sintomas_sono, 'ronco_habitual', 'pausas_respiratorias'))",
               "indicacao": "Rinossinusite crônica, vertigem com sinais centrais, SAHOS grave, casos refratários ao tratamento inicial",
               "codigo": "",
               "cid": "J32, H81, G47.3",
@@ -1510,7 +1595,7 @@
               "nome": "Medicina do Sono",
               "descricao": "<p>Avaliação especializada em distúrbios do sono</p>",
               "condicional": "visivel",
-              "condicao": "selected_any(sintomas_sono, 'pausas_respiratorias', 'sonolencia_diurna') and escala_epworth >= 10",
+              "condicao": "selected_any(sintomas_sono, 'pausas_respiratorias', 'sonolencia_diurna')",
               "indicacao": "Síndrome da apneia obstrutiva do sono, distúrbios do sono complexos",
               "codigo": "",
               "cid": "G47.3",
@@ -1532,8 +1617,8 @@
               "nome": "Neurologia",
               "descricao": "<p>Avaliação neurológica urgente</p>",
               "condicional": "visivel",
-              "condicao": "'vertigem_rotatoria' in sintomas_vestibulares and 'sintomas_neurologicos' in sintomas_associados",
-              "indicacao": "Vertigem central, sintomas neurológicos associados, suspeita de lesão do SNC",
+              "condicao": "'vertigem_rotatoria' in sintomas_vestibulares and ('sintomas_neurologicos' in sintomas_associados or selected_any(sintomas_associados, 'head_impulse_anormal', 'nistagmo_vertical', 'test_skew_positivo'))",
+              "indicacao": "Vertigem central, sintomas neurológicos associados (incl. HINTS+), suspeita de lesão do SNC",
               "codigo": "",
               "cid": "H81.9, G93.1",
               "destino": "Neurologia"
@@ -1697,4 +1782,4 @@
       "data": {}
     }
   ]
-};
+}

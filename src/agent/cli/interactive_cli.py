@@ -334,8 +334,8 @@ class InteractiveCLI:
             ("google/gemini-2.5-flash-preview-09-2025", "Gemini 2.5 Flash Preview", "$0.30/$2.50 por MTok"),
             ("google/gemini-2.5-flash", "Gemini 2.5 Flash", "$0.30/$2.50 por MTok"),
             ("google/gemini-2.5-pro", "Gemini 2.5 Pro", "$1.25/$10.00 por MTok"),
-            ("anthropic/claude-sonnet-4-20250514", "Claude Sonnet 4.5", "$3.00/$15.00 por MTok"),
-            ("anthropic/claude-opus-4-20250514", "Claude Opus 4.5", "$5.00/$25.00 por MTok"),
+            ("anthropic/claude-sonnet-4.5", "Claude Sonnet 4.5", "$3.00/$15.00 por MTok"),
+            ("anthropic/claude-opus-4", "Claude Opus 4", "$15.00/$75.00 por MTok"),
         ]
 
         if QUESTIONARY_AVAILABLE:
@@ -671,6 +671,25 @@ class InteractiveCLI:
                                 self.display.show_warning("Caminho do relatório TXT não encontrado para edição")
                         else:
                             self.display.show_info("Nenhum padrão significativo identificado.")
+                        
+                        # Wave 2: Learn from rejections and create rules
+                        try:
+                            from ..learning.feedback_learner import learn_from_feedback_session
+                            
+                            if edited_report and edited_report.get('rejected_suggestions'):
+                                new_rules = learn_from_feedback_session(edited_report)
+                                
+                                if new_rules:
+                                    self.display.show_success(
+                                        f"🧠 Sistema aprendeu {len(new_rules)} novas regras do feedback!"
+                                    )
+                                    for rule in new_rules:
+                                        self.display.show_info(f"   📝 {rule.rule_id}: {rule.description}")
+                        except ImportError:
+                            pass  # Learning module not available
+                        except Exception as e:
+                            if logger:
+                                logger.warning(f"FeedbackLearner error: {e}")
                             
                     except Exception as e:
                         self.display.show_warning(f"Erro ao analisar padrões: {e}")
@@ -780,6 +799,30 @@ class InteractiveCLI:
                 changes = reconstruction_result.changes_applied
                 if changes:
                     self.display.show_diff(changes)
+                
+                # Generate audit report (Wave 3)
+                try:
+                    from ..applicator.audit_reporter import generate_reconstruction_audit
+                    
+                    # Create audit report path (same as JSON but with _AUDIT.txt suffix)
+                    audit_path = str(output_path).replace('.json', '_AUDIT.txt')
+                    
+                    # Get LLM-generated changelog if available
+                    detailed_changelog = reconstruction_result.detailed_changelog
+                    
+                    audit_report = generate_reconstruction_audit(
+                        original_protocol=protocol_json,
+                        reconstructed_protocol=reconstructed_protocol,
+                        suggestions=suggestions_for_reconstruction,
+                        changes_applied=changes,
+                        detailed_changelog=detailed_changelog,
+                        output_path=audit_path
+                    )
+                    
+                    self.display.show_success(f"📋 Relatório de auditoria salvo: {audit_path}")
+                except Exception as e:
+                    if logger:
+                        logger.warning(f"Failed to generate audit report: {e}")
 
                 summary = {
                     "Arquivo": str(output_path),
@@ -855,8 +898,15 @@ class InteractiveCLI:
                             f.write(f"{i}. [{sug_id}] {title}\n")
                             f.write(f"   Categoria: {category}\n")
                             if sug.get('description') and sug.get('description') != title:
-                                desc = sug.get('description', '')[:200]
+                                desc = sug.get('description', '')
                                 f.write(f"   Descrição: {desc}\n")
+                            # Add rationale if available
+                            if sug.get('rationale'):
+                                f.write(f"   Justificativa: {sug.get('rationale')}\n")
+                            # Add location if available
+                            loc = sug.get('location', sug.get('specific_location', {}))
+                            if loc and isinstance(loc, dict) and loc.get('node_id'):
+                                f.write(f"   Local: {loc.get('node_id')}\n")
                             f.write("\n")
                     
                     if media:
@@ -869,8 +919,13 @@ class InteractiveCLI:
                             f.write(f"{i}. [{sug_id}] {title}\n")
                             f.write(f"   Categoria: {category}\n")
                             if sug.get('description') and sug.get('description') != title:
-                                desc = sug.get('description', '')[:200]
+                                desc = sug.get('description', '')
                                 f.write(f"   Descrição: {desc}\n")
+                            if sug.get('rationale'):
+                                f.write(f"   Justificativa: {sug.get('rationale')}\n")
+                            loc = sug.get('location', sug.get('specific_location', {}))
+                            if loc and isinstance(loc, dict) and loc.get('node_id'):
+                                f.write(f"   Local: {loc.get('node_id')}\n")
                             f.write("\n")
                     
                     if baixa:
@@ -883,8 +938,13 @@ class InteractiveCLI:
                             f.write(f"{i}. [{sug_id}] {title}\n")
                             f.write(f"   Categoria: {category}\n")
                             if sug.get('description') and sug.get('description') != title:
-                                desc = sug.get('description', '')[:200]
+                                desc = sug.get('description', '')
                                 f.write(f"   Descrição: {desc}\n")
+                            if sug.get('rationale'):
+                                f.write(f"   Justificativa: {sug.get('rationale')}\n")
+                            loc = sug.get('location', sug.get('specific_location', {}))
+                            if loc and isinstance(loc, dict) and loc.get('node_id'):
+                                f.write(f"   Local: {loc.get('node_id')}\n")
                             f.write("\n")
                 else:
                     f.write("Nenhuma sugestão de melhoria gerada.\n")
@@ -942,6 +1002,22 @@ class InteractiveCLI:
     def _run_complete(self) -> None:
         """Finaliza a sessão."""
         self.session_state.stage = SessionStage.COMPLETE
+        
+        # Display cost summary (Wave 3)
+        try:
+            import sys
+            from ..cost_control.cost_tracker import get_cost_tracker
+            tracker = get_cost_tracker()
+            cost_summary = tracker.format_summary()
+            if "No active session" not in cost_summary:
+                sys.stdout.flush()  # Clear any buffered output
+                print()  # Blank line
+                print(cost_summary)
+                print()
+                sys.stdout.flush()
+        except Exception:
+            pass  # Cost tracking is optional
+        
         self.display.show_banner(
             title="Sessão Concluída",
             subtitle="Obrigado por usar o Agente Daktus | QA!"

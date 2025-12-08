@@ -85,11 +85,11 @@ class ImpactScorer:
             eficiencia = impact_scores.get("eficiencia", "L")
             usabilidade = impact_scores.get("usabilidade", 0)
         else:
-            # Assume it's a Suggestion object
-            seguranca = suggestion.impact_scores.get("seguranca", 0)
-            economia = suggestion.impact_scores.get("economia", "L")
-            eficiencia = suggestion.impact_scores.get("eficiencia", "L")
-            usabilidade = suggestion.impact_scores.get("usabilidade", 0)
+            # It's a Suggestion object with ImpactScores dataclass
+            seguranca = getattr(suggestion.impact_scores, 'seguranca', 0)
+            economia = getattr(suggestion.impact_scores, 'economia', 'L')
+            eficiencia = getattr(suggestion.impact_scores, 'eficiencia', 'L')
+            usabilidade = getattr(suggestion.impact_scores, 'usabilidade', 0)
         
         # If scores are missing or zero, try to calculate from content
         if seguranca == 0 and isinstance(suggestion, dict):

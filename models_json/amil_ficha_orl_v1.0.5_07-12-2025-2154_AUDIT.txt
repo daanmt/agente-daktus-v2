@@ -1,0 +1,28 @@
+======================================================================
+📋 RELATÓRIO DE AUDITORIA - RECONSTRUÇÃO DE PROTOCOLO
+======================================================================
+Data: 2025-12-07 21:54:10
+Protocolo: Unknown
+Sugestões Aplicadas: 5
+
+======================================================================
+MUDANÇAS DETECTADAS (COMPARAÇÃO)
+======================================================================
+
+======================================================================
+SUGESTÕES APLICADAS
+======================================================================
+1. [sug_016] Adicionar opção 'Nenhum' para Sintomas Sistêmicos Associados
+   Categoria: eficiencia
+2. [sug_002] Restringir Timpanometria em caso de Otorreia Ativa ou Perfuração
+   Categoria: seguranca
+3. [sug_017] Condicionar Audiometria Vocal à alteração na Audiometria Tonal
+   Categoria: economia
+4. [sug_005] Otimizar condição de exibição do nó 'Cronologia e Fatores Modificadores'
+   Categoria: eficiencia
+5. [sug_003] Adicionar alerta de contraindicação de Prova Calórica em Otorreia Recente
+   Categoria: seguranca
+
+======================================================================
+RESUMO: 5 sugestões | 2025-12-07 21:54:10
+======================================================================

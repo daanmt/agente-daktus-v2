@@ -1,0 +1,126 @@
+{
+  "version": "1.0",
+  "updated_at": "2025-12-07 20:03:18",
+  "rules": [
+    {
+      "rule_id": "req_specific_reference",
+      "rule_type": "require_specificity",
+      "description": "Referência do playbook deve ser específica, não genérica",
+      "error_message": "Playbook reference is too generic or too short (min 30 chars, no generic phrases)",
+      "learned_from": "domain_knowledge",
+      "enabled": true,
+      "keywords": [],
+      "blocked_categories": [],
+      "required_field": null,
+      "min_field_length": 0
+    },
+    {
+      "rule_id": "alert_requires_field",
+      "rule_type": "block_keyword",
+      "description": "Sugestões sobre 'alertas' que não especificam campo são bloqueadas",
+      "error_message": "Alert suggestion blocked: must mention 'mensagem_alerta' or specific field in description",
+      "learned_from": "domain_knowledge",
+      "enabled": true,
+      "keywords": [
+        "alerta genérico",
+        "generic alert",
+        "adicionar alerta simples"
+      ],
+      "blocked_categories": [],
+      "required_field": null,
+      "min_field_length": 0
+    },
+    {
+      "rule_id": "no_structural_changes",
+      "rule_type": "block_keyword",
+      "description": "Bloqueia sugestões de mudanças estruturais (tooltips, funcionalidade do sistema)",
+      "error_message": "Structural change suggestion blocked: cannot modify system functionality",
+      "learned_from": "domain_knowledge",
+      "enabled": true,
+      "keywords": [
+        "adicionar tooltip",
+        "implementar funcionalidade",
+        "mudar interface",
+        "sistema deve"
+      ],
+      "blocked_categories": [],
+      "required_field": null,
+      "min_field_length": 0
+    },
+    {
+      "rule_id": "no_autonomy_invasion",
+      "rule_type": "block_keyword",
+      "description": "Bloqueia sugestões que invadem autonomia médica",
+      "error_message": "Suggestion blocked: invades medical professional autonomy",
+      "learned_from": "domain_knowledge",
+      "enabled": true,
+      "keywords": [
+        "médico deve sempre",
+        "obrigar prescrição",
+        "forçar conduta",
+        "impedir escolha"
+      ],
+      "blocked_categories": [],
+      "required_field": null,
+      "min_field_length": 0
+    },
+    {
+      "rule_id": "req_implementation_strategy",
+      "rule_type": "require_implementation",
+      "description": "Sugestões devem ter implementation_strategy específica",
+      "error_message": "Missing or invalid implementation_strategy (must have target_field, modification_type, instructions >= 30 chars)",
+      "learned_from": "wave2_domain_knowledge",
+      "enabled": false,
+      "keywords": [],
+      "blocked_categories": [],
+      "required_field": null,
+      "min_field_length": 0
+    },
+    {
+      "rule_id": "spider_no_ui_changes",
+      "rule_type": "block_keyword",
+      "description": "Bloqueia sugestões de mudanças de UI/sistema (Spider não suporta)",
+      "error_message": "Suggestion targets UI/system features not configurable in Spider protocol JSON",
+      "learned_from": "spider_playbook",
+      "enabled": true,
+      "keywords": [
+        "criar nova tela",
+        "adicionar botão",
+        "mudar layout",
+        "redesenhar",
+        "nova funcionalidade",
+        "implementar feature",
+        "criar módulo",
+        "interface do usuário",
+        "user interface",
+        "frontend",
+        "backend"
+      ],
+      "blocked_categories": [],
+      "required_field": null,
+      "min_field_length": 0
+    },
+    {
+      "rule_id": "spider_no_flow_changes",
+      "rule_type": "block_keyword",
+      "description": "Bloqueia sugestões de alteração de fluxo/criação de nodos (mudança estrutural)",
+      "error_message": "Suggestion requires flow/node changes - outside automated reconstruction scope",
+      "learned_from": "spider_playbook",
+      "enabled": true,
+      "keywords": [
+        "criar novo nodo",
+        "adicionar nodo",
+        "remover nodo",
+        "mudar fluxo",
+        "reorganizar fluxo",
+        "nova etapa",
+        "break point",
+        "dividir nodo",
+        "unir nodos"
+      ],
+      "blocked_categories": [],
+      "required_field": null,
+      "min_field_length": 0
+    }
+  ]
+}
