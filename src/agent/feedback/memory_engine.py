@@ -28,22 +28,14 @@ if str(current_dir) not in sys.path:
 from ..core.logger import logger
 from ..core.llm_client import LLMClient
 
-# Embeddings for semantic similarity (optional, with fallback)
-# CRITICAL: Set environment variables BEFORE importing sentence_transformers
-# This prevents HuggingFace from trying to connect when offline
-import os
-os.environ['HF_HUB_OFFLINE'] = '1'
-os.environ['TRANSFORMERS_OFFLINE'] = '1'
-os.environ['HF_DATASETS_OFFLINE'] = '1'
+# Embeddings for semantic similarity - DISABLED
+# Using simple text-based Jaccard similarity instead (always works offline)
+# The sentence_transformers library causes network issues even with HF_HUB_OFFLINE=1
+# because it still tries to validate cached models against remote servers
 
-try:
-    from sentence_transformers import SentenceTransformer
-    import numpy as np
-    _EMBEDDINGS_AVAILABLE = True
-except ImportError:
-    _EMBEDDINGS_AVAILABLE = False
-    SentenceTransformer = None
-    np = None
+_EMBEDDINGS_AVAILABLE = False
+SentenceTransformer = None
+np = None
 
 
 @dataclass
