@@ -29,6 +29,13 @@ from ..core.logger import logger
 from ..core.llm_client import LLMClient
 
 # Embeddings for semantic similarity (optional, with fallback)
+# CRITICAL: Set environment variables BEFORE importing sentence_transformers
+# This prevents HuggingFace from trying to connect when offline
+import os
+os.environ['HF_HUB_OFFLINE'] = '1'
+os.environ['TRANSFORMERS_OFFLINE'] = '1'
+os.environ['HF_DATASETS_OFFLINE'] = '1'
+
 try:
     from sentence_transformers import SentenceTransformer
     import numpy as np
@@ -89,13 +96,7 @@ class MemoryEngine:
         self.embedder: Optional[Any] = None
         if _EMBEDDINGS_AVAILABLE:
             try:
-                import os
-                # Desabilitar downloads e tentar usar modelo em cache local
-                # Se não tiver em cache, usa fallback
-                os.environ['HF_HUB_OFFLINE'] = '1'
-                os.environ['TRANSFORMERS_OFFLINE'] = '1'
-                
-                # Tentar carregar modelo (apenas do cache local)
+                # Tentar carregar modelo (usando cache local - offline mode setado no topo do módulo)
                 self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
                 logger.info("Embeddings model loaded from cache: all-MiniLM-L6-v2")
             except Exception as e:
