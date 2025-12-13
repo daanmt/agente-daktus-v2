@@ -342,6 +342,16 @@ class LLMClient:
                         # Erro 402 (Payment Required) - não fazer retry, apenas relançar
                         logger.error(f"Payment required (402) - insufficient credits. Error: {e}")
                         raise
+                    elif e.response.status_code == 403:
+                        # Erro 403 (Forbidden) - modelo não disponível ou quota excedida
+                        logger.error(
+                            f"Access forbidden (403) - model may be unavailable or quota exceeded. "
+                            f"Try a different model (e.g., gemini-2.5-flash-lite). Error: {e}"
+                        )
+                        raise Exception(
+                            f"403 Forbidden: O modelo selecionado pode estar indisponível ou quota excedida. "
+                            f"Tente usar outro modelo (ex: Gemini 2.5 Flash Lite). Erro original: {e}"
+                        )
                     else:
                         logger.error(f"LLM API error: {e}")
                         raise

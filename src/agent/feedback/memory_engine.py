@@ -89,11 +89,18 @@ class MemoryEngine:
         self.embedder: Optional[Any] = None
         if _EMBEDDINGS_AVAILABLE:
             try:
-                # Modelo leve e rápido para embeddings
+                import os
+                # Desabilitar downloads e tentar usar modelo em cache local
+                # Se não tiver em cache, usa fallback
+                os.environ['HF_HUB_OFFLINE'] = '1'
+                os.environ['TRANSFORMERS_OFFLINE'] = '1'
+                
+                # Tentar carregar modelo (apenas do cache local)
                 self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
-                logger.info("Embeddings model loaded: all-MiniLM-L6-v2")
+                logger.info("Embeddings model loaded from cache: all-MiniLM-L6-v2")
             except Exception as e:
-                logger.warning(f"Failed to load embeddings model: {e}. Will use LLM fallback.")
+                # Se não conseguir carregar (offline ou não cached), usa fallback
+                logger.warning(f"SentenceTransformer not available (offline/no cache): {e}. Using text matching fallback.")
                 self.embedder = None
         
         # LLM client para similaridade semântica (fallback se embeddings não disponível)
@@ -591,11 +598,41 @@ Return ONLY the number, no explanation."""
             logger.warning(f"Failed to compute LLM similarity: {e}")
             return 0.0
     
+    def _compute_similarity_text(self, text1: str, text2: str) -> float:
+        """
+        Computa similaridade usando matching de texto simples (fallback offline).
+        
+        Usa contagem de palavras em comum dividido pelo total de palavras únicas.
+        
+        Args:
+            text1: Primeiro texto
+            text2: Segundo texto
+            
+        Returns:
+            Score de similaridade (0.0-1.0) baseado em Jaccard de palavras
+        """
+        # Normalizar e tokenizar
+        words1 = set(self._normalize_text(text1).split())
+        words2 = set(self._normalize_text(text2).split())
+        
+        # Remover palavras muito curtas (stopwords)
+        words1 = {w for w in words1 if len(w) > 2}
+        words2 = {w for w in words2 if len(w) > 2}
+        
+        if not words1 or not words2:
+            return 0.0
+        
+        # Jaccard similarity
+        intersection = len(words1 & words2)
+        union = len(words1 | words2)
+        
+        return intersection / union if union > 0 else 0.0
+    
     def _compute_similarity(self, text1: str, text2: str) -> float:
         """
-        Computa similaridade semântica (TASK 1 - wrapper com fallback).
+        Computa similaridade semântica (TASK 1 - wrapper com fallback robusto).
         
-        Tenta embeddings primeiro, depois LLM, depois retorna 0.0.
+        Tenta embeddings primeiro, depois LLM, depois texto simples.
         
         Args:
             text1: Primeiro texto
@@ -609,14 +646,18 @@ Return ONLY the number, no explanation."""
             try:
                 return self._compute_similarity_embeddings(text1, text2)
             except Exception as e:
-                logger.debug(f"Embeddings similarity failed: {e}, trying LLM fallback")
+                logger.debug(f"Embeddings similarity failed: {e}, trying fallbacks")
         
-        # Fallback para LLM
+        # Fallback para LLM (se disponível e online)
         try:
-            return self._compute_similarity_llm(text1, text2)
+            llm_score = self._compute_similarity_llm(text1, text2)
+            if llm_score > 0:
+                return llm_score
         except Exception as e:
-            logger.warning(f"Both embeddings and LLM similarity failed: {e}. Returning 0.0")
-            return 0.0
+            logger.debug(f"LLM similarity failed: {e}, using text fallback")
+        
+        # Fallback final: matching de texto simples (always works)
+        return self._compute_similarity_text(text1, text2)
     
     def _semantic_similarity_filter(
         self,

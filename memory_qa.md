@@ -20,116 +20,77 @@ As seções abaixo contêm regras estruturadas que são usadas para filtrar suge
 ```json
 [
   {
-    "rule_id": "636e9aac46cf63d8",
-    "text": "Melhorar clareza da pergunta sobre 'Provas Anatômicas DAC'. A pergunta 'Alterações em provas coronarianas anatômicas:' (uid: provas_anatomicas_dac) lista opções que misturam achados de angioTC e cateterismo. Sugere-se refinar a descrição das opções para maior clareza e especificidade, indicando qual exame se refere cada achado.",
+    "rule_id": "efeafb37097d3ae8",
+    "text": "Consolidar mensagens educativas repetidas sobre estatina em DAC em uma única mensagem reutilizável. O campo 'mensagemMedico' de múltiplos medicamentos estatinas (Sinvastatina 20mg, Sinvastatina 40mg, Atorvastatina 20mg, Atorvastatina 40mg, Rosuvastatina 10mg, Rosuvastatina 20mg, Rosuvastatina 40mg) contém EXATAMENTE o mesmo texto longo sobre 'ESTATINA OBRIGATÓRIA EM DAC'. Isso gera redundância no JSON (7 cópias do mesmo texto de ~1500 caracteres = ~10.5KB de duplicação). SOLUÇÃO: Criar uma mensagem educativa única (id: 'msg-educativa-estatina-dac') no nó de conduta e referenciar essa mensagem no campo 'mensagemMedico' de cada estatina usando template variable ou link.",
     "decision": "accepted",
     "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:53:08.664522",
+    "model_id": "anthropic/claude-sonnet-4.5",
+    "timestamp": "2025-12-13T10:17:23.760880",
     "comment": null,
-    "suggestion_id": "sug_007",
-    "category": "usabilidade",
+    "suggestion_id": "sug_009",
+    "category": "eficiencia",
     "priority": "baixa",
     "keywords": null
   },
   {
-    "rule_id": "b55fd853d575f062",
-    "text": "Adicionar opção 'Outros' em 'Detalhamento da queixa principal'. O campo 'Detalhamento da queixa principal:' (uid: detalhamento_queixa) é do tipo 'string' e não oferece opções pré-definidas. Sugere-se adicionar uma opção 'Outros' com um campo de texto associado para facilitar a categorização e análise posterior das queixas.",
+    "rule_id": "f32df7900170654f",
+    "text": "Adicionar campo de frequência de síncope no nó de anamnese inicial para estratificação de risco. O protocolo coleta contexto de síncope (esforço, ortostática, etc.) e pródromo, mas NÃO coleta frequência dos episódios. Playbook menciona que 'primeiro episódio (primeira vez na vida)' merece investigação mais ampla, enquanto episódios recorrentes podem sugerir causa benigna. Campo 'sincope_frequencia' existe no nó node-1754054008885 mas está oculto (expressao: 'sincope_presente in ['pre_sincope', 'sincope']', mas 'sincope_presente' não é definido). SOLUÇÃO: Corrigir expressão para 'sincope' in main e tornar campo visível quando síncope for selecionada.",
     "decision": "accepted",
     "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:53:17.043458",
-    "comment": null,
-    "suggestion_id": "sug_012",
-    "category": "usabilidade",
-    "priority": "baixa",
-    "keywords": null
-  },
-  {
-    "rule_id": "2cba0bdae8081eb4",
-    "text": "Melhorar clareza da descrição do PREVENT Calculator. A descrição do nó 'Calculadoras - reavaliação' (ID: summary-b6a21578-f1ca-4b0b-bae6-8146d5f38ed7) contém informações sobre a lógica de cálculo e referências, mas a descrição principal do propósito da calculadora PREVENT poderia ser mais direta e focada no benefício para o paciente.",
-    "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:53:25.611204",
-    "comment": null,
-    "suggestion_id": "sug_018",
-    "category": "usabilidade",
-    "priority": "baixa",
-    "keywords": null
-  },
-  {
-    "rule_id": "b7247b55dee3f508",
-    "text": "Adicionar condição para solicitação de Ecocardiograma em FA+Dispneia. A combinação de Fibrilação Atrial (FA) com dispneia requer um Ecocardiograma Transtorácico (ECOTT). Sugere-se adicionar uma condição explícita para a solicitação do ECOTT (ID: ecocardiograma) quando 'fa' ou 'flutter_atrial' estiverem selecionados em comorbidades E 'dispneia' estiver selecionado em 'main'.",
-    "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:53:30.326607",
-    "comment": null,
-    "suggestion_id": "sug_011",
-    "category": "eficiencia",
-    "priority": "media",
-    "keywords": null
-  },
-  {
-    "rule_id": "0f91881ff77b80a8",
-    "text": "Automatizar solicitação de Holter em palpitações ou arritmias no ECG. O Holter de 24h é indicado para pacientes com palpitações ou arritmias detectadas no ECG. Sugere-se automatizar a solicitação do Holter quando 'palpitacao' for selecionado em 'main', ou quando opções como 'fa_ecg', 'esv_ecg', 'bav_ecg', 'bradicardia_ecg', 'taquicardia_extrema_ecg', ou 'outras_arritmias_ecg' forem selecionadas no ECG.",
-    "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:53:34.771948",
-    "comment": null,
-    "suggestion_id": "sug_014",
-    "category": "eficiencia",
-    "priority": "media",
-    "keywords": null
-  },
-  {
-    "rule_id": "d03c6fd5330d2fc4",
-    "text": "Automatizar solicitação de Ecocardiograma em ICC ou Disfunção Ventricular. O Ecocardiograma Transtorácico (ECOTT) é fundamental para avaliar a função ventricular e diagnosticar ICC. Sugere-se automatizar a solicitação do ECOTT quando 'icc' for selecionado em comorbidades, ou quando o risco PREVENT for alto (≥20%) ou risco CVD Total for alto (≥25%).",
-    "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:53:42.603932",
-    "comment": null,
-    "suggestion_id": "sug_020",
-    "category": "eficiencia",
-    "priority": "media",
-    "keywords": null
-  },
-  {
-    "rule_id": "531dcefd78435210",
-    "text": "Automatizar solicitação de Holter em casos de Palpitações ou Arritmias no ECG. O Holter de 24h é indicado para pacientes com palpitações ou arritmias detectadas no ECG. Sugere-se automatizar a solicitação do Holter quando 'palpitacao' for selecionado em 'main', ou quando opções como 'fa_ecg', 'esv_ecg', 'bav_ecg', 'bradicardia_ecg', 'taquicardia_extrema_ecg', ou 'outras_arritmias_ecg' forem selecionadas no ECG.",
-    "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:53:49.178931",
-    "comment": null,
-    "suggestion_id": "sug_024",
-    "category": "eficiencia",
-    "priority": "media",
-    "keywords": null
-  },
-  {
-    "rule_id": "fcb7c2990188bb3e",
-    "text": "Automatizar solicitação de MAPA/MRPA em casos de variabilidade da PA. O protocolo identifica a variabilidade da PA ('variabilidade_aval_has') como um fator a ser avaliado. Sugere-se automatizar a solicitação de MAPA ou MRPA (conforme diretriz SBC 2025) quando esta opção for selecionada, para agilizar o diagnóstico e monitoramento da hipertensão arterial.",
-    "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:54:02.661395",
+    "model_id": "anthropic/claude-sonnet-4.5",
+    "timestamp": "2025-12-13T10:17:41.451919",
     "comment": null,
     "suggestion_id": "sug_006",
-    "category": "eficiencia",
+    "category": "seguranca",
     "priority": "media",
     "keywords": null
   },
   {
-    "rule_id": "4c49e7f3c7e188de",
-    "text": "Adicionar condição para solicitação de Teste Ergométrico. O Teste Ergométrico é sugerido em várias condições, mas sua solicitação automática pode ser otimizada. Sugere-se adicionar uma condição explícita para a solicitação do Teste Ergométrico (ID: teste_ergometrico) quando o paciente tiver dor torácica, risco intermediário (PREVENT 7.5-20%) e não houver contraindicações (mobilidade prejudicada, impossibilidade de exercício).",
+    "rule_id": "7a1c442cacff63a8",
+    "text": "Adicionar validação de idade para cálculo PREVENT (30-79 anos) com bloqueio de resultado se fora da faixa. O protocolo calcula PREVENT para qualquer idade, mas calculadora é validada apenas para 30-79 anos (AHA 2024). Existe expressão 'prevent_validacao_idade' que detecta idade fora da faixa, mas apenas exibe alerta sem bloquear cálculo. SOLUÇÃO: Modificar lógica para que, se idade <30 ou >79, resultado de risco NÃO seja exibido (apenas alerta de validação). Adicionar condição no template 'prevent_resumo': 'if 30 <= age <= 79: exibir resultado, else: exibir apenas alerta de idade fora da faixa validada'.",
     "decision": "accepted",
     "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:54:19.765000",
+    "model_id": "anthropic/claude-sonnet-4.5",
+    "timestamp": "2025-12-13T10:17:52.092163",
+    "comment": null,
+    "suggestion_id": "sug_007",
+    "category": "seguranca",
+    "priority": "media",
+    "keywords": null
+  },
+  {
+    "rule_id": "6bcc73fb698bd9ea",
+    "text": "Adicionar descrição explicativa no campo de coleta de eGFR para cálculo PREVENT. O campo 'prevent_egfr' (id: P89dfc661-e3c5-4f73-a3fa-83a837349f08) solicita 'eGFR - Taxa de Filtração Glomerular (mL/min/1.73m²)' com descrição 'Calculado pela creatinina (equação CKD-EPI)', mas não explica COMO calcular. Médico pode não saber fórmula CKD-EPI ou não ter calculadora disponível. SOLUÇÃO: Adicionar link para calculadora online (ex: https://www.kidney.org/professionals/kdoqi/gfr_calculator) na descrição do campo OU implementar cálculo automático a partir de creatinina, idade, sexo e raça (se disponível). Descrição sugerida: 'eGFR calculado pela creatinina usando equação CKD-EPI. Se não souber o valor, deixe em branco e o sistema calculará automaticamente a partir da creatinina registrada.'",
+    "decision": "accepted",
+    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
+    "model_id": "anthropic/claude-sonnet-4.5",
+    "timestamp": "2025-12-13T10:18:07.964151",
+    "comment": null,
+    "suggestion_id": "sug_011",
+    "category": "usabilidade",
+    "priority": "media",
+    "keywords": null
+  },
+  {
+    "rule_id": "a05531a71601f085",
+    "text": "Adicionar campo de coleta de IMC no nó de exame físico para cálculo PREVENT. O cálculo PREVENT requer IMC (prevent_imc), mas protocolo NÃO coleta peso e altura no nó de exame físico (node-1754076722505). Campo prevent_imc é solicitado manualmente no nó node-prevent-dados-clinicos, mas médico pode não saber calcular ou digitar valor incorreto. SOLUÇÃO: Adicionar campos de peso (kg) e altura (m) no nó de exame físico. Criar expressão clínica que calcule IMC automaticamente: imc_calculado = peso / (altura ** 2). Auto-preencher campo prevent_imc com imc_calculado.",
+    "decision": "accepted",
+    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
+    "model_id": "anthropic/claude-sonnet-4.5",
+    "timestamp": "2025-12-13T10:18:18.839997",
+    "comment": null,
+    "suggestion_id": "sug_013",
+    "category": "seguranca",
+    "priority": "media",
+    "keywords": null
+  },
+  {
+    "rule_id": "9b28be272b75f028",
+    "text": "Adicionar auto-preenchimento de campos PREVENT a partir de dados já coletados no protocolo. O nó 'node-prevent-dados-clinicos' solicita dados que já foram coletados em nós anteriores: PAS (campo 'pas' em node-1754076722505), creatinina (campo 'creatinina' em node-1754075093485), CT e HDL (campos 'colesterol_total' e 'colesterol_hdl' em node-1754075093485). Isso gera retrabalho e risco de inconsistência (médico pode digitar valores diferentes). SOLUÇÃO: Adicionar expressões clínicas que auto-preencham campos PREVENT: prevent_pas = pas (se pas != None), prevent_ct = colesterol_total (se colesterol_total != None), prevent_hdl = colesterol_hdl (se colesterol_hdl != None). Calcular prevent_egfr a partir de creatinina usando fórmula CKD-EPI. Campos devem ser editáveis (permitir override se necessário).",
+    "decision": "accepted",
+    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
+    "model_id": "anthropic/claude-sonnet-4.5",
+    "timestamp": "2025-12-13T10:18:29.292945",
     "comment": null,
     "suggestion_id": "sug_008",
     "category": "eficiencia",
@@ -137,51 +98,12 @@ As seções abaixo contêm regras estruturadas que são usadas para filtrar suge
     "keywords": null
   },
   {
-    "rule_id": "cf11b736eaba993e",
-    "text": "Automatizar solicitação de Teste Ergométrico em Dor Torácica de Risco Intermediário. Para pacientes com dor torácica e risco cardiovascular intermediário (PREVENT 7.5-20%), o Teste Ergométrico é uma ferramenta diagnóstica importante. Sugere-se automatizar a solicitação deste exame quando essas condições forem atendidas, excluindo pacientes com contraindicações.",
+    "rule_id": "bad3041331a54c0b",
+    "text": "Adicionar alerta crítico de bloqueio para síncope de esforço no nó de conduta médica. O protocolo detecta síncope de esforço (sincope_contexto == 'contexto_esforco') e exibe mensagem educativa (msg-critico-sincope-esforco), mas NÃO bloqueia liberação para atividade física. Síncope de esforço tem risco de morte súbita 5-30% e requer investigação OBRIGATÓRIA antes de qualquer liberação. SOLUÇÃO: Adicionar alerta CRÍTICO no nó de conduta (conduta-1754085461792) que IMPEÇA finalização do atendimento sem: (1) ECG realizado, (2) ECOTT solicitado, (3) Teste ergométrico/cintilografia solicitado, (4) Encaminhamento cardiologia registrado. Exemplo JSON: {'id': 'alerta-bloqueio-sincope-esforco', 'condicao': 'sincope_contexto == \"contexto_esforco\"', 'tipo': 'bloqueio', 'mensagem': 'BLOQUEIO DE SEGURANÇA: Paciente com síncope de esforço NÃO pode ser liberado para atividade física. Investigação obrigatória: ECG + ECOTT + Teste ergométrico/Cintilografia + Avaliação cardiologista.'}",
     "decision": "accepted",
     "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:54:43.571240",
-    "comment": null,
-    "suggestion_id": "sug_022",
-    "category": "eficiencia",
-    "priority": "media",
-    "keywords": null
-  },
-  {
-    "rule_id": "da0633630f1f2053",
-    "text": "Automatizar solicitação de Exames Laboratoriais para Risco Cardiovascular Elevado. Pacientes com risco cardiovascular elevado (PREVENT ≥ 7.5%) necessitam de exames laboratoriais específicos (Perfil Lipídico Completo, HbA1c, Creatinina+eGFR). Sugere-se automatizar a solicitação desses exames quando o risco PREVENT for intermediário ou alto.",
-    "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:54:49.426558",
-    "comment": null,
-    "suggestion_id": "sug_029",
-    "category": "eficiencia",
-    "priority": "media",
-    "keywords": null
-  },
-  {
-    "rule_id": "9106703beb7d551a",
-    "text": "Otimizar solicitação de exames laboratoriais de rotina. Os exames laboratoriais básicos (Hemograma, Creatinina, Ureia, Eletrólitos, Perfil Lipídico, Glicada) são frequentemente solicitados mesmo quando o paciente já os trouxe recentes. Sugere-se adicionar uma condição para solicitar esses exames apenas se 'sem_exames_recentes' for selecionado em 'exames_avaliacao', evitando duplicação e custos desnecessários.",
-    "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:55:24.370696",
-    "comment": null,
-    "suggestion_id": "sug_009",
-    "category": "economia",
-    "priority": "media",
-    "keywords": null
-  },
-  {
-    "rule_id": "cfbb1e276c25a0be",
-    "text": "Garantir prescrição de estatina em DAC. O protocolo identifica a ausência de estatina em pacientes com DAC ('expr-dac-sem-estatina-alerta'), mas não força a prescrição ou um alerta crítico na conduta médica. Sugere-se adicionar um alerta de alta prioridade e a prescrição automática de estatina de alta intensidade (Atorvastatina 40-80mg ou Rosuvastatina 20-40mg) quando a condição for identificada.",
-    "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:56:19.700775",
+    "model_id": "anthropic/claude-sonnet-4.5",
+    "timestamp": "2025-12-13T10:18:36.076942",
     "comment": null,
     "suggestion_id": "sug_003",
     "category": "seguranca",
@@ -189,12 +111,12 @@ As seções abaixo contêm regras estruturadas que são usadas para filtrar suge
     "keywords": null
   },
   {
-    "rule_id": "b7d7b2e8758468a9",
-    "text": "Implementar Rastreamento de IC em DM2 com BNP/NT-proBNP. A diretriz ADA 2025 recomenda o rastreamento de insuficiência cardíaca estágio B em pacientes com Diabetes Mellitus tipo 2 (DM2) usando BNP ou NT-proBNP. O protocolo deve incluir a solicitação desses exames quando DM2 for identificado e adicionar uma mensagem educativa sobre o propósito do exame.",
+    "rule_id": "c84834ce144cbed0",
+    "text": "Adicionar validação de prescrição de estatina em pacientes com DAC no nó de conduta. O protocolo detecta DAC sem estatina (dac_sem_estatina) e exibe mensagem educativa (msg-critico-dac-sem-estatina), mas NÃO valida se estatina foi PRESCRITA antes de finalizar atendimento. DAC sem estatina é gap terapêutico crítico (Evidência 1A). SOLUÇÃO: Adicionar validação no nó de conduta que IMPEÇA finalização se: (1) 'dac' in comorbidades E (2) Nenhuma estatina foi prescrita (verificar lista de medicamentos prescritos) E (3) Não há justificativa documentada de contraindicação. Exemplo JSON: {'id': 'validacao-estatina-dac', 'condicao': \"'dac' in comorbidades and not any('estatina' in med['categoria'].lower() for med in medicamentos_prescritos)\", 'tipo': 'alerta_critico', 'mensagem': 'ATENÇÃO: Paciente com DAC sem prescrição de estatina. Prescrever estatina alta intensidade (Atorvastatina 40-80mg OU Rosuvastatina 20-40mg) ou documentar contraindicação.'}",
     "decision": "accepted",
     "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:57:47.243322",
+    "model_id": "anthropic/claude-sonnet-4.5",
+    "timestamp": "2025-12-13T10:18:51.119945",
     "comment": null,
     "suggestion_id": "sug_004",
     "category": "seguranca",
@@ -202,12 +124,25 @@ As seções abaixo contêm regras estruturadas que são usadas para filtrar suge
     "keywords": null
   },
   {
-    "rule_id": "d32aebea9d21ceb8",
-    "text": "Reforçar a obrigatoriedade do ECG em Síncope sem Pródromos. O protocolo identifica 'Síncope súbita sem pródromo sugere arritmia' como um alerta de risco alto. No entanto, a solicitação explícita de ECG de 12 derivações como exame inicial obrigatório para essa condição não está claramente definida no fluxo de conduta. Sugere-se adicionar o ECG como exame mandatório quando esta opção for selecionada.",
+    "rule_id": "09cd8063b0794e73",
+    "text": "Adicionar validação de dados obrigatórios para cálculo PREVENT antes de exibir resultado. O nó 'summary-prevent-calculo' exibe resultado de risco cardiovascular mesmo com dados incompletos (CT, HDL, PAS, eGFR ausentes). Isso pode gerar estimativa incorreta e decisão clínica inadequada. SOLUÇÃO: Adicionar expressão clínica 'prevent_dados_completos' que valida presença de TODOS os campos obrigatórios. Se falso, exibir apenas mensagem de alerta 'msg-validacao-prevent-dados-faltantes' e NÃO calcular risco. Exemplo JSON: {'id': 'expr-prevent-validacao', 'formula': 'prevent_ct != None and prevent_hdl != None and prevent_pas != None and prevent_egfr != None', 'template': 'Exibir resultado apenas se True'}",
     "decision": "accepted",
     "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:57:53.442775",
+    "model_id": "anthropic/claude-sonnet-4.5",
+    "timestamp": "2025-12-13T10:18:59.385078",
+    "comment": null,
+    "suggestion_id": "sug_001",
+    "category": "seguranca",
+    "priority": "alta",
+    "keywords": null
+  },
+  {
+    "rule_id": "c1d69b479e1cbe94",
+    "text": "Adicionar solicitação automática de ECOTT quando FA + dispneia detectados. O protocolo detecta FA + dispneia (fa_dispneia_ecott_required) e exibe mensagem educativa (msg-critico-fa-dispneia-ecott), mas NÃO adiciona ECOTT automaticamente à lista de exames solicitados. ECOTT é OBRIGATÓRIO nessa combinação (ESC Guidelines on AF 2020 - Classe I). SOLUÇÃO: Adicionar lógica no nó de conduta que, quando fa_dispneia_ecott_required == True, automaticamente inclui exame 'US - Ecocardiograma com Doppler convencional - artérias' (id: 08a4d940-0732-464d-8fdc-f7a62afeff7c) na lista de exames solicitados, com alerta destacado: 'OBRIGATÓRIO em FA + dispneia para avaliar FE e trombos em AE (risco AVE)'.",
+    "decision": "accepted",
+    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
+    "model_id": "anthropic/claude-sonnet-4.5",
+    "timestamp": "2025-12-13T10:19:02.478223",
     "comment": null,
     "suggestion_id": "sug_005",
     "category": "seguranca",
@@ -215,27 +150,27 @@ As seções abaixo contêm regras estruturadas que são usadas para filtrar suge
     "keywords": null
   },
   {
-    "rule_id": "2db0acb3db494ab4",
-    "text": "Adicionar alerta para FA + Dispneia. A combinação de Fibrilação Atrial (FA) com dispneia é um sinal de alerta crítico para insuficiência cardíaca ou risco de tromboembolismo. O protocolo deve apresentar um alerta explícito e a solicitação obrigatória de Ecocardiograma Transtorácico (ECOTT) e BNP/NT-proBNP, conforme a diretriz ESC.",
+    "rule_id": "91a9f361beb34673",
+    "text": "Adicionar validação de contraindicações para teste ergométrico antes de solicitar exame. O protocolo solicita teste ergométrico em várias situações (DAC estável, dor torácica de risco baixo-moderado, pré-operatório), mas NÃO valida contraindicações absolutas antes de solicitar. Playbook menciona contraindicações: estenose aórtica grave/sintomática, arritmias permanentes não controladas, obstrução hemodinâmica de via de saída VE, hipotensão (PAS <90mmHg). SOLUÇÃO: Adicionar validação no exame 'Teste ergométrico computadorizado' que detecte contraindicações e exiba alerta: 'ATENÇÃO: Paciente possui contraindicação para teste ergométrico (estenose aórtica grave/hipotensão/arritmia não controlada). Considerar prova funcional alternativa (cintilografia com estresse farmacológico ou eco de estresse com dobutamina).'",
     "decision": "accepted",
     "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:58:21.704680",
+    "model_id": "anthropic/claude-sonnet-4.5",
+    "timestamp": "2025-12-13T10:19:08.126778",
     "comment": null,
-    "suggestion_id": "sug_027",
+    "suggestion_id": "sug_015",
     "category": "seguranca",
     "priority": "alta",
     "keywords": null
   },
   {
-    "rule_id": "c86757a8f92087f5",
-    "text": "Adicionar alerta para Síncope em Posição Supina. A síncope em posição supina (deitado) é um sinal de alerta para causas cardíacas ou neurológicas graves. Sugere-se adicionar um alerta de alta prioridade e a solicitação de ECG e Ecocardiograma quando esta opção for selecionada.",
+    "rule_id": "397519bae4b15eca",
+    "text": "Adicionar validação de valores de BNP/NT-proBNP com alerta se elevados em pacientes com DM2. O protocolo solicita BNP ou NT-proBNP para rastreamento de IC estágio B em DM2 (ADA 2025), mas NÃO valida valores de corte (BNP ≥50 pg/mL ou NT-proBNP ≥125 pg/mL) nem gera alerta automático se elevados. Médico precisa interpretar manualmente. SOLUÇÃO: Adicionar campos de coleta de valores de BNP e NT-proBNP no nó de exames complementares. Criar expressões clínicas que validem valores: bnp_elevado = bnp >= 50, ntprobnp_elevado = ntprobnp >= 125. Se elevado E paciente tem DM2, adicionar alerta automático no nó de conduta: 'BNP/NT-proBNP elevado em paciente com DM2. Solicitar ECOTT e encaminhar para cardiologista (risco IC estágio B)'.",
     "decision": "accepted",
     "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:58:35.150083",
+    "model_id": "anthropic/claude-sonnet-4.5",
+    "timestamp": "2025-12-13T10:19:31.385133",
     "comment": null,
-    "suggestion_id": "sug_030",
+    "suggestion_id": "sug_010",
     "category": "seguranca",
     "priority": "alta",
     "keywords": null
@@ -248,118 +183,14 @@ As seções abaixo contêm regras estruturadas que são usadas para filtrar suge
 ```json
 [
   {
-    "rule_id": "89ebd93f5e86a759",
-    "text": "Clarificar a pergunta sobre 'Risco do procedimento a ser realizado'. A pergunta 'Risco do procedimento a ser realizado:' (uid: risco_procedimento) no nó 'Pré-operatório - reavaliação' menciona 'colocar tabela do miro de DCC e levar pro resumo de atendimento'. A descrição atual é vaga. Sugere-se adicionar a tabela de risco ou um link direto para ela, e clarificar que a seleção deve ser baseada em diretrizes clínicas.",
+    "rule_id": "6cbf6d91f61c94a1",
+    "text": "Corrigir lógica de ocultação do nó de exames complementares (node-1754075093485). O nó 'Resultados de exames complementares - inicial' (node-1754075093485) está configurado como OCULTO quando 'sem_exames_recentes' está selecionado. Isso é INVERSO à lógica correta: o nó deveria ser VISÍVEL quando paciente NÃO traz exames, para coletar dados laboratoriais essenciais (creatinina, HbA1c, lipidograma) necessários para cálculo PREVENT e estratificação de risco. SOLUÇÃO: Alterar condicional de 'oculto' para 'visivel' e inverter condição para 'not('sem_exames_recentes' in exames_avaliacao)' OU remover condição completamente (nó sempre visível).",
     "decision": "rejected",
     "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:55:10.023147",
-    "comment": "adiciona complexidade com baixo retorno operacional",
-    "suggestion_id": "sug_010",
-    "category": "usabilidade",
-    "priority": "media",
-    "keywords": null
-  },
-  {
-    "rule_id": "01a7aad2c1402b9a",
-    "text": "Adicionar alerta para Síncope de Esforço. O campo 'Síncope de esforço' (ID: contexto_esforco) é um red flag crítico. Atualmente, o protocolo não apresenta um alerta visual ou bloqueio explícito para garantir investigação imediata. Sugere-se adicionar um alerta de alta prioridade e um bloqueio de conduta até que a investigação seja concluída, conforme a diretriz ESC.",
-    "decision": "rejected",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:55:53.915534",
-    "comment": "alertas devem ser sugeridos como mensagens ao médico, orientações ao paciente, ou então mensagens no campo \"mensagem de alerta\" dos medicamentos.",
-    "suggestion_id": "sug_001",
-    "category": "seguranca",
-    "priority": "alta",
-    "keywords": null
-  },
-  {
-    "rule_id": "736b57f8f80132b1",
-    "text": "Adicionar alerta e bloqueio para Síncope de Esforço não investigada. A síncope de esforço é um red flag crítico. O protocolo deve implementar um bloqueio de conduta médica e um alerta visual explícito caso o paciente relate síncope de esforço e a investigação cardiológica obrigatória (ECG, ECOTT, Teste Ergométrico/Cintilografia) não tenha sido realizada ou documentada.",
-    "decision": "rejected",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:56:31.327035",
-    "comment": "alertas devem ser sugeridos como mensagens ao médico, orientações ao paciente, ou então mensagens no campo \"mensagem de alerta\" dos medicamentos.",
-    "suggestion_id": "sug_015",
-    "category": "seguranca",
-    "priority": "alta",
-    "keywords": null
-  },
-  {
-    "rule_id": "2809ff23c4b838f6",
-    "text": "Reforçar a obrigatoriedade de investigação para Síncope de Esforço. A síncope de esforço é um red flag crítico. O protocolo deve garantir que, ao selecionar 'contexto_esforco' para síncope, um alerta crítico seja exibido e a conduta médica seja bloqueada até que a investigação cardiológica obrigatória (ECG, ECOTT, Teste Ergométrico/Cintilografia) seja documentada.",
-    "decision": "rejected",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:56:56.850482",
-    "comment": "alertas devem ser sugeridos como mensagens ao médico, orientações ao paciente, ou então mensagens no campo \"mensagem de alerta\" dos medicamentos.",
-    "suggestion_id": "sug_021",
-    "category": "seguranca",
-    "priority": "alta",
-    "keywords": null
-  },
-  {
-    "rule_id": "ec5fcd2cc34dc959",
-    "text": "Adicionar alerta para Síncope de Esforço não investigada. A síncope de esforço é um red flag crítico. O protocolo deve garantir que, ao selecionar 'contexto_esforco' para síncope, um alerta crítico seja exibido e a conduta médica seja bloqueada até que a investigação cardiológica obrigatória (ECG, ECOTT, Teste Ergométrico/Cintilografia) seja documentada.",
-    "decision": "rejected",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:57:20.882170",
-    "comment": "alertas devem ser sugeridos como mensagens ao médico, orientações ao paciente, ou então mensagens no campo \"mensagem de alerta\" dos medicamentos.",
-    "suggestion_id": "sug_026",
-    "category": "seguranca",
-    "priority": "alta",
-    "keywords": null
-  },
-  {
-    "rule_id": "7dcf7ea645b0bc56",
-    "text": "Adicionar alerta para DAC sem estatina prescrita. O protocolo possui a expressão 'expr-dac-sem-estatina-alerta' que identifica pacientes com DAC sem estatina. Sugere-se transformar isso em um alerta visual proeminente na tela de conduta médica e, opcionalmente, pré-selecionar a prescrição de uma estatina de alta intensidade.",
-    "decision": "rejected",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:57:31.850558",
-    "comment": "alertas devem ser sugeridos como mensagens ao médico, orientações ao paciente, ou então mensagens no campo \"mensagem de alerta\" dos medicamentos.",
-    "suggestion_id": "sug_031",
-    "category": "seguranca",
-    "priority": "alta",
-    "keywords": null
-  },
-  {
-    "rule_id": "47f9bb4a8a788c01",
-    "text": "Adicionar alerta para Fibrilação Atrial + Dispneia. A combinação de Fibrilação Atrial (FA) com dispneia é um sinal de alerta crítico para insuficiência cardíaca ou risco de tromboembolismo. O protocolo deve apresentar um alerta explícito e a solicitação obrigatória de Ecocardiograma Transtorácico (ECOTT) e BNP/NT-proBNP, conforme a diretriz ESC.",
-    "decision": "rejected",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:57:40.843053",
-    "comment": "alertas devem ser sugeridos como mensagens ao médico, orientações ao paciente, ou então mensagens no campo \"mensagem de alerta\" dos medicamentos.",
+    "model_id": "anthropic/claude-sonnet-4.5",
+    "timestamp": "2025-12-13T10:19:27.026785",
+    "comment": "na verdade, a lógica está correta.",
     "suggestion_id": "sug_002",
-    "category": "seguranca",
-    "priority": "alta",
-    "keywords": null
-  },
-  {
-    "rule_id": "c86757a8f92087f5",
-    "text": "Adicionar alerta para Síncope em Posição Supina. A síncope em posição supina (deitado) é um sinal de alerta para causas cardíacas ou neurológicas graves. Sugere-se adicionar um alerta de alta prioridade e a solicitação de ECG e Ecocardiograma quando esta opção for selecionada.",
-    "decision": "rejected",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:57:59.843110",
-    "comment": "alertas devem ser sugeridos como mensagens ao médico, orientações ao paciente, ou então mensagens no campo \"mensagem de alerta\" dos medicamentos.",
-    "suggestion_id": "sug_013",
-    "category": "seguranca",
-    "priority": "alta",
-    "keywords": null
-  },
-  {
-    "rule_id": "18b44a0a6bf21101",
-    "text": "Adicionar alerta para Síncope sem Pródromos. A opção 'sem_prodromos' na pergunta sobre síncope tem 'flag_risk': 'high' e um alerta 'Síncope súbita sem pródromo sugere arritmia'. Sugere-se transformar isso em um alerta visual proeminente na tela de conduta médica, com recomendação de investigação cardiológica.",
-    "decision": "rejected",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "google/gemini-2.5-flash-lite",
-    "timestamp": "2025-12-12T22:58:27.830042",
-    "comment": "s",
-    "suggestion_id": "sug_028",
     "category": "seguranca",
     "priority": "alta",
     "keywords": null
@@ -5542,6 +5373,171 @@ O feedback do usuário revela uma desconexão significativa entre a geração de
 - **Sugestões genéricas em categorias de usabilidade e eficiência:** 13 ocorrências
 
 **Categoria Dominante:** Desconsideração da complexidade operacional e do 'retorno operacional'
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Feedback - 2025-12-13 10:19
+
+**Protocolo:** amil_ficha_cardiologia_v2.0.0_12-12-2025-1024
+**Modelo:** anthropic/claude-sonnet-4.5
+
+**Estatísticas:**
+- Total revisado: 13
+- Relevantes: 12
+- Irrelevantes: 1
+
+### Sugestões Rejeitadas (com comentários)
+
+- **sug_002:** na verdade, a lógica está correta.
+
+
+---
+
+## Feedback - 2025-12-13 10:19
+
+**Protocolo:** amil_ficha_cardiologia_v2.0.0_12-12-2025-1024
+**Modelo:** anthropic/claude-sonnet-4.5
+
+**Estatísticas:**
+- Total revisado: 13
+- Relevantes: 12
+- Irrelevantes: 1
+
+### Sugestões Rejeitadas (com comentários)
+
+- **sug_002:** na verdade, a lógica está correta.
+
+
+---
+
+## Insight LLM - 2025-12-13 10:20
+
+**Análise:**
+A análise apresenta uma taxa de aceitação excepcionalmente alta (92.3% - 12 de 13 sugestões relevantes), indicando que o sistema está gerando recomendações de alta qualidade. O único ponto de falha identificado foi uma sugestão que propôs correção de lógica já implementada corretamente, conforme feedback do usuário ('na verdade, a lógica está correta'). Este erro sugere necessidade de análise mais profunda do código antes de sugerir correções de lógica. A forte concentração em sugestões de segurança (76.9%) mostra expertise nesta área, mas pode estar deixando oportunidades de usabilidade e eficiência inexploradas. As sugestões de segurança focaram corretamente em validações clínicas críticas (faixas etárias para scores, dados essenciais para cálculos) e as de eficiência em consolidação e reaproveitamento de dados - ambos padrões bem aceitos.
+
+**Recomendações:**
+1. VALIDAÇÃO DE LÓGICA: Implementar verificação dupla antes de sugerir correções de lógica - analisar fluxo completo, condições alternativas e testes de edge cases para evitar falsos positivos. 2. BALANCEAMENTO DE CATEGORIAS: Criar checklist estruturado que garanta análise equilibrada de segurança, eficiência e usabilidade, com meta mínima de 3-5 sugestões por categoria. 3. EXPANSÃO DE USABILIDADE: Desenvolver framework específico para identificar problemas de UX em protocolos clínicos: clareza de labels, terminologia acessível, feedback ao usuário, fluxos intuitivos. 4. MANTER PONTOS FORTES: Continuar priorizando validações clínicas críticas, consolidação de conteúdo repetido e auto-preenchimento de dados - padrões com alta taxa de aceitação. 5. CONTEXTO CLÍNICO: Ao analisar protocolos de cardiologia (e outras especialidades), considerar guidelines clínicos específicos (PREVENT, estratificação de risco) como fonte de sugestões de segurança.
+
+---
+
+## Aprendizados - 2025-12-13 10:20
+
+### Padrão: falso_positivo_validacao_logica
+
+**Descrição:** O sistema identificou uma suposta falha de validação ou lógica que na realidade está correta. O usuário comentou 'na verdade, a lógica está correta', indicando que uma sugestão marcada como irrelevante foi gerada por interpretação equivocada do código existente.
+
+**Severidade:** alta
+**Frequência:** 1
+
+**Exemplos:**
+- Sugestão de segurança que propôs validação/correção de lógica já implementada corretamente
+
+---
+
+### Padrão: alta_taxa_aceitacao_seguranca
+
+**Descrição:** Das 10 sugestões de segurança geradas, a taxa de aceitação foi muito alta (9-10 relevantes), indicando que o sistema está identificando corretamente gaps reais de segurança no protocolo.
+
+**Severidade:** baixa
+**Frequência:** 10
+
+**Exemplos:**
+- Sugestões sobre validação de idade para PREVENT
+- Sugestões sobre coleta de IMC e eGFR para cálculos clínicos
+- Sugestões sobre estratificação de risco com dados de síncope
+
+---
+
+### Padrão: sugestoes_eficiencia_bem_aceitas
+
+**Descrição:** As 2 sugestões de eficiência foram bem recebidas (ambas relevantes), focando em consolidação de mensagens repetidas e auto-preenchimento de dados já coletados.
+
+**Severidade:** baixa
+**Frequência:** 2
+
+**Exemplos:**
+- Consolidar mensagens educativas repetidas sobre estatina
+- Auto-preenchimento de campos PREVENT a partir de dados já coletados
+
+---
+
+### Padrão: baixo_volume_usabilidade
+
+**Descrição:** Apenas 1 sugestão de usabilidade foi gerada (descrição explicativa para campo eGFR), representando ~7.7% do total. Pode haver oportunidades não exploradas nesta categoria.
+
+**Severidade:** media
+**Frequência:** 1
+
+**Exemplos:**
+- Adicionar descrição explicativa no campo de coleta de eGFR
+
+---
+
+### Padrão: distribuicao_desbalanceada_categorias
+
+**Descrição:** A distribuição de sugestões está fortemente concentrada em segurança (76.9%), com eficiência (15.4%) e usabilidade (7.7%) sub-representadas. Isso pode indicar viés de análise ou características específicas deste protocolo.
+
+**Severidade:** media
+**Frequência:** 13
+
+**Exemplos:**
+- Segurança: 10 sugestões
+- Eficiência: 2 sugestões
+- Usabilidade: 1 sugestão
+
+---
+
+
+## Métricas - 2025-12-13 10:19
+
+**Protocolo:** amil_ficha_cardiologia_v2.0.0_12-12-2025-1024
+**Sessão:** fb-20251213-001
+
+### Breakdown de Sugestões
+
+- **Total geradas:** 13
+- **Revisadas:** 13
+- **Relevantes:** 12 (92.3%)
+- **Irrelevantes:** 1 (7.7%)
+
+### Distribuição por Prioridade
+
+- **Alta:** 7
+- **Média:** 5
+- **Baixa:** 1
+
+**Taxa de Rejeição (Baixa Prioridade):** 0.0%
+
+### Tendência de Melhoria
+
+- **Taxa de Rejeição Atual:** 7.7%
+- **Taxa de Rejeição Acumulada:** 31.8%
+- **Mudança vs Sessão Anterior:** [PIORA] 0.0%
+- **Sessões até agora:** 74
+
+### Padrões de Rejeição Detectados
+
+- **distribuicao_desbalanceada_categorias:** 13 ocorrências
+- **alta_taxa_aceitacao_seguranca:** 10 ocorrências
+- **sugestoes_eficiencia_bem_aceitas:** 2 ocorrências
+- **falso_positivo_validacao_logica:** 1 ocorrências
+- **baixo_volume_usabilidade:** 1 ocorrências
+
+**Categoria Dominante:** distribuicao_desbalanceada_categorias
 
 ---
 
