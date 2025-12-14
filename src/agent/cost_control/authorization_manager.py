@@ -159,18 +159,36 @@ class AuthorizationManager:
         input_tokens = cost_estimate.estimated_tokens["input"]
         output_tokens = cost_estimate.estimated_tokens["output"]
         
-        print("\n" + "=" * 60)
-        print("ESTIMATIVA DE CUSTO - AUTORIZAÇÃO REQUERIDA")
-        print("=" * 60)
-        print(f"\nOperação: {operation_description}")
-        print(f"Modelo: {cost_estimate.model}")
-        print(f"\nTokens Estimados:")
-        print(f"  Input:  {input_tokens:,} tokens (${input_cost:.4f})")
-        print(f"  Output: {output_tokens:,} tokens (${output_cost:.4f})")
-        print(f"  Total:  {input_tokens + output_tokens:,} tokens")
-        print(f"\nCusto Total Estimado: ${total_cost:.4f} USD")
-        print(f"Confiança: {cost_estimate.confidence.upper()}")
-        print("=" * 60)
+        # Use Rich for consistent UI
+        try:
+            from rich.console import Console
+            from rich.panel import Panel
+            
+            console = Console()
+            
+            content_lines = [
+                f"[bold]{cost_estimate.model}[/bold]",
+                "",
+                f"Operação: {operation_description}",
+                "",
+                "Tokens Estimados:",
+                f"  Input:  {input_tokens:,} tokens ([cyan]${input_cost:.4f}[/cyan])",
+                f"  Output: {output_tokens:,} tokens ([cyan]${output_cost:.4f}[/cyan])",
+                f"  Total:  {input_tokens + output_tokens:,} tokens",
+                "",
+                f"[bold yellow]Custo Total Estimado: ${total_cost:.4f} USD[/bold yellow]",
+                f"Confiança: {cost_estimate.confidence.upper()}"
+            ]
+            
+            console.print(Panel(
+                "\n".join(content_lines),
+                title="💰 Estimativa de Custo - Autorização Requerida",
+                border_style="yellow"
+            ))
+        except ImportError:
+            # Fallback simples
+            print(f"\n💰 Estimativa de Custo: {cost_estimate.model}")
+            print(f"Tokens: {input_tokens + output_tokens:,} | Custo: ${total_cost:.4f} USD ({cost_estimate.confidence.upper()})")
     
     def _log_decision(self, decision: AuthorizationDecision) -> None:
         """

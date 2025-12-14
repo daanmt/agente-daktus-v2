@@ -806,13 +806,60 @@ class InteractiveCLI:
             with self.display.spinner("Carregando protocolo para reconstrução..."):
                 protocol_json = load_protocol(protocol_path_to_load)
 
-            # Reconstruir
+            # Mostrar estimativa de custo ANTES do spinner (para evitar conflito de output)
+            try:
+                from ..cost_control import CostEstimator
+                from rich.console import Console
+                from rich.panel import Panel
+                
+                cost_estimator = CostEstimator()
+                import json as json_module
+                protocol_size = len(json_module.dumps(protocol_json, ensure_ascii=False))
+                
+                cost_estimate = cost_estimator.estimate_auto_apply_cost(
+                    protocol_size=protocol_size,
+                    suggestions=suggestions_for_reconstruction,
+                    model=self.session_state.model
+                )
+                
+                # Exibir painel de estimativa de custo
+                console = Console()
+                total_cost = cost_estimate.estimated_cost_usd["total"]
+                input_cost = cost_estimate.estimated_cost_usd["input"]
+                output_cost = cost_estimate.estimated_cost_usd["output"]
+                input_tokens = cost_estimate.estimated_tokens["input"]
+                output_tokens = cost_estimate.estimated_tokens["output"]
+                
+                content_lines = [
+                    f"[bold]{cost_estimate.model}[/bold]",
+                    "",
+                    f"Operação: Reconstrução de Protocolo JSON ({len(suggestions_for_reconstruction)} sugestões)",
+                    "",
+                    "Tokens Estimados:",
+                    f"  Input:  {input_tokens:,} tokens ([cyan]${input_cost:.4f}[/cyan])",
+                    f"  Output: {output_tokens:,} tokens ([cyan]${output_cost:.4f}[/cyan])",
+                    f"  Total:  {input_tokens + output_tokens:,} tokens",
+                    "",
+                    f"[bold yellow]Custo Total Estimado: ${total_cost:.4f} USD[/bold yellow]",
+                    f"Confiança: {cost_estimate.confidence.upper()}"
+                ]
+                
+                console.print(Panel(
+                    "\n".join(content_lines),
+                    title="💰 Estimativa de Custo",
+                    border_style="yellow"
+                ))
+            except Exception as e:
+                logger.debug(f"Could not show cost estimate: {e}")
+            
+            # Reconstruir (sem exibir custo novamente)
             with self.display.spinner("Aplicando sugestões..."):
                 reconstructor = ProtocolReconstructor(model=self.session_state.model)
                 reconstruction_result = reconstructor.reconstruct_protocol(
                     original_protocol=protocol_json,
                     suggestions=suggestions_for_reconstruction,
-                    analysis_result=self.session_state.enhanced_result
+                    analysis_result=self.session_state.enhanced_result,
+                    show_cost=False  # Custo já mostrado acima
                 )
 
             if reconstruction_result:
@@ -842,19 +889,79 @@ class InteractiveCLI:
                     with open(output_path, 'w', encoding='utf-8') as f:
                         json.dump(reconstructed_protocol, f, ensure_ascii=False, indent=2)
 
-                # Exibir resultados
+                # Exibir resultados com feedback detalhado (Wave 4.3)
                 changes = reconstruction_result.changes_applied
-                if changes:
-                    self.display.show_diff(changes)
+                metadata = reconstruction_result.metadata or {}
                 
-                # Generate audit report (Wave 3)
+                # 1. Mostrar verificação de mudanças (O QUE foi realmente modificado)
+                verification = metadata.get("verification", {})
+                if verification:
+                    self.display.show_verification_results(
+                        verification_data=verification,
+                        detailed_verified=verification.get("verified_details", []),
+                        detailed_failed=verification.get("failed_details", [])
+                    )
+                    
+                    # Aprender com falhas de implementação
+                    failed_details = verification.get("failed_details", [])
+                    if failed_details:
+                        try:
+                            from ..learning.feedback_learner import learn_from_implementation_failures
+                            protocol_name = Path(self.session_state.protocol_path).stem
+                            lessons = learn_from_implementation_failures(
+                                failed_changes=failed_details,
+                                protocol_name=protocol_name
+                            )
+                            if lessons:
+                                self.display.show_info(f"📝 {len(lessons)} lições de falhas salvas na memória")
+                        except Exception as e:
+                            if logger:
+                                logger.debug(f"Could not learn from failures: {e}")
+                else:
+                    # Fallback para exibição antiga se não houver verificação
+                    if changes:
+                        self.display.show_diff(changes)
+                
+                # 2. Mostrar erros de validação de forma clara
+                validation_warnings = metadata.get("validation_warnings", [])
+                if validation_warnings:
+                    # Separar por tipo
+                    conditional_errors = [w for w in validation_warnings if "Conditional Logic" in w]
+                    other_warnings = [w for w in validation_warnings if "Conditional Logic" not in w]
+                    
+                    if conditional_errors:
+                        self.display.show_validation_errors(
+                            errors=conditional_errors,
+                            error_type="Lógica Condicional",
+                            severity="warning"
+                        )
+                        
+                        # Aprender com erros de validação para não repetir
+                        try:
+                            from ..learning.feedback_learner import learn_from_validation_errors
+                            protocol_name = Path(self.session_state.protocol_path).stem
+                            validation_lessons = learn_from_validation_errors(
+                                validation_warnings=conditional_errors,
+                                protocol_name=protocol_name
+                            )
+                            if validation_lessons:
+                                self.display.show_info(f"🧠 {len(validation_lessons)} lições de erros de validação salvas")
+                        except Exception as e:
+                            if logger:
+                                logger.debug(f"Could not learn from validation errors: {e}")
+                    
+                    if other_warnings:
+                        self.display.show_validation_errors(
+                            errors=other_warnings,
+                            error_type="Cross-Reference",
+                            severity="info"
+                        )
+                
+                # 3. Gerar relatório de auditoria (Wave 3)
                 try:
                     from ..applicator.audit_reporter import generate_reconstruction_audit
                     
-                    # Create audit report path (same as JSON but with _AUDIT.txt suffix)
                     audit_path = str(output_path).replace('.json', '_AUDIT.txt')
-                    
-                    # Get LLM-generated changelog if available
                     detailed_changelog = reconstruction_result.detailed_changelog
                     
                     audit_report = generate_reconstruction_audit(
@@ -871,16 +978,19 @@ class InteractiveCLI:
                     if logger:
                         logger.warning(f"Failed to generate audit report: {e}")
 
-                summary = {
-                    "Arquivo": str(output_path),
-                    "Versão": f"{reconstruction_result.metadata.get('original_version', 'N/A')} → {new_version}",
-                    "Sugestões Aplicadas": len(changes),
-                    "Validação": "✅ PASSOU" if reconstruction_result.validation_passed else "❌ FALHOU"
-                }
-                self.display.show_summary_panel("Reconstrução Concluída", summary)
+                # 4. Exibir resumo final com status claro
+                verified_count = verification.get("verified", 0) if verification else len(changes)
+                failed_count = verification.get("failed", 0) if verification else 0
+                
+                self.display.show_reconstruction_summary(
+                    applied_count=len(suggestions_for_reconstruction),
+                    verified_count=verified_count,
+                    failed_count=failed_count,
+                    validation_warnings=validation_warnings,
+                    output_path=str(output_path)
+                )
 
                 self.session_state.reconstruction_result = reconstruction_result
-                self.display.show_success("Protocolo reconstruído com sucesso!")
             else:
                 self.display.show_warning("Reconstrução não concluída")
 
@@ -1059,7 +1169,7 @@ class InteractiveCLI:
             if "No active session" not in cost_summary:
                 sys.stdout.flush()  # Clear any buffered output
                 print()  # Blank line
-                print(cost_summary)
+                tracker.print_summary()  # Use Rich Panel
                 print()
                 sys.stdout.flush()
         except Exception:

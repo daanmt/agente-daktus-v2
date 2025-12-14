@@ -493,3 +493,222 @@ class DisplayManager:
             for key, value in items.items():
                 print(f"{key}: {value}")
 
+    def show_verification_results(
+        self,
+        verification_data: Dict,
+        detailed_verified: List[Dict] = None,
+        detailed_failed: List[Dict] = None
+    ) -> None:
+        """
+        Exibe resultados de verificação de mudanças aplicadas.
+        
+        Mostra ao usuário O QUE foi realmente modificado vs O QUE falhou.
+        
+        Args:
+            verification_data: Dict com total, verified, failed, verification_rate
+            detailed_verified: Lista com detalhes das mudanças verificadas (opcional)
+            detailed_failed: Lista com detalhes das falhas (opcional)
+        """
+        total = verification_data.get('total', 0)
+        verified = verification_data.get('verified', 0)
+        failed = verification_data.get('failed', 0)
+        rate = verification_data.get('verification_rate', 0.0)
+        
+        if self.rich_available:
+            # Determinar status geral
+            if rate >= 0.9:
+                status_icon = "✅"
+                status_color = "green"
+                status_text = "SUCESSO"
+            elif rate >= 0.7:
+                status_icon = "⚠️"
+                status_color = "yellow"
+                status_text = "PARCIAL"
+            else:
+                status_icon = "❌"
+                status_color = "red"
+                status_text = "FALHAS"
+            
+            # Construir conteúdo
+            content_lines = [
+                f"[bold]{status_icon} Status: [{status_color}]{status_text}[/{status_color}][/bold]",
+                "",
+                f"Sugestões processadas: {total}",
+                f"[green]✓ Aplicadas com sucesso:[/green] {verified}",
+            ]
+            
+            if failed > 0:
+                content_lines.append(f"[red]✗ Não aplicadas:[/red] {failed}")
+            
+            content_lines.append(f"Taxa de sucesso: {rate*100:.1f}%")
+            
+            # Mostrar falhas detalhadas se houver
+            if failed > 0 and detailed_failed:
+                content_lines.append("")
+                content_lines.append("[bold red]Mudanças NÃO aplicadas:[/bold red]")
+                for i, f in enumerate(detailed_failed[:10]):  # Limitar a 10
+                    title = f.get('title', f.get('id', 'N/A'))[:60]
+                    error = f.get('error', 'Erro desconhecido')
+                    content_lines.append(f"  [red]•[/red] {title}")
+                    content_lines.append(f"    [dim]Motivo: {error}[/dim]")
+                
+                if len(detailed_failed) > 10:
+                    content_lines.append(f"  [dim]... e mais {len(detailed_failed) - 10} falhas[/dim]")
+            
+            # Mostrar sucessos resumidos
+            if verified > 0 and detailed_verified:
+                content_lines.append("")
+                content_lines.append("[bold green]Mudanças APLICADAS:[/bold green]")
+                for i, v in enumerate(detailed_verified[:8]):  # Limitar a 8
+                    title = v.get('title', v.get('id', 'N/A'))[:60]
+                    node_id = v.get('node_id', 'N/A')
+                    has_changelog = "📝" if v.get('has_changelog') else ""
+                    content_lines.append(f"  [green]✓[/green] {title} {has_changelog}")
+                    content_lines.append(f"    [dim]Nó: {node_id}[/dim]")
+                
+                if len(detailed_verified) > 8:
+                    content_lines.append(f"  [dim]... e mais {len(detailed_verified) - 8} mudanças[/dim]")
+            
+            panel = Panel(
+                "\n".join(content_lines),
+                title="📊 Verificação de Mudanças",
+                border_style=status_color,
+                box=box.ROUNDED
+            )
+            self.console.print(panel)
+        else:
+            print(f"\nVERIFICAÇÃO DE MUDANÇAS")
+            print("=" * 60)
+            print(f"Total: {total} | Aplicadas: {verified} | Falhas: {failed}")
+            print(f"Taxa de sucesso: {rate*100:.1f}%")
+            
+            if failed > 0 and detailed_failed:
+                print("\nMudanças NÃO aplicadas:")
+                for f in detailed_failed[:5]:
+                    print(f"  - {f.get('title', 'N/A')}: {f.get('error', 'N/A')}")
+
+    def show_validation_errors(
+        self,
+        errors: List[str],
+        error_type: str = "Validação",
+        severity: str = "warning"
+    ) -> None:
+        """
+        Exibe erros de validação de forma clara e acionável.
+        
+        Args:
+            errors: Lista de mensagens de erro
+            error_type: Tipo de erro (ex: "Lógica Condicional", "Cross-Reference")
+            severity: "warning", "error" ou "info"
+        """
+        if not errors:
+            return
+        
+        if self.rich_available:
+            # Cores e ícones por severidade
+            colors = {"warning": "yellow", "error": "red", "info": "blue"}
+            icons = {"warning": "⚠️", "error": "❌", "info": "ℹ️"}
+            
+            color = colors.get(severity, "yellow")
+            icon = icons.get(severity, "⚠️")
+            
+            content_lines = [
+                f"[bold]{icon} {len(errors)} erros de {error_type} encontrados[/bold]",
+                "",
+                "[dim]Estes erros podem indicar problemas no protocolo reconstruído.[/dim]",
+                "[dim]Revise os itens abaixo antes de usar o protocolo em produção.[/dim]",
+                ""
+            ]
+            
+            for i, err in enumerate(errors[:15], 1):  # Limitar a 15
+                # Formatar erro de forma mais legível
+                err_formatted = err.replace("Conditional Logic Error: ", "")
+                content_lines.append(f"[{color}]{i}.[/{color}] {err_formatted}")
+            
+            if len(errors) > 15:
+                content_lines.append(f"\n[dim]... e mais {len(errors) - 15} erros[/dim]")
+            
+            content_lines.append("")
+            content_lines.append(f"[bold]Recomendação:[/bold] Verifique as condicionais nos nós afetados.")
+            
+            panel = Panel(
+                "\n".join(content_lines),
+                title=f"🔍 Erros de {error_type}",
+                border_style=color,
+                box=box.ROUNDED
+            )
+            self.console.print(panel)
+        else:
+            print(f"\n⚠️ ERROS DE {error_type.upper()}")
+            print("-" * 60)
+            for i, err in enumerate(errors[:10], 1):
+                print(f"{i}. {err}")
+            if len(errors) > 10:
+                print(f"... e mais {len(errors) - 10} erros")
+
+    def show_reconstruction_summary(
+        self,
+        applied_count: int,
+        verified_count: int,
+        failed_count: int,
+        validation_warnings: List[str],
+        output_path: str
+    ) -> None:
+        """
+        Exibe resumo completo da reconstrução.
+        
+        Args:
+            applied_count: Quantidade de sugestões processadas
+            verified_count: Quantidade verificada como aplicada
+            failed_count: Quantidade que falhou na verificação
+            validation_warnings: Avisos de validação
+            output_path: Caminho do arquivo salvo
+        """
+        if self.rich_available:
+            # Calcular status geral
+            if failed_count == 0 and len(validation_warnings) == 0:
+                status = "✅ SUCESSO TOTAL"
+                color = "green"
+            elif failed_count > 0 or len(validation_warnings) > 0:
+                status = "⚠️ SUCESSO COM AVISOS"
+                color = "yellow"
+            else:
+                status = "❌ PROBLEMAS DETECTADOS"
+                color = "red"
+            
+            content_lines = [
+                f"[bold]{status}[/bold]",
+                "",
+                f"[green]✓ Mudanças aplicadas:[/green] {verified_count}/{applied_count}",
+            ]
+            
+            if failed_count > 0:
+                content_lines.append(f"[red]✗ Mudanças não aplicadas:[/red] {failed_count}")
+            
+            if validation_warnings:
+                content_lines.append(f"[yellow]⚠ Avisos de validação:[/yellow] {len(validation_warnings)}")
+            
+            content_lines.append("")
+            content_lines.append(f"[bold]Arquivo salvo:[/bold]")
+            content_lines.append(f"[cyan]{output_path}[/cyan]")
+            
+            if validation_warnings:
+                content_lines.append("")
+                content_lines.append("[dim]Execute uma nova análise para verificar")
+                content_lines.append("se os avisos persistem ou foram resolvidos.[/dim]")
+            
+            panel = Panel(
+                "\n".join(content_lines),
+                title="📋 Resumo da Reconstrução",
+                border_style=color,
+                box=box.DOUBLE
+            )
+            self.console.print(panel)
+        else:
+            print(f"\n{'='*60}")
+            print("RESUMO DA RECONSTRUÇÃO")
+            print(f"{'='*60}")
+            print(f"Aplicadas: {verified_count}/{applied_count}")
+            print(f"Falhas: {failed_count}")
+            print(f"Avisos: {len(validation_warnings)}")
+            print(f"Arquivo: {output_path}")

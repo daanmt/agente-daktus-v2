@@ -8,8 +8,97 @@ Substitui regex frágil por AST parsing, garantindo:
 """
 
 import ast
+import re
 from typing import Tuple, List, Set, Dict
 from ..core.logger import logger
+
+
+def sanitize_conditional_expression(expression: str) -> str:
+    """
+    Sanitiza expressão condicional removendo chamadas de função inválidas.
+    
+    LLMs frequentemente geram funções que não existem no Daktus Studio:
+    - selected_only(var, value) → 'value' in var
+    - contains(var, value) → 'value' in var
+    - isEmpty(var) → var == None
+    - getAnswer(var) → var
+    
+    Args:
+        expression: Expressão original com possíveis funções inválidas
+        
+    Returns:
+        Expressão sanitizada com sintaxe Daktus válida
+    """
+    if not expression or not isinstance(expression, str):
+        return expression
+    
+    original = expression
+    
+    # Padrão 1: "not selected_only(var, 'value')" → "" (remover completamente, é redundante)
+    expression = re.sub(
+        r'\s*and\s+not\s+selected_only\s*\([^)]+\)',
+        '',
+        expression,
+        flags=re.IGNORECASE
+    )
+    
+    # Padrão 2: "selected_only(var, 'value')" → "'value' in var"
+    def replace_selected_only(match):
+        var = match.group(1).strip()
+        value = match.group(2).strip()
+        return f"{value} in {var}"
+    
+    expression = re.sub(
+        r'selected_only\s*\(\s*(\w+)\s*,\s*([\'"][^"\']+[\'"])\s*\)',
+        replace_selected_only,
+        expression,
+        flags=re.IGNORECASE
+    )
+    
+    # Padrão 3: "contains(var, 'value')" → "'value' in var"
+    def replace_contains(match):
+        var = match.group(1).strip()
+        value = match.group(2).strip()
+        return f"{value} in {var}"
+    
+    expression = re.sub(
+        r'contains\s*\(\s*(\w+)\s*,\s*([\'"][^"\']+[\'"])\s*\)',
+        replace_contains,
+        expression,
+        flags=re.IGNORECASE
+    )
+    
+    # Padrão 4: "isEmpty(var)" → "var == None" ou remover
+    expression = re.sub(
+        r'isEmpty\s*\(\s*(\w+)\s*\)',
+        r'\1 == None',
+        expression,
+        flags=re.IGNORECASE
+    )
+    
+    # Padrão 5: "getAnswer('var')" → "var"
+    expression = re.sub(
+        r'getAnswer\s*\(\s*[\'"](\w+)[\'"]\s*\)',
+        r'\1',
+        expression,
+        flags=re.IGNORECASE
+    )
+    
+    # Limpar "and and" ou "or or" resultantes
+    expression = re.sub(r'\s+and\s+and\s+', ' and ', expression)
+    expression = re.sub(r'\s+or\s+or\s+', ' or ', expression)
+    
+    # Limpar espaços extras
+    expression = re.sub(r'\s+', ' ', expression).strip()
+    
+    # Remover "and" ou "or" no início/fim
+    expression = re.sub(r'^(and|or)\s+', '', expression)
+    expression = re.sub(r'\s+(and|or)$', '', expression)
+    
+    if expression != original:
+        logger.debug(f"Sanitized conditional: '{original[:50]}...' → '{expression[:50]}...'")
+    
+    return expression
 
 class ConditionalExpressionValidator:
     """
@@ -156,7 +245,7 @@ def validate_protocol_conditionals(protocol_dict: Dict) -> Tuple[bool, List[str]
         if not isinstance(data, dict):
             continue
             
-        questions = data.get("questions", [])
+        questions = data.get("questions") or []
         if not isinstance(questions, list):
             continue
             
@@ -196,7 +285,7 @@ def validate_protocol_conditionals(protocol_dict: Dict) -> Tuple[bool, List[str]
     # Validar question expressoes
     for node in nodes:
         data = node.get("data", {})
-        questions = data.get("questions", [])
+        questions = data.get("questions") or []
         
         for question in questions:
             if not isinstance(question, dict): 

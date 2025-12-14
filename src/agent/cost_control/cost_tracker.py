@@ -176,23 +176,38 @@ class CostTracker:
         return self.current_session.to_dict()
     
     def format_summary(self) -> str:
-        """Format for CLI display."""
+        """Format for CLI display using Rich Panel."""
         if not self.current_session:
             return "No active session"
         
         s = self.current_session
-        lines = [
-            "=" * 50,
-            "💰 SESSION COST SUMMARY",
-            "=" * 50,
-            f"Model: {s.model}",
-            f"Calls: {s.total_calls}",
-            f"Tokens: {s.total_tokens:,} (in: {s.total_prompt_tokens:,}, out: {s.total_completion_tokens:,})",
+        
+        # Return Rich-formatted string for Panel content
+        content_lines = [
+            f"[bold]Model:[/bold] {s.model}",
+            f"[bold]Calls:[/bold] {s.total_calls}",
+            f"[bold]Tokens:[/bold] {s.total_tokens:,} (in: {s.total_prompt_tokens:,}, out: {s.total_completion_tokens:,})",
             "",
-            f"💵 TOTAL COST: ${s.total_cost_usd:.4f} USD",
-            "=" * 50
+            f"[bold green]💵 TOTAL COST: ${s.total_cost_usd:.4f} USD[/bold green]"
         ]
-        return "\n".join(lines)
+        return "\n".join(content_lines)
+    
+    def print_summary(self) -> None:
+        """Print session summary using Rich Panel."""
+        from rich.console import Console
+        from rich.panel import Panel
+        
+        console = Console()
+        content = self.format_summary()
+        
+        if content == "No active session":
+            console.print(content)
+        else:
+            console.print(Panel(
+                content,
+                title="💰 Session Cost Summary",
+                border_style="green"
+            ))
 
 
 def get_cost_tracker() -> CostTracker:

@@ -1,0 +1,132 @@
+======================================================================
+📋 RELATÓRIO DE AUDITORIA - RECONSTRUÇÃO DE PROTOCOLO
+======================================================================
+Data: 2025-12-14 00:12:28
+Protocolo: Unknown
+Sugestões Aplicadas: 29
+
+======================================================================
+MUDANÇAS DETECTADAS (COMPARAÇÃO)
+======================================================================
+
+🔹 Nodo: Identificação - inicial (node-219cf8a0-e2da-4754-8195-91f05e215523)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Anamnese - inicial (node-1754054008885)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Anamnese - inicial (node-1754058668684)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Resultados de exames complementares - inicial (node-1754075093485)
+   • condicional pergunta 'exames_cardio_aberto': MODIFICADA
+     Nova: not 'exames_lab' in exames_avaliacao
+   • descrição: MODIFICADA
+
+🔹 Nodo: Exame físico - inicial (node-1754076722505)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Resumo atendimento - enfermagem - reavaliação (fdf74edc-8049-4d16-9e31-a0666dcf6733)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Conduta(enfermagem) - avaliação (conduta-1754077048525)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Exames cardiológicos - reavaliação (node-1754085865415)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Pré-operatório - reavaliação (node-1754077407613)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Hipertensão arterial - reavaliação (node-1754083703202)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Dor torácica - reavaliação (node-1754083708410)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Anamnese cardiológica - reavaliação (node-a2135151-3599-4efb-a605-fc2782c56736)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Calculadoras - reavaliação (summary-b6a21578-f1ca-4b0b-bae6-8146d5f38ed7)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Dados Clínicos para Cálculo PREVENT (node-prevent-dados-clinicos)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Cálculo de Risco PREVENT (AHA 2024) (summary-prevent-calculo)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Conduta médica - reavaliação (conduta-1754085461792)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Impressão e conduta médica - reavaliação (node-de010b49-ebeb-424b-bd21-c2e326417faf)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Resumo atendimento - médico - reavaliação (14917447-7630-4715-8407-ff890c40facc)
+   • descrição: MODIFICADA
+
+======================================================================
+SUGESTÕES APLICADAS
+======================================================================
+1. [sug_001] Melhorar descrição do campo eGFR para cálculo automático
+   Categoria: usabilidade
+2. [sug_006] Otimizar condição de exibição do nó de Exames Laboratoriais
+   Categoria: eficiencia
+3. [sug_009] Refinar condição para 'Orientações para diabéticos'
+   Categoria: eficiencia
+4. [sug_010] Adicionar opção 'Outras arritmias' ao ECG
+   Categoria: usabilidade
+5. [sug_011] Simplificar condição de visibilidade do nó de Exames Cardiológicos
+   Categoria: eficiencia
+6. [sug_013] Otimizar descrição da característica da dor torácica
+   Categoria: usabilidade
+7. [sug_017] Ajustar visibilidade do campo 'Outras alterações no ECG'
+   Categoria: usabilidade
+8. [sug_024] Simplificar condição de visibilidade do nó de Exames Cardiológicos
+   Categoria: eficiencia
+9. [sug_004] Implementar rastreamento de IC em DM2 com BNP/NT-proBNP
+   Categoria: eficiencia
+10. [sug_007] Melhorar clareza sobre a Tabela de Risco de DCC
+   Categoria: usabilidade
+11. [sug_005] Clarificar indicação de Teste Ergométrico em dor torácica de risco moderado
+   Categoria: usabilidade
+12. [sug_015] Destacar alerta crítico de DAC sem estatina no resumo médico
+   Categoria: seguranca
+13. [sug_016] Destacar alerta de DAC sem estatina no resumo do PREVENT
+   Categoria: seguranca
+14. [sug_019] Consolidar e refinar mensagens sobre estatina em DAC
+   Categoria: seguranca
+15. [sug_020] Reforçar RED FLAG para Síncope de Esforço
+   Categoria: seguranca
+16. [sug_022] Reforçar prescrição de estatina para DAC
+   Categoria: seguranca
+17. [sug_025] Reforçar RED FLAG para Síncope de Esforço
+   Categoria: seguranca
+18. [sug_026] Reforçar RED FLAG para Síncope de Esforço
+   Categoria: seguranca
+19. [sug_027] Reforçar RED FLAG para Síncope de Esforço
+   Categoria: seguranca
+20. [sug_028] Reforçar RED FLAG para Síncope de Esforço
+   Categoria: seguranca
+21. [sug_029] Reforçar RED FLAG para Síncope de Esforço
+   Categoria: seguranca
+22. [sug_030] Reforçar RED FLAG para Síncope de Esforço
+   Categoria: seguranca
+23. [sug_031] Reforçar RED FLAG para Síncope de Esforço
+   Categoria: seguranca
+24. [sug_032] Reforçar RED FLAG para Síncope de Esforço
+   Categoria: seguranca
+25. [sug_034] Reforçar prescrição de estatina para DAC
+   Categoria: seguranca
+26. [sug_002] Reforçar alerta para Síncope de Esforço como RED FLAG ABSOLUTA
+   Categoria: seguranca
+27. [sug_012] Adicionar alerta RED FLAG para Síncope sem pródromos
+   Categoria: seguranca
+28. [sug_018] Reforçar alerta RED FLAG para Síncope sem pródromos
+   Categoria: seguranca
+29. [sug_023] Refinar condição para BNP/NT-proBNP em DM2 assintomático
+   Categoria: seguranca
+
+======================================================================
+RESUMO: 29 sugestões | 2025-12-14 00:12:28
+======================================================================

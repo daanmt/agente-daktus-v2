@@ -2,9 +2,9 @@
 
 > Sistema de validação e correção automatizada de protocolos clínicos usando IA
 
-**Versão Atual**: 3.1.0
-**Status**: Waves 1, 2, 3 Complete - Production Ready | ✅ TODOS OS BUGS CORRIGIDOS (Validado 2025-12-11)
-**Última Atualização**: 2025-12-11
+**Versão Atual**: 3.2.0  
+**Status**: ✅ PRODUCTION-READY | Waves 1-4.3 Completas | Feedback Loop Completo  
+**Última Atualização**: 2025-12-13
 
 ---
 
@@ -18,6 +18,7 @@ Valida protocolos clínicos (JSON) contra playbooks médicos (texto/PDF) para ga
 - ✅ Recomendações baseadas em evidências
 - ✅ Identificação de gaps e oportunidades de melhoria
 - ✅ **Correção automatizada** com feedback loop
+- ✅ **Aprendizado contínuo** com histórico de feedback
 
 **Entrada**: Protocolo clínico (JSON) + Playbook médico (Markdown/PDF)  
 **Saída**: Relatório de validação + Sugestões priorizadas + Protocolo corrigido (opcional)
@@ -56,36 +57,18 @@ python run_agent.py --help
 
 ## ⚙️ Funcionalidades Principais
 
-### 📊 Análise Expandida
-- **20-50 sugestões** por análise (vs 5-15 anteriormente)
-- Cada sugestão com **scores de impacto** (Segurança 0-10, Economia L/M/A)
-- **Rastreabilidade completa**: cada sugestão linkada à evidência do playbook
-- **Estimativa de custo** para aplicar cada sugestão
-
-### 🔄 Human-in-the-Loop
-- Usuário revisa cada sugestão: Relevante | Irrelevante | Sair
-- Sistema **detecta padrões** de erro e acerto
-- **Aprendizado contínuo** via `memory_qa.md`
-- Sugestões irrelevantes são filtradas em análises futuras
-
-### 🛡️ Restrição ao Playbook
-- **Playbook como única fonte de verdade**
-- Validação multi-camada contra hallucinations
-- 95%+ das sugestões verificáveis no playbook
-
 ### 🛡️ Wave 1: Clinical Safety Foundations
 - **Pydantic Schema Validation**: Estrutura de protocolo validada em tempo de reconstrução
 - **AST-Based Logic Validation**: Validação segura de expressões condicionais (sem regex frágil)
 - **LLM Contract Validation**: Detecção de model drift com schemas Pydantic
 - **Zero Invalid Protocols**: 100% dos protocolos inválidos bloqueados antes de salvar
 
-### 🧠 Wave 2: Memory & Learning (✅ VALIDADO 2025-12-11)
+### 🧠 Wave 2: Memory & Learning
 - **Hard Rules Engine**: Bloqueio automático de sugestões inválidas
 - **Reference Validator**: Verificação rigorosa de evidências do playbook
 - **Change Verifier**: Validação pós-reconstrução de mudanças aplicadas
 - **Feedback Learner**: Aprendizado automático com padrões de rejeição
 - **Spider/Daktus Knowledge**: Regras específicas para protocolos clínicos
-- **6 Bugs Críticos Corrigidos**: Display reconstrução, threshold=1, filtros no prompt, pattern-based filtering, EDITED reports, UX simplificado
 
 ### 💰 Wave 3: Observability & Cost Control
 - **Real-Time Cost Tracking**: Token counter ao vivo durante análise
@@ -94,17 +77,46 @@ python run_agent.py --help
 - **Implementation Path**: Sugestões estruturadas com JSON path exato
 - **Spider-Aware Reconstruction**: LLM entende estrutura de protocolos Daktus
 
-### 🔧 Reconstrução Inteligente
-- Aplica **apenas sugestões aprovadas** pelo usuário
-- Versionamento semântico automático (MAJOR.MINOR.PATCH)
-- Changelog documentado em cada nó modificado
+### 🎯 Wave 4.1: Agent Intelligence
+- **Alert Rules Module**: Regras de implementação de alertas com templates
+- **Suggestion Validator**: Filtragem de antipadrões e duplicatas
+- **Protocol Analyzer**: Ferramentas de análise estrutural
+- **Good Alert Examples**: Few-shot learning para alertas específicos
+- **Enhanced Prompts**: Redução de 71.4% → <30% em taxa de rejeição
+
+### ✨ Wave 4.2: Bug Fixes & Polish
+- **Template String Escaping**: Correção de erros em prompts complexos
+- **NoneType Handling**: Tratamento robusto de edge cases
+- **JSON Parsing Robusto**: Estratégias para LLM quirks
+- **Transient Error Retry**: Retry automático com backoff exponencial
+- **UI Consistency**: 100% Rich Panels profissionais
+- **Node ID Preservation**: Reconstrução preserva IDs originais
+- **Production Stability**: Zero crashes conhecidos
+
+### 🔄 Wave 4.3: Feedback Loop & Learning (v3.2.0)
+- **Verificação de Mudanças**: Mostra O QUE foi realmente modificado vs O QUE falhou  
+- **Erros de Validação Claros**: Painel detalhado com erros de lógica condicional e severity  
+- **Aprendizado com Falhas**: Sistema salva lições de implementações que falharam (`memory_qa.md`)  
+- **Aprendizado com Validação**: Detecta erros de sintaxe e salva em memória  
+- **Resumo Final Acionável**: Status claro (SUCESSO / PARCIAL / FALHAS)  
+- **Sanitização de Condicionais**: Remove automaticamente funções inválidas do LLM  
+- **Parser JSON Robusto**: Fix de strings multi-linha e JSON truncado  
+
+**Arquivos principais:**
+- `src/agent/cli/display_manager.py` - Novos métodos de display  
+- `src/agent/learning/feedback_learner.py` - Aprendizado duplo (falhas + validação)  
+- `src/agent/validators/logic_validator.py` - Sanitizador de condicionais  
+- `src/agent/core/llm_client.py` - Parser JSON melhorado (Strategy 6 & 7)  
+
+**⚠️ Problema Conhecido:** LLM ainda gera 4-5 funções inválidas apesar das instruções. Ver `docs/PROBLEMA_VALIDACAO_CONDICIONAIS.md` para análise completa e soluções.
+- **Feedback Loop Completo**: Agente aprende e evita repetir mesmos erros
 
 ---
 
 ## 📁 Estrutura do Projeto
 
 ```
-AgenteV2/
+Agente Daktus/
 ├── run_agent.py            # Entry point unificado
 ├── src/
 │   └── agent/              # Módulo principal unificado
@@ -125,7 +137,6 @@ AgenteV2/
 ## 🤖 Modelos Suportados
 
 **Recomendados:**
-- `x-ai/grok-4.1-fast:free` ⭐ (gratuito, contexto 2M tokens)
 - `google/gemini-2.5-flash-preview-09-2025` (baixo custo)
 - `anthropic/claude-sonnet-4.5` (alta qualidade)
 

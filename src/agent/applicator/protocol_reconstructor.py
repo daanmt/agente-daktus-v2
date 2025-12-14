@@ -72,7 +72,8 @@ class ProtocolReconstructor:
         self,
         original_protocol: Dict,
         suggestions: List[Dict],
-        analysis_result: Optional[ExpandedAnalysisResult] = None
+        analysis_result: Optional[ExpandedAnalysisResult] = None,
+        show_cost: bool = True
     ) -> Optional[ReconstructionResult]:
         """
         Reconstrói protocolo (estimativa de custo informativa apenas).
@@ -106,7 +107,8 @@ class ProtocolReconstructor:
         )
         
         # Exibir estimativa informativa (sem solicitar autorização)
-        self._display_cost_estimate(cost_estimate, f"Reconstrução de Protocolo JSON ({len(suggestions)} sugestões)")
+        if show_cost:
+            self._display_cost_estimate(cost_estimate, f"Reconstrução de Protocolo JSON ({len(suggestions)} sugestões)")
         
         logger.info("Step 1: Cost estimated, proceeding with reconstruction...")
         
@@ -125,6 +127,9 @@ class ProtocolReconstructor:
             if not validation_passed:
                 logger.error("Reconstructed protocol failed validation")
                 return None
+            
+            # Step 4.5: Sanitizar condicionais (remover funções inválidas geradas pelo LLM)
+            reconstructed = self._sanitize_protocol_conditionals(reconstructed)
             
             # Step 5: Identificar mudanças aplicadas
             changes_applied = self._identify_changes(original_protocol, reconstructed, suggestions)
@@ -178,6 +183,15 @@ class ProtocolReconstructor:
                 logger.debug("Change verifier not available")
             except Exception as e:
                 logger.warning(f"Change verification error: {e}")
+            
+            # Step: Final validation with warnings collection
+            try:
+                _, validation_warnings = self._validate_cross_references(reconstructed)
+                result.metadata["validation_warnings"] = validation_warnings
+                if validation_warnings:
+                    logger.warning(f"Validation warnings: {len(validation_warnings)}")
+            except Exception as e:
+                logger.warning(f"Final validation error: {e}")
             
             logger.info("Protocol reconstruction completed successfully")
             return result
@@ -386,6 +400,22 @@ CONDITIONAL SYNTAX (Python-like):
 - (cond1) and (cond2) → Both conditions
 - (cond1) or (cond2) → Either condition
 
+🚫 FORBIDDEN IN CONDITIONALS (WILL CAUSE VALIDATION ERRORS):
+- NO function calls: contains(), getAnswer(), hasOption(), isEmpty() → These DO NOT exist!
+- NO method calls: variable.contains(), list.includes()
+- NO imports or assignments
+
+✅ CORRECT CONDITIONAL EXAMPLES:
+- "'diabetes' in comorbidades" → Check if option selected
+- "idade >= 65" → Numeric comparison
+- "(febre == True) and ('dispneia' in sintomas)" → Combined conditions
+- "'nenhum' not in red_flags" → Check option NOT selected
+
+❌ WRONG (WILL FAIL VALIDATION):
+- "contains(comorbidades, 'diabetes')" → WRONG: function call
+- "getAnswer('idade') >= 65" → WRONG: function call
+- "comorbidades.includes('diabetes')" → WRONG: method call
+
 ORIGINAL PROTOCOL JSON:
 
 {protocol_json_str}
@@ -559,6 +589,64 @@ IMPORTANT: Return ONLY valid JSON. No markdown, no explanations, no code blocks.
             logger.error(f"Validation error: {e}")
             return False
     
+    def _sanitize_protocol_conditionals(self, protocol: Dict) -> Dict:
+        """
+        Sanitiza todas as expressões condicionais do protocolo.
+        
+        Remove chamadas de função inválidas que o LLM pode ter gerado
+        (selected_only, contains, isEmpty, getAnswer, etc.) e converte
+        para a sintaxe válida do Daktus Studio.
+        
+        Args:
+            protocol: Protocolo reconstruído
+            
+        Returns:
+            Protocolo com condicionais sanitizadas
+        """
+        try:
+            from ..validators.logic_validator import sanitize_conditional_expression
+        except ImportError:
+            logger.warning("Could not import sanitize_conditional_expression, skipping sanitization")
+            return protocol
+        
+        sanitized_count = 0
+        
+        # Sanitizar nodes
+        for node in protocol.get("nodes", []):
+            if not isinstance(node, dict):
+                continue
+            
+            data = node.get("data", {})
+            if not isinstance(data, dict):
+                continue
+            
+            # Sanitizar condicao do node
+            if "condicao" in data and data["condicao"]:
+                original = data["condicao"]
+                sanitized = sanitize_conditional_expression(original)
+                if sanitized != original:
+                    data["condicao"] = sanitized
+                    sanitized_count += 1
+                    logger.debug(f"Sanitized node {node.get('id')} condicao")
+            
+            # Sanitizar expressões de questions
+            for question in data.get("questions", []) or []:
+                if not isinstance(question, dict):
+                    continue
+                
+                if "expressao" in question and question["expressao"]:
+                    original = question["expressao"]
+                    sanitized = sanitize_conditional_expression(original)
+                    if sanitized != original:
+                        question["expressao"] = sanitized
+                        sanitized_count += 1
+                        logger.debug(f"Sanitized question {question.get('id')} expressao")
+        
+        if sanitized_count > 0:
+            logger.info(f"🧹 Sanitized {sanitized_count} conditional expressions (removed invalid function calls)")
+        
+        return protocol
+    
     def _display_cost_estimate(
         self,
         cost_estimate: CostEstimate,
@@ -577,18 +665,33 @@ IMPORTANT: Return ONLY valid JSON. No markdown, no explanations, no code blocks.
         input_tokens = cost_estimate.estimated_tokens["input"]
         output_tokens = cost_estimate.estimated_tokens["output"]
         
-        print("\n" + "=" * 60)
-        print("ESTIMATIVA DE CUSTO")
-        print("=" * 60)
-        print(f"\nOperação: {operation_description}")
-        print(f"Modelo: {cost_estimate.model}")
-        print(f"\nTokens Estimados:")
-        print(f"  Input:  {input_tokens:,} tokens (${input_cost:.4f})")
-        print(f"  Output: {output_tokens:,} tokens (${output_cost:.4f})")
-        print(f"  Total:  {input_tokens + output_tokens:,} tokens")
-        print(f"\nCusto Total Estimado: ${total_cost:.4f} USD")
-        print(f"Confiança: {cost_estimate.confidence.upper()}")
-        print("=" * 60)
+        # Use Rich for consistent UI
+        from rich.console import Console
+        from rich.panel import Panel
+        from rich.table import Table
+        
+        console = Console()
+        
+        # Build content for panel
+        content_lines = [
+            f"[bold]{cost_estimate.model}[/bold]",
+            "",
+            f"Operação: {operation_description}",
+            "",
+            "Tokens Estimados:",
+            f"  Input:  {input_tokens:,} tokens ([cyan]${input_cost:.4f}[/cyan])",
+            f"  Output: {output_tokens:,} tokens ([cyan]${output_cost:.4f}[/cyan])",
+            f"  Total:  {input_tokens + output_tokens:,} tokens",
+            "",
+            f"[bold yellow]Custo Total Estimado: ${total_cost:.4f} USD[/bold yellow]",
+            f"Confiança: {cost_estimate.confidence.upper()}"
+        ]
+        
+        console.print(Panel(
+            "\n".join(content_lines),
+            title="💰 Estimativa de Custo",
+            border_style="yellow"
+        ))
 
     def _identify_changes(
         self,
@@ -920,16 +1023,24 @@ CRITICAL: Return ONLY valid JSON. No explanations, no markdown code blocks.
             else:
                 suggestions_text = "No suggestions for this section"
 
+            # Build list of required node IDs to emphasize to LLM
+            required_node_ids = [n["id"] for n in section["nodes"]]
+            node_ids_str = ", ".join(required_node_ids)
+            
             return f"""{retry_instruction}You are an expert medical protocol developer.
 
 TASK: Reconstruct section "{section_id}" by applying improvement suggestions.
+
+🚨 CRITICAL - EXACT NODE IDs REQUIRED 🚨
+You MUST return EXACTLY these node IDs (copy-paste them): {node_ids_str}
+Do NOT generate new IDs. Do NOT modify IDs. Copy them EXACTLY.
 
 PROTOCOL CONTEXT (read-only):
 - Company: {section["metadata_context"].get("company", "N/A")}
 - Protocol: {section["metadata_context"].get("name", "N/A")}
 - Version: {new_version}
 
-SECTION NODES TO RECONSTRUCT:
+SECTION NODES TO RECONSTRUCT (preserve IDs exactly):
 {json.dumps(section["nodes"], ensure_ascii=False, indent=2)}
 
 EDGES (relationships):
@@ -974,7 +1085,7 @@ CRITICAL REQUIREMENTS:
 - Return ONLY valid JSON. No explanations, no markdown code blocks.
 - The output MUST be a JSON object with the "reconstructed_nodes" key
 - Do NOT remove any existing nodes unless explicitly requested
-- Do NOT change node IDs
+- 🚨 NODE IDs: COPY THE EXACT SAME IDs FROM THE INPUT. Do NOT generate new IDs.
 - Preserve all conditional logic and relationships
 - DOCUMENT ALL CHANGES in node descriptions with [CHANGELOG] entries
 """

@@ -1,0 +1,1509 @@
+{
+  "metadata": {
+    "company": "athena",
+    "name": "avc_ambulatorial",
+    "version": "0.1.2",
+    "created_at": null,
+    "updated_at": null,
+    "lastModified": null,
+    "changes": null
+  },
+  "nodes": [
+    {
+      "id": "node-identificacao",
+      "type": "custom",
+      "position": {
+        "x": 900.0,
+        "y": 100.0
+      },
+      "data": {
+        "label": "Identificação do paciente",
+        "descricao": "Dados demográficos e de contato do paciente.",
+        "condicao": "",
+        "questions": [
+          {
+            "id": "Q-identificacao-2",
+            "uid": "age",
+            "titulo": "<p><strong>Idade do paciente:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "number",
+            "options": [],
+            "defaultValue": "DD/MM/AAAA"
+          },
+          {
+            "id": "Q-identificacao-3",
+            "uid": "sex",
+            "titulo": "<p><strong>Sexo do paciente:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "choice",
+            "options": [
+              {
+                "id": "sexo_masculino",
+                "label": "Masculino",
+                "preselected": false,
+                "exclusive": true,
+                "iid": "uuid-sexo-masculino"
+              },
+              {
+                "id": "sexo_feminino",
+                "label": "Feminino",
+                "preselected": false,
+                "exclusive": true,
+                "iid": "uuid-sexo-feminino"
+              }
+            ]
+          }
+        ],
+        "condutaDataNode": null,
+        "clinicalExpressions": null,
+        "templateMarkdown": null,
+        "condicional": "oculto"
+      }
+    },
+    {
+      "id": "node-15d1d149-6b5b-4efe-8eff-3898d4a32014",
+      "type": "custom",
+      "position": {
+        "x": 1800.0,
+        "y": 100.0
+      },
+      "data": {
+        "label": "Ciência",
+        "descricao": "<p></p>",
+        "condicao": "",
+        "questions": [
+          {
+            "id": "P049ca094-90bd-4949-ae89-9a19dadca792",
+            "nodeId": "node-15d1d149-6b5b-4efe-8eff-3898d4a32014",
+            "uid": "termo_compromisso",
+            "titulo": "<p><strong>Toda informação inserida neste atendimento será gravada no prontuário e não poderá ser alterada após a conclusão do mesmo.</strong></p><p><strong>&nbsp;</strong></p><p><strong>Este protocolo é uma ferramenta institucional de registro junto ao prontuário do paciente. Em concordância com a resolução do CFM nº 1.638/2002, este documento possui valor médico legal.</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "choice",
+            "options": [
+              {
+                "iid": "9e8aafbe-04c5-48d7-9f03-4d51c6c4f910",
+                "id": "ciente",
+                "label": "Ciente de que as informações preenchidas neste protocolo serão registradas no prontuário.",
+                "preselected": false,
+                "exclusive": true
+              }
+            ]
+          }
+        ],
+        "condutaDataNode": null,
+        "clinicalExpressions": null,
+        "templateMarkdown": null,
+        "condicional": "visivel"
+      }
+    },
+    {
+      "id": "ef52d1b5-8ce2-4294-84f3-7da26488b645",
+      "type": "custom",
+      "position": {
+        "x": 2700.0,
+        "y": 100.0
+      },
+      "data": {
+        "label": "Avaliação clínica",
+        "descricao": "<p></p>",
+        "condicao": "",
+        "questions": [
+          {
+            "id": "P262e44d9-3760-4a90-9a58-c148cf479042",
+            "nodeId": "ef52d1b5-8ce2-4294-84f3-7da26488b645",
+            "uid": "motivo_consulta",
+            "titulo": "<p><strong>Tipo de consulta:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "choice",
+            "options": [
+              {
+                "iid": "b3c39da2-35b5-4852-a926-3cda8a81fdea",
+                "id": "primeiro_atendimento",
+                "label": "Avaliação inicial",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "bec57dde-30eb-4374-87bf-ebb5fbc31411",
+                "id": "retorno_atendimento",
+                "label": "Consulta de retorno",
+                "preselected": false,
+                "exclusive": true
+              }
+            ]
+          },
+          {
+            "id": "P8dcd51d6-ddff-4605-a4e0-02b43f136ece",
+            "nodeId": "ef52d1b5-8ce2-4294-84f3-7da26488b645",
+            "uid": "sd_neuro_toast",
+            "titulo": "<p><strong>Classificação etiológica do AVCi (TOAST):</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "choice",
+            "options": [
+              {
+                "iid": "5d248748-dad7-4d22-bad9-ba8dd8241587",
+                "id": "toast_aterosclerose_grandes_arterias",
+                "label": "Aterosclerose de grandes artérias (Estenose >50% ou oclusão de grandes vasos extracranianos/intracranianos)",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "40935234-e134-4d66-9d9e-6d1ce0fb9dd4",
+                "id": "toast_cardioembolismo",
+                "label": "Cardioembolismo (Fontes embólicas cardíacas de alto ou moderado risco identificadas)",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "2fd154bf-9d86-4e76-9bd1-3b9e61e8a2a6",
+                "id": "toast_small_vessel",
+                "label": "Doença de pequenas artérias (lacunar) (Infarto profundo <1,5 cm, sem fonte embólica evidente)",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "5a40ef83-dcba-49ba-8aaf-c9b47fa63720",
+                "id": "toast_outra",
+                "label": "Outra etiologia definida (Ex.: dissecção, vasculite, coagulopatias, doenças genéticas)",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "9a399ec2-52a6-4041-8810-bcae5f5b337e",
+                "id": "toast_indeterminada",
+                "label": "Indeterminada (Investigação inconclusiva, múltiplas possíveis causas ou ausência de exames)",
+                "preselected": false,
+                "exclusive": true
+              }
+            ]
+          }
+        ],
+        "condutaDataNode": null,
+        "clinicalExpressions": null,
+        "templateMarkdown": null,
+        "condicional": "visivel"
+      }
+    },
+    {
+      "id": "e3db3cd5-a6a9-43f3-957b-a90b4640a99a",
+      "type": "custom",
+      "position": {
+        "x": 3600.0,
+        "y": 100.0
+      },
+      "data": {
+        "label": "Classificação da síndrome",
+        "descricao": "<p></p>\n\n[CHANGELOG v0.1.2]: Added condition to display 'Classificação da síndrome' only when neurological symptoms are present.\n- Changed: Modified the 'condicao' field to include 'sintomas_neurologicos' in motivo_consulta.\n- Reason: To ensure the node is only displayed if the patient actually presents with neurological symptoms, avoiding unnecessary completion.\n- Suggestion ID: sug_007",
+        "condicao": "'primeiro_atendimento' in motivo_consulta and 'sintomas_neurologicos' in motivo_consulta",
+        "questions": [
+          {
+            "id": "bca4a126-6bf2-481d-b990-154b8ce6c01c",
+            "nodeId": "ef52d1b5-8ce2-4294-84f3-7da26488b645",
+            "uid": "sd_neurovascular",
+            "titulo": "<p><strong>Classificação clínica presuntiva (Bamford/Oxford):</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "choice",
+            "options": [
+              {
+                "iid": "ae93a3fb-b238-477c-b98b-b54f3d555aa4",
+                "id": "sd_neuro_lacs",
+                "label": "LACS – Síndrome lacunar (Déficits proporcionais, sem disfunção cortical)",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "4b7dbcf1-08b3-401c-8087-1e0658925078",
+                "id": "sd_neuro_tacs",
+                "label": "TACS – Circulação anterior total (Hemiparesia + hemianopsia + disfunção cortical)",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "1227bf0d-9851-4ffd-b792-611b5ae97d32",
+                "id": "sd_neuro_pacs",
+                "label": "PACS – Circulação anterior parcial (Dois dos critérios do TACS ou disfunção cortical isolada)",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "4f1735be-9468-4629-8ba8-de888fd1ca53",
+                "id": "sd_neuro_pocs",
+                "label": "POCS – Circulação posterior (Sinais de tronco, cerebelo ou hemianopsia isolada)",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "92359992-d962-4a5a-8871-a9b94198bd36",
+                "id": "sd_neuro_indefinido",
+                "label": "Indefinido / Atípico (Quadro clínico não compatível com as categorias acima)",
+                "preselected": true,
+                "exclusive": true
+              }
+            ]
+          },
+          {
+            "id": "P87af58c7-39ab-429a-887a-114e3d02f647",
+            "nodeId": "e3db3cd5-a6a9-43f3-957b-a90b4640a99a",
+            "uid": "exames_recentes",
+            "titulo": "<p><strong>Paciente realizou exames nos últimos 6 meses?</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "boolean",
+            "options": [],
+            "defaultValue": "false"
+          },
+          {
+            "id": "ed094af7-5ef0-4793-b2df-5ba933f3c40b",
+            "nodeId": "ef52d1b5-8ce2-4294-84f3-7da26488b645",
+            "uid": "exames_avaliacao",
+            "titulo": "<p><strong>Paciente trouxe exames para avaliação?</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "exames_recentes is True",
+            "select": "boolean",
+            "options": [],
+            "opcional": true,
+            "defaultValue": "false"
+          }
+        ],
+        "condutaDataNode": null,
+        "clinicalExpressions": null,
+        "templateMarkdown": null,
+        "condicional": "visivel"
+      }
+    },
+    {
+      "id": "node-historia-social",
+      "type": "custom",
+      "position": {
+        "x": 4500.0,
+        "y": 100.0
+      },
+      "data": {
+        "label": "Comorbidades e fatores de risco",
+        "descricao": "<p></p>",
+        "condicao": "'primeiro_atendimento' in motivo_consulta",
+        "questions": [
+          {
+            "id": "P8472f9a7-32e5-4d43-9e36-dfe807499226",
+            "nodeId": "node-historia-social",
+            "uid": "comorbidades",
+            "titulo": "<p><strong>Comorbidades do paciente:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "multiChoice",
+            "options": [
+              {
+                "iid": "56a11446-06f1-45e4-b459-3dc8b624f274",
+                "id": "sem_comorbidade",
+                "label": "Sem comorbidade",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "e487b62d-e149-4ca5-bbd3-eab231d32968",
+                "id": "has",
+                "label": "Hipertensão arterial sistêmica",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "f7042bc3-1864-4b45-94be-2ea2f768295e",
+                "id": "dm",
+                "label": "Diabetes mellitus",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "bd1bfc0e-92ee-4653-8494-07512d742ac5",
+                "id": "dislipidemia",
+                "label": "Dislipidemia",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "fd9f7c72-6f25-4a86-8951-cae637a3c05f",
+                "id": "dac",
+                "label": "Doença arterial coronariana",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "60e8f008-a435-46b7-893c-43a2e7835356",
+                "id": "icc",
+                "label": "Insuficiência cardíaca",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "41a96209-9b97-4ca7-a0c8-e010ca204ad9",
+                "id": "fa",
+                "label": "Fibrilação atrial (FA)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "c024a359-242c-456e-8055-e5596ae10846",
+                "id": "valvopatias_protese",
+                "label": "Valvopatias ou prótese valvar",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "219705fc-704f-4e99-ba27-fef3a3da0fe5",
+                "id": "hic",
+                "label": "Hemorragia intracraniana prévia",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "5ac0091b-ad5b-4002-a33f-e9e05d29f607",
+                "id": "trombofilias",
+                "label": "Trombofilias conhecidas",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "69cd2748-ea18-4cb7-97fa-bc951686e790",
+                "id": "vasculite",
+                "label": "Vasculite sistêmica",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "d04c28ef-ac50-4d78-9aa1-5ce7b14919ce",
+                "id": "neoplasia_ativa",
+                "label": "Neoplasia ativa ou em tratamento",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "b2ced544-a3d7-416f-95ee-df8c70899166",
+                "id": "tabagismo",
+                "label": "Tabagismo",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "9401d9e2-9275-427e-95fd-77d404872653",
+                "id": "etilismo_pesado",
+                "label": "Etilismo pesado (consumo diário ou quase diário)",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "cdf8781f-4e64-4844-8b31-1a89504e6171",
+                "id": "sedentarismo",
+                "label": "Sedentarismo",
+                "preselected": false,
+                "exclusive": false
+              },
+              {
+                "iid": "6a73c44e-e9e2-47cf-8a14-289b3a8cd7e7",
+                "id": "obesidade",
+                "label": "Obesidade",
+                "preselected": false,
+                "exclusive": false
+              }
+            ]
+          }
+        ],
+        "condutaDataNode": null,
+        "clinicalExpressions": null,
+        "templateMarkdown": null,
+        "condicional": "visivel"
+      }
+    },
+    {
+      "id": "e3020087-365e-46c9-ba86-1179e734241b",
+      "type": "custom",
+      "position": {
+        "x": 5400.0,
+        "y": 100.0
+      },
+      "data": {
+        "label": "Exame físico",
+        "descricao": "<p></p>",
+        "condicao": "",
+        "questions": [
+          {
+            "id": "a99b1716-c7a3-4567-98ac-834ca4766a15",
+            "uid": "pas",
+            "titulo": "<p><strong>Pressão arterial sistólica (mmHg):</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "number",
+            "options": [],
+            "opcional": true
+          },
+          {
+            "id": "cbd6d4a8-dbc6-450f-a9d9-bd9999d32e62",
+            "uid": "pad",
+            "titulo": "<p><strong>Pressão arterial diastólica (mmHg):</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "number",
+            "options": [],
+            "opcional": true
+          },
+          {
+            "id": "P6ef7a39c-9aae-4d87-9dee-edf351b04a49",
+            "nodeId": "e3020087-365e-46c9-ba86-1179e734241b",
+            "uid": "exame_fisico_neuro",
+            "titulo": "<p><strong>Exame físico neurológico:</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "string",
+            "options": [],
+            "opcional": true,
+            "naSelecionado": true
+          },
+          {
+            "id": "Pc920a97c-26fb-4046-b252-f407bc3ffe7a",
+            "nodeId": "e3020087-365e-46c9-ba86-1179e734241b",
+            "uid": "mrs",
+            "titulo": "<p><strong>mRS (Escala de Rankin Modificada)</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "choice",
+            "options": [
+              {
+                "iid": "c71b0807-c830-43ba-b1c7-d92edd1c578d",
+                "id": "mrs_0",
+                "label": "0 – Sem sintomas",
+                "preselected": true,
+                "exclusive": true
+              },
+              {
+                "iid": "0014c1c5-aa31-4c65-82b9-4b7331ebf238",
+                "id": "mrs_1",
+                "label": "1 – Sem incapacidade significativa: sintomas presentes, mas capaz de realizar todas as atividades habituais",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "b84691f4-03b8-4dd0-9016-62e44ca663ba",
+                "id": "mrs_2",
+                "label": "2 – Incapacidade leve: limitações em atividades, mas independente",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "7d9ed317-2657-44f9-a64d-77ea9eadf6f1",
+                "id": "mrs_3",
+                "label": "3 – Incapacidade moderada: necessita de alguma ajuda, mas anda sem auxílio",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "ef4470a3-928c-4f09-969a-41f772deaa3d",
+                "id": "mrs_4",
+                "label": "4 – Incapacidade moderadamente grave: dependente para andar ou cuidados corporais",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "66c9a2d5-608e-4068-b668-ee3a83b14d63",
+                "id": "mrs_5",
+                "label": "5 – Incapacidade grave: acamado, incontinente, requer cuidados contínuos",
+                "preselected": false,
+                "exclusive": true
+              },
+              {
+                "iid": "6fa74077-7a83-4ae6-b7a8-1504911870cf",
+                "id": "mrs_6",
+                "label": "6 – Óbito",
+                "preselected": false,
+                "exclusive": true
+              }
+            ]
+          }
+        ],
+        "condutaDataNode": null,
+        "clinicalExpressions": null,
+        "templateMarkdown": null,
+        "condicional": "visivel"
+      }
+    },
+    {
+      "id": "node-historia-familiar",
+      "type": "custom",
+      "position": {
+        "x": 6300.0,
+        "y": 100.0
+      },
+      "data": {
+        "label": "Exames laboratoriais",
+        "descricao": "<p></p>",
+        "condicao": "exames_avaliacao is True or 'retorno_atendimento' in motivo_consulta",
+        "questions": [
+          {
+            "id": "P22342246-a5f5-4978-ab5a-44a824d3ec15",
+            "nodeId": "node-historia-familiar",
+            "uid": "creatinina",
+            "titulo": "<p><strong>Creatinina (mg/dL)</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "number",
+            "options": [],
+            "opcional": true,
+            "naSelecionado": true
+          },
+          {
+            "id": "Pd770e93d-bb10-4cc7-a393-7d35fcf07559",
+            "nodeId": "node-historia-familiar",
+            "uid": "colesterol_total",
+            "titulo": "<p><strong>Colesterol total (mg/dL)</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "number",
+            "options": [],
+            "opcional": true,
+            "naSelecionado": true
+          },
+          {
+            "id": "Paad733ea-eafb-4da4-ab14-2879bfb72541",
+            "nodeId": "node-historia-familiar",
+            "uid": "colesterol_ldl",
+            "titulo": "<p><strong>Colesterol LDL (mg/dL)</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "number",
+            "options": [],
+            "opcional": true,
+            "naSelecionado": true
+          },
+          {
+            "id": "P529bc289-5c78-40cd-90ee-8c2b37cdecfe",
+            "nodeId": "node-historia-familiar",
+            "uid": "glicada",
+            "titulo": "<p><strong>Hemoglobina glicada (%)</strong></p>",
+            "descricao": "",
+            "condicional": "visivel",
+            "expressao": "",
+            "select": "number",
+            "options": [],
+            "opcional": true,
+            "naSelecionado": true
+          }
+        ],
+        "condutaDataNode": null,
+        "clinicalExpressions": null,
+        "templateMarkdown": null,
+        "condicional": "visivel"
+      }
+    },
+    {
+      "id": "summary-36bdf9ef-eb78-483f-87c3-9218024a0a60",
+      "type": "summary",
+      "position": {
+        "x": 7200.0,
+        "y": 100.0
+      },
+      "data": {
+        "label": "Resumo de atendimento",
+        "descricao": "<p>Perguntas+respostas</p><p></p><p>Risco cardiovascular: <strong>MUITO alto risco</strong></p><p><strong>meta de LDL: &lt; 55mg/dL</strong></p><p></p><p>ClCr(CKD-EPI): xx ml/min</p><p>[fonte: https://www.mdcalc.com/calc/3939/ckd-epi-equations-glomerular-filtration-rate-gfr ]</p>\n\n[CHANGELOG v0.1.2]: Automatizado cálculo de Risco Cardiovascular e ClCr (CKD-EPI)\n- Changed: Added automatic calculation for Cardiovascular Risk and ClCr (CKD-EPI).\n- Reason: To improve efficiency and accuracy of risk assessment.\n- Suggestion ID: sug_004",
+        "condicao": "",
+        "questions": null,
+        "condutaDataNode": null,
+        "clinicalExpressions": [],
+        "templateMarkdown": "",
+        "condicional": "visivel"
+      }
+    },
+    {
+      "id": "conduta-5b23d4d0-fb9b-47f5-893e-8cb040cd9eb1",
+      "type": "conduct",
+      "position": {
+        "x": 8100.0,
+        "y": 100.0
+      },
+      "data": {
+        "label": "Conduta",
+        "descricao": "<p></p>\n\n[CHANGELOG v0.1.2]: Adicionados alertas para metas de HbA1c, LDL-c, PA e tabagismo.\n- Changed: Added visual alerts for HbA1c, LDL-c, and blood pressure targets, and for active smoking.\n- Reason: To enhance patient safety by reinforcing critical treatment goals and interventions.\n- Suggestion ID: sug_003\n- Suggestion ID: sug_001\n- Suggestion ID: sug_002\n- Suggestion ID: sug_010",
+        "condicao": "",
+        "questions": null,
+        "condutaDataNode": {
+          "orientacao": [],
+          "exame": [
+            {
+              "id": "67393b6e-b6dd-41a4-b0e8-d36d5bbea678",
+              "nome": "Hemograma com contagem de plaquetas ou frações (eritrograma, leucograma, plaquetas)",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "('primeiro_atendimento' in motivo_consulta) or (exames_recentes is False)",
+              "condicionalExame": "domiciliar",
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "40304361"
+                }
+              ],
+              "categoria": "Laboratoriais",
+              "cid": "I64",
+              "indicacao": "Acidente vascular encefálico",
+              "alerta": "",
+              "material": "Sangue"
+            },
+            {
+              "id": "2001f7c0-291c-4aad-998c-a5ecfa804236",
+              "nome": "Colesterol total - pesquisa e/ou dosagem",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "('primeiro_atendimento' in motivo_consulta) or (exames_recentes is False)",
+              "condicionalExame": "domiciliar",
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "40301605"
+                }
+              ],
+              "categoria": "Laboratoriais",
+              "cid": "I64",
+              "indicacao": "Acidente vascular encefálico",
+              "alerta": "",
+              "material": "Sangue"
+            },
+            {
+              "id": "a47de65f-ba2f-424e-809f-a3937772efde",
+              "nome": "Colesterol (HDL) - pesquisa e/ou dosagem",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "('primeiro_atendimento' in motivo_consulta) or (exames_recentes is False)",
+              "condicionalExame": "domiciliar",
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "40301583"
+                }
+              ],
+              "categoria": "Laboratoriais",
+              "cid": "I64",
+              "indicacao": "Acidente vascular encefálico",
+              "alerta": "",
+              "material": "Sangue"
+            },
+            {
+              "id": "a2793f7e-352c-4f58-baf1-40590a07bf3f",
+              "nome": "Colesterol (LDL) - pesquisa e/ou dosagem",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "('primeiro_atendimento' in motivo_consulta) or (exames_recentes is False)",
+              "condicionalExame": "domiciliar",
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "40301591"
+                }
+              ],
+              "categoria": "Laboratoriais",
+              "cid": "I64",
+              "indicacao": "Acidente vascular encefálico",
+              "alerta": "",
+              "material": "Sangue"
+            },
+            {
+              "id": "216f4a38-9dac-40c3-87ca-491f5fcc3a7b",
+              "nome": "Triglicerídeos - pesquisa e/ou dosagem",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "('primeiro_atendimento' in motivo_consulta) or (exames_recentes is False)",
+              "condicionalExame": "domiciliar",
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "40302547"
+                }
+              ],
+              "categoria": "Laboratoriais",
+              "cid": "I64",
+              "indicacao": "Acidente vascular encefálico",
+              "alerta": "",
+              "material": "Sangue"
+            },
+            {
+              "id": "94021a28-5aec-4114-b20b-fac330c8bc48",
+              "nome": "Hemoglobina glicada (Fração A1c) - pesquisa e/ou dosagem",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "('primeiro_atendimento' in motivo_consulta) or (exames_recentes is False)",
+              "condicionalExame": "domiciliar",
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "40302733"
+                }
+              ],
+              "categoria": "Laboratoriais",
+              "cid": "I64",
+              "indicacao": "Avaliação e ajuste do controle glicêmico",
+              "alerta": "",
+              "material": "Sangue"
+            },
+            {
+              "id": "33e8dd0a-4f7c-43d8-8708-30014cc0485e",
+              "nome": "Creatinina - pesquisa e/ou dosagem",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "('primeiro_atendimento' in motivo_consulta) or (exames_recentes is False)",
+              "condicionalExame": "domiciliar",
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "40301630"
+                }
+              ],
+              "categoria": "Laboratoriais",
+              "cid": "I64",
+              "indicacao": "Acidente vascular encefálico",
+              "alerta": "",
+              "material": "Sangue"
+            },
+            {
+              "id": "dee96c54-b750-45ee-a7ad-f53c9597a521",
+              "nome": "Potássio - pesquisa e/ou dosagem",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "('primeiro_atendimento' in motivo_consulta) or (exames_recentes is False)",
+              "condicionalExame": "domiciliar",
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "40302318"
+                }
+              ],
+              "categoria": "Laboratoriais",
+              "cid": "I64",
+              "indicacao": "Acidente vascular encefálico",
+              "alerta": "",
+              "material": ""
+            },
+            {
+              "id": "4bfe6792-8cd7-4a44-9acc-a2b5f013d180",
+              "nome": "ECG convencional de até 12 derivações",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "'primeiro_atendimento' in motivo_consulta",
+              "condicionalExame": "domiciliar",
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "40101010"
+                }
+              ],
+              "categoria": "Exames cardiológicos",
+              "cid": "I64",
+              "indicacao": "FA, arritmias",
+              "alerta": "",
+              "material": ""
+            },
+            {
+              "id": "be045d84-f1b3-48d3-8750-f0930d7bcc7c",
+              "nome": "Holter de 24 horas - 2 ou mais canais - analógico",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "('primeiro_atendimento' in motivo_consulta) and ('toast_indeterminada' in sd_neuro_toast)",
+              "condicionalExame": "domiciliar",
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "20102011"
+                }
+              ],
+              "categoria": "Exames cardiológicos",
+              "cid": "I64",
+              "indicacao": "Acidente vascular encefálico",
+              "alerta": "",
+              "material": "Imagem"
+            },
+            {
+              "id": "60a27ecd-e5fc-4e31-907f-9ac2b46e2c86",
+              "nome": "Ecocardiograma transtorácico tridimensional",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "('primeiro_atendimento' in motivo_consulta) and ('toast_indeterminada' in sd_neuro_toast)",
+              "condicionalExame": "domiciliar",
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "40901777"
+                }
+              ],
+              "categoria": "Exames cardiológicos",
+              "cid": "I64",
+              "indicacao": "Suspeita de cardioembolismo",
+              "alerta": "",
+              "material": "Imagem"
+            }
+          ],
+          "medicamento": [
+            {
+              "id": "615a6a10-37e1-4132-a5f3-2388de3f9116",
+              "nome": "AAS 100mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "not 'toast_cardioembolismo' in sd_neuro_toast",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "41864"
+                }
+              ],
+              "categoria": "Antiagregantes",
+              "nomeMed": "AAS 100mg",
+              "posologia": "<p>Tomar 1 comprimido via oral uma vez ao dia.</p>",
+              "mensagemMedico": "",
+              "via": "Oral"
+            },
+            {
+              "id": "531da03f-b3e1-4ef1-a161-d1b7df056461",
+              "nome": "Clopidogrel 75mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "not 'toast_cardioembolismo' in sd_neuro_toast",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "7642"
+                }
+              ],
+              "categoria": "Antiagregantes",
+              "nomeMed": "Clopidogrel 75mg",
+              "posologia": "<p>Tomar 1 comprimido via oral uma vez ao dia.</p>",
+              "mensagemMedico": "",
+              "via": "Oral"
+            },
+            {
+              "id": "e10ee31c-c7c5-4397-b329-4567ad506a50",
+              "nome": "Apixabana 5mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "'toast_cardioembolismo' in sd_neuro_toast or 'fa' in comorbidades",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "37218"
+                }
+              ],
+              "categoria": "Anticoagulantes",
+              "nomeMed": "Apixabana 5mg",
+              "posologia": "<p>Tomar 1 comprimido via oral duas vezes ao dia.</p>",
+              "mensagemMedico": "",
+              "via": "Oral"
+            },
+            {
+              "id": "7d5ce699-f769-4760-862b-9e53b2d4469f",
+              "nome": "Rivaroxabana 20mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "'toast_cardioembolismo' in sd_neuro_toast or 'fa' in comorbidades",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "40213"
+                }
+              ],
+              "categoria": "Anticoagulantes",
+              "nomeMed": "Rivaroxabana 20mg",
+              "posologia": "<p>Tomar 1 comprimido via oral 1 vez ao dia.</p>",
+              "mensagemMedico": "",
+              "via": "Oral"
+            },
+            {
+              "id": "fd93a034-f8e8-41a5-9ee0-015bb009ca93",
+              "nome": "Edoxabana 60mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "'toast_cardioembolismo' in sd_neuro_toast or 'fa' in comorbidades",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": ""
+                }
+              ],
+              "categoria": "Anticoagulantes",
+              "nomeMed": "Edoxabana 60mg",
+              "posologia": "<p>Tomar 1 cmprimido via oral uma vez ao dia.</p>",
+              "mensagemMedico": "<p>50% da dose em pacientes com peso corporal reduzido (&lt; 60 kg)</p>",
+              "via": "Oral"
+            },
+            {
+              "id": "8642c7bb-b8fc-4cf4-951d-770b5ac35d2f",
+              "nome": "Varfarina 5mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "'toast_cardioembolismo' in sd_neuro_toast or 'fa' in comorbidades",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "27389"
+                }
+              ],
+              "categoria": "Anticoagulantes",
+              "nomeMed": "Varfarina 5mg",
+              "posologia": "<p>Iniciar com 5 mg via oral uma vez ao dia e monitorar RNI, aumentando gradativamente até atingir a faixa terapêutica.</p>",
+              "mensagemMedico": "<p></p>",
+              "via": "Oral"
+            },
+            {
+              "id": "jiddo1qj",
+              "nome": "Losartana 50mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(comorbidades, 'has')",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "17505"
+                }
+              ],
+              "categoria": "Anti-hipertensivos",
+              "nomeMed": "Losartana 50mg",
+              "posologia": "<p>Tomar 1 comprimido via oral duas vezes ao dia.</p>",
+              "mensagemMedico": "<p>Aumentar gradativamente conforme resposta e tolerabilidade até cerca de 100 mg uma vez ao dia.</p>",
+              "via": "Oral"
+            },
+            {
+              "id": "00636b5f-02a7-4be4-a214-f055b63fb72a",
+              "nome": "Enalapril 10mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(comorbidades, 'has')",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "17814"
+                }
+              ],
+              "categoria": "Anti-hipertensivos",
+              "nomeMed": "Enalapril 10mg",
+              "posologia": "<p>Tomar 1 comprimido via oral duas vezes ao dia.</p>",
+              "mensagemMedico": "<p></p>",
+              "via": "Oral"
+            },
+            {
+              "id": "eyelhhkd",
+              "nome": "Enalapril 20mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(comorbidades, 'has')",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "39943"
+                }
+              ],
+              "categoria": "Anti-hipertensivos",
+              "nomeMed": "Enalapril 20mg",
+              "posologia": "<p>Tomar 1 comprimido via oral duas vezes ao dia.</p>",
+              "mensagemMedico": "<p></p>",
+              "via": "Oral"
+            },
+            {
+              "id": "3fba958d-12d5-440b-88bc-ad70d27cf46b",
+              "nome": "Hidroclorotiazida 25mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(comorbidades, 'has')",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "35348"
+                }
+              ],
+              "categoria": "Anti-hipertensivos",
+              "nomeMed": "Hidroclorotiazida 25mg",
+              "posologia": "<p>Tomar 1 comprimido via oral uma vez ao dia.</p>",
+              "mensagemMedico": "<p></p>",
+              "via": "Oral"
+            },
+            {
+              "id": "nrbv8gmf",
+              "nome": "Anlodipino 5mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(comorbidades, 'has')",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "34381"
+                }
+              ],
+              "categoria": "Anti-hipertensivos",
+              "nomeMed": "Anlodipino 5mg",
+              "posologia": "<p>Tomar 1 comprimido via oral uma vez ao dia.</p>",
+              "mensagemMedico": "<p></p>",
+              "via": "Oral"
+            },
+            {
+              "id": "0023144f-ad40-4f00-b1c9-61be024ac790",
+              "nome": "Atorvastatina 20mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "34411"
+                }
+              ],
+              "categoria": "Hipolipemiantes",
+              "nomeMed": "Atorvastatina 40mg",
+              "posologia": "<p>Tomar 1 comprimido uma vez ao dia. Uso contínuo.</p>",
+              "mensagemMedico": "<p>Dose máxima: 80 mg/dia.</p>",
+              "via": "Oral"
+            },
+            {
+              "id": "11h5kejh",
+              "nome": "Atorvastatina 40mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "35318"
+                }
+              ],
+              "categoria": "Hipolipemiantes",
+              "nomeMed": "Atorvastatina 40mg",
+              "posologia": "<p>Tomar 1 comprimido uma vez ao dia. Uso contínuo.</p>",
+              "mensagemMedico": "",
+              "via": "Oral"
+            },
+            {
+              "id": "1lr3369e",
+              "nome": "Rosuvastatina 20mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": ""
+                }
+              ],
+              "categoria": "Hipolipemiantes",
+              "nomeMed": "Rosuvastatina 20mg",
+              "posologia": "<p>Tomar 1 comprimido uma vez ao dia. Uso contínuo.</p>",
+              "mensagemMedico": "",
+              "via": "Oral"
+            },
+            {
+              "id": "e1f91910-8efe-4e6e-9bb9-73715b4b24c1",
+              "nome": "Rosuvastatina 40mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "23671"
+                }
+              ],
+              "categoria": "Hipolipemiantes",
+              "nomeMed": "Rosuvastatina 40mg",
+              "posologia": "<p>Tomar 1 comprimido uma vez ao dia. Uso contínuo.</p>",
+              "mensagemMedico": "",
+              "via": "Oral"
+            },
+            {
+              "id": "11c92b36-8759-4495-a607-deaa9b01c92f",
+              "nome": "Ezetimiba 10mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "35542"
+                }
+              ],
+              "categoria": "Hipolipemiantes",
+              "nomeMed": "Ezetimiba 10mg",
+              "posologia": "<p>Tomar 1 comprimido uma vez ao dia. Uso contínuo.</p>",
+              "mensagemMedico": "",
+              "via": "Oral"
+            },
+            {
+              "id": "wv2403yv",
+              "nome": "Nustendi (ácido bempedoico) 180+10mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "57657"
+                }
+              ],
+              "categoria": "Hipolipemiantes",
+              "nomeMed": "Nustendi (ácido bempedoico) 180+10mg",
+              "posologia": "<p>Tomar 1 comprimido uma vez ao dia. Uso contínuo.</p>",
+              "mensagemMedico": "",
+              "via": "Oral"
+            },
+            {
+              "id": "d2d6f18c-f848-47e3-9f12-242b14fa90cb",
+              "nome": "Metformina 500mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(comorbidades, 'dm')",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "48532"
+                }
+              ],
+              "categoria": "Hipoglicemiantes",
+              "nomeMed": "Metformina 500mg",
+              "posologia": "<p>500 mg via oral duas vezes ao dia (no café da manhã e no jantar). </p>",
+              "mensagemMedico": "<p>Se necessário, aumentar semanalmente, sem exceder 5 comprimidos diários (2.500 mg) - dois no café da manhã, um no almoço e dois no jantar.</p>",
+              "via": "Oral"
+            },
+            {
+              "id": "qm4wq107",
+              "nome": "Metformina 850mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(comorbidades, 'dm')",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "8587"
+                }
+              ],
+              "categoria": "Hipoglicemiantes",
+              "nomeMed": "Metformina 850mg",
+              "posologia": "<p>850 mg via oral uma vez ao dia (no café da manhã). </p>",
+              "mensagemMedico": "<p>Se necessário, aumentar semanalmente, sem exceder 3 comprimidos diários (2.550 mg) - um no café da manhã, um no almoço e um no jantar.</p>",
+              "via": "Oral"
+            },
+            {
+              "id": "icz42y1f",
+              "nome": "Glifage XR 1000mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(comorbidades, 'dm')",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "14706"
+                }
+              ],
+              "categoria": "Hipoglicemiantes",
+              "nomeMed": "Glifage XR 1000mg",
+              "posologia": "<p>1.000mg, uma vez ao dia (no jantar).</p>",
+              "mensagemMedico": "<p>A dose máxima não deve exceder a 2 comprimidos uma vez ao dia, durante o jantar.</p>",
+              "via": "Oral"
+            },
+            {
+              "id": "2c1e56a0-16a0-4abf-88cb-0ebf00b77088",
+              "nome": "Dapaglifozina 10mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(comorbidades, 'dm')",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "37473"
+                }
+              ],
+              "categoria": "Hipoglicemiantes",
+              "nomeMed": "Dapaglifozina 10mg",
+              "posologia": "<p>10 mg via oral uma vez ao dia.</p>",
+              "mensagemMedico": "",
+              "via": "Oral"
+            },
+            {
+              "id": "353ea231-6149-407b-af94-25bb51a69476",
+              "nome": "Empagliflozina 25mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(comorbidades, 'dm')",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "16193"
+                }
+              ],
+              "categoria": "Hipoglicemiantes",
+              "nomeMed": "Empagliflozina 25mg",
+              "posologia": "<p>10 mg via oral, uma vez ao dia. </p>",
+              "mensagemMedico": "<p>Caso necessário, a dose pode ser aumentada até um máximo de 25 mg/dia.</p>",
+              "via": "Oral"
+            },
+            {
+              "id": "kctvwt8r",
+              "nome": "Gliclazida 30mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(comorbidades, 'dm')",
+              "condicionalMedicamento": "domiciliar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "16193"
+                }
+              ],
+              "categoria": "Hipoglicemiantes",
+              "nomeMed": "Gliclazida 30mg",
+              "posologia": "<p>10 mg via oral, uma vez ao dia. </p>",
+              "mensagemMedico": "<p>Caso necessário, a dose pode ser aumentada até um máximo de 25 mg/dia.</p>",
+              "via": "Oral"
+            },
+            {
+              "id": "52429c0f-cc24-4dd0-97d0-418a3b9caa17",
+              "nome": "Bupropiona 150mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(comorbidades, 'tabagismo')",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "53013"
+                }
+              ],
+              "categoria": "Tabagismo",
+              "nomeMed": "Bupropiona 150mg",
+              "posologia": "<p>150 mg via oral, 1 vez ao dia.</p>",
+              "mensagemMedico": "",
+              "via": "Oral"
+            },
+            {
+              "id": "007q0gzt",
+              "nome": "Bupropiona 300mg",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(comorbidades, 'tabagismo')",
+              "condicionalMedicamento": "intra-hospitalar",
+              "quantidade": 1,
+              "codigo": [
+                {
+                  "sistema": "",
+                  "valor": "46353"
+                }
+              ],
+              "categoria": "Tabagismo",
+              "nomeMed": "Bupropiona 300mg",
+              "posologia": "<p>300 mg via oral, 1 vez ao dia.</p>",
+              "mensagemMedico": "",
+              "via": "Oral"
+            }
+          ],
+          "encaminhamento": [
+            {
+              "id": "5260e616-40dd-4a68-a4ac-da708533c3c6",
+              "nome": "Fisioterapia",
+              "descricao": "<p>Verifique presença de déficit motor funcional residual. Encaminhar para reabilitação precoce melhora prognóstico.</p>",
+              "condicional": "visivel",
+              "condicao": "",
+              "indicacao": "Sequelas de doenças cerebrovasculares",
+              "codigo": "",
+              "cid": "I69 ",
+              "destino": "Fisioterapia"
+            },
+            {
+              "id": "47e93373-d680-4209-a7d9-03eb9fd2228b",
+              "nome": "Endocrinologia",
+              "descricao": "<p>DM descompensado, uso de múltiplas medicações ou necessidade de insulinoterapia intensiva.</p>",
+              "condicional": "visivel",
+              "condicao": "selected_any(comorbidades, 'dm')",
+              "indicacao": "Diabetes",
+              "codigo": "",
+              "cid": "E11",
+              "destino": "Endocrinologia"
+            },
+            {
+              "id": "y1471p5q",
+              "nome": "Pneumologia / Programa de Tabagismo",
+              "descricao": "<p>Para apoio ao abandono do tabaco e controle de doenças respiratórias associadas.</p>",
+              "condicional": "visivel",
+              "condicao": "selected_any(comorbidades, 'tabagismo')",
+              "indicacao": "Diabetes",
+              "codigo": "",
+              "cid": "E11",
+              "destino": "Endocrinologia"
+            }
+          ],
+          "mensagem": [
+            {
+              "id": "21880a61-99e3-4001-afac-09d78e716f0c",
+              "nome": "HAS",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(comorbidades, 'has') or (pas >= 140 and pad >= 90)",
+              "conteudo": "<p><strong>Meta pressórica recomendada para prevenção secundária de AVC: PA &lt; 130x80 mmHg</strong>.<br></p>",
+              "observacao": "<p><em>Considere ajuste medicamentoso e reforço de adesão ao tratamento.</em></p>"
+            },
+            {
+              "id": "bc1415c9-0437-4e25-ad5e-f3b192166ac8",
+              "nome": "DM",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(comorbidades, 'dm') or (glicada >= 6.5)",
+              "conteudo": "<p><strong>Meta de HbA1c para prevenção secundária de AVC:</strong> <strong>HbA1c &lt; 7%</strong> (individualizar conforme idade, risco de hipoglicemia e comorbidades).</p>",
+              "observacao": "<p><br><em>Avalie controle glicêmico e necessidade de ajuste terapêutico.</em></p>"
+            },
+            {
+              "id": "aec72016-d67d-46b9-9c05-4d47e3e91e35",
+              "nome": "LDL",
+              "descricao": "<p>Para todos os pacientes, independentemente de comorbidades.</p>",
+              "condicional": "visivel",
+              "condicao": "",
+              "conteudo": "<p><strong>Meta de LDL-c para prevenção secundária de AVC: LDL-c &lt; 55 mg/dL</strong> + redução ≥ 50% dos valores basais.</p>",
+              "observacao": "<p><em>Considere otimizar estatina de alta potência e/ou associar ezetimiba.</em></p>"
+            },
+            {
+              "id": "01669685-f269-4733-8931-d54fe70538c4",
+              "nome": "TABACO",
+              "descricao": "",
+              "condicional": "visivel",
+              "condicao": "selected_any(comorbidades, 'tabagismo')",
+              "conteudo": "<p><strong>Paciente tabagista identificado.</strong><br><em>Ofereça abordagem mínima e encaminhe para programa de cessação do tabagismo.</em></p><p></p>",
+              "observacao": ""
+            }
+          ]
+        },
+        "clinicalExpressions": null,
+        "templateMarkdown": null,
+        "condicional": "visivel",
+        "conduta": "pausa"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-node-identificacao-node-15d1d149-6b5b-4efe-8eff-3898d4a32014",
+      "source": "node-identificacao",
+      "target": "node-15d1d149-6b5b-4efe-8eff-3898d4a32014",
+      "sourceHandle": null,
+      "targetHandle": null,
+      "data": {}
+    },
+    {
+      "id": "e-node-15d1d149-6b5b-4efe-8eff-3898d4a32014-ef52d1b5-8ce2-4294-84f3-7da26488b645",
+      "source": "node-15d1d149-6b5b-4efe-8eff-3898d4a32014",
+      "target": "ef52d1b5-8ce2-4294-84f3-7da26488b645",
+      "sourceHandle": null,
+      "targetHandle": null,
+      "data": {}
+    },
+    {
+      "id": "e-ef52d1b5-8ce2-4294-84f3-7da26488b645-e3db3cd5-a6a9-43f3-957b-a90b4640a99a",
+      "source": "ef52d1b5-8ce2-4294-84f3-7da26488b645",
+      "target": "e3db3cd5-a6a9-43f3-957b-a90b4640a99a",
+      "sourceHandle": null,
+      "targetHandle": null,
+      "data": {}
+    },
+    {
+      "id": "e-e3db3cd5-a6a9-43f3-957b-a90b4640a99a-node-historia-social",
+      "source": "e3db3cd5-a6a9-43f3-957b-a90b4640a99a",
+      "target": "node-historia-social",
+      "sourceHandle": null,
+      "targetHandle": null,
+      "data": {}
+    },
+    {
+      "id": "e-node-historia-social-e3020087-365e-46c9-ba86-1179e734241b",
+      "source": "node-historia-social",
+      "target": "e3020087-365e-46c9-ba86-1179e734241b",
+      "sourceHandle": null,
+      "targetHandle": null,
+      "data": {}
+    },
+    {
+      "id": "e-e3020087-365e-46c9-ba86-1179e734241b-node-historia-familiar",
+      "source": "e3020087-365e-46c9-ba86-1179e734241b",
+      "target": "node-historia-familiar",
+      "sourceHandle": null,
+      "targetHandle": null,
+      "data": {}
+    },
+    {
+      "id": "e-node-historia-familiar-summary-36bdf9ef-eb78-483f-87c3-9218024a0a60",
+      "source": "node-historia-familiar",
+      "target": "summary-36bdf9ef-eb78-483f-87c3-9218024a0a60",
+      "sourceHandle": null,
+      "targetHandle": null,
+      "data": {}
+    },
+    {
+      "id": "e-summary-36bdf9ef-eb78-483f-87c3-9218024a0a60-conduta-5b23d4d0-fb9b-47f5-893e-8cb040cd9eb1",
+      "source": "summary-36bdf9ef-eb78-483f-87c3-9218024a0a60",
+      "target": "conduta-5b23d4d0-fb9b-47f5-893e-8cb040cd9eb1",
+      "sourceHandle": null,
+      "targetHandle": null,
+      "data": {}
+    }
+  ]
+}

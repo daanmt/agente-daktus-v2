@@ -1,0 +1,39 @@
+======================================================================
+📋 RELATÓRIO DE AUDITORIA - RECONSTRUÇÃO DE PROTOCOLO
+======================================================================
+Data: 2025-12-13 20:42:49
+Protocolo: Unknown
+Sugestões Aplicadas: 6
+
+======================================================================
+MUDANÇAS DETECTADAS (COMPARAÇÃO)
+======================================================================
+
+🔹 Nodo: Classificação da síndrome (e3db3cd5-a6a9-43f3-957b-a90b4640a99a)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Resumo de atendimento (summary-36bdf9ef-eb78-483f-87c3-9218024a0a60)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Conduta (conduta-5b23d4d0-fb9b-47f5-893e-8cb040cd9eb1)
+   • descrição: MODIFICADA
+
+======================================================================
+SUGESTÕES APLICADAS
+======================================================================
+1. [sug_003] Adicionar alerta para meta de HbA1c em prevenção secundária
+   Categoria: seguranca
+2. [sug_004] Automatizar cálculo de Risco Cardiovascular
+   Categoria: eficiencia
+3. [sug_007] Adicionar condição para exibição de 'Classificação da síndrome'
+   Categoria: seguranca
+4. [sug_001] Adicionar alerta para meta de LDL-c em prevenção secundária
+   Categoria: seguranca
+5. [sug_002] Adicionar alerta para meta pressórica em prevenção secundária
+   Categoria: seguranca
+6. [sug_010] Adicionar alerta para tabagismo ativo
+   Categoria: seguranca
+
+======================================================================
+RESUMO: 6 sugestões | 2025-12-13 20:42:49
+======================================================================

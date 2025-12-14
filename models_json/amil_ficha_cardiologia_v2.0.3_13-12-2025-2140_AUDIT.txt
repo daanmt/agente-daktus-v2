@@ -1,0 +1,136 @@
+======================================================================
+📋 RELATÓRIO DE AUDITORIA - RECONSTRUÇÃO DE PROTOCOLO
+======================================================================
+Data: 2025-12-13 21:40:18
+Protocolo: Unknown
+Sugestões Aplicadas: 32
+
+======================================================================
+MUDANÇAS DETECTADAS (COMPARAÇÃO)
+======================================================================
+
+🔹 Nodo: Identificação - inicial (node-219cf8a0-e2da-4754-8195-91f05e215523)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Anamnese - inicial (node-1754054008885)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Anamnese - inicial (node-1754058668684)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Resultados de exames complementares - inicial (node-1754075093485)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Exame físico - inicial (node-1754076722505)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Resumo atendimento - enfermagem - reavaliação (fdf74edc-8049-4d16-9e31-a0666dcf6733)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Conduta(enfermagem) - avaliação (conduta-1754077048525)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Exames cardiológicos - reavaliação (node-1754085865415)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Pré-operatório - reavaliação (node-1754077407613)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Hipertensão arterial - reavaliação (node-1754083703202)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Dor torácica - reavaliação (node-1754083708410)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Anamnese cardiológica - reavaliação (node-a2135151-3599-4efb-a605-fc2782c56736)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Calculadoras - reavaliação (summary-b6a21578-f1ca-4b0b-bae6-8146d5f38ed7)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Dados Clínicos para Cálculo PREVENT (node-prevent-dados-clinicos)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Cálculo de Risco PREVENT (AHA 2024) (summary-prevent-calculo)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Conduta médica - reavaliação (conduta-1754085461792)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Impressão e conduta médica - reavaliação (node-de010b49-ebeb-424b-bd21-c2e326417faf)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Resumo atendimento - médico - reavaliação (14917447-7630-4715-8407-ff890c40facc)
+   • descrição: MODIFICADA
+
+======================================================================
+SUGESTÕES APLICADAS
+======================================================================
+1. [sug_006] Otimizar condição de exibição do nó de Exames Laboratoriais
+   Categoria: eficiencia
+2. [sug_010] Adicionar opção 'Outras arritmias' ao ECG
+   Categoria: usabilidade
+3. [sug_011] Simplificar condição de visibilidade do nó de Exames Cardiológicos
+   Categoria: eficiencia
+4. [sug_013] Melhorar clareza da descrição da dor torácica característica
+   Categoria: usabilidade
+5. [sug_017] Ajustar visibilidade do campo 'Outras alterações no ECG'
+   Categoria: usabilidade
+6. [sug_024] Simplificar condição de visibilidade do nó de Exames Cardiológicos (Duplicado)
+   Categoria: eficiencia
+7. [sug_004] Implementar rastreamento de IC Estágio B em DM2 assintomático com BNP/NT-proBNP
+   Categoria: seguranca
+8. [sug_019] Melhorar clareza e segurança das perguntas sobre síncope
+   Categoria: usabilidade
+9. [sug_023] Refinar condição para BNP/NT-proBNP em DM2 (Duplicado)
+   Categoria: seguranca
+10. [sug_025] Melhorar clareza e segurança das perguntas sobre síncope (Duplicado)
+   Categoria: usabilidade
+11. [sug_027] Melhorar clareza e segurança das perguntas sobre síncope (Duplicado)
+   Categoria: usabilidade
+12. [sug_029] Melhorar clareza e segurança das perguntas sobre síncope (Duplicado)
+   Categoria: usabilidade
+13. [sug_030] Melhorar clareza e segurança das perguntas sobre síncope (Duplicado)
+   Categoria: usabilidade
+14. [sug_031] Melhorar clareza e segurança das perguntas sobre síncope (Duplicado)
+   Categoria: usabilidade
+15. [sug_005] Ajustar indicação de Teste Ergométrico em Dor Torácica de Risco Moderado
+   Categoria: seguranca
+16. [sug_007] Melhorar clareza da descrição do risco do procedimento no pré-operatório
+   Categoria: usabilidade
+17. [sug_014] Reforçar clareza sobre origem dos dados para cálculo PREVENT
+   Categoria: usabilidade
+18. [sug_001] Adicionar alerta para Síncope de Esforço
+   Categoria: seguranca
+19. [sug_020] Adicionar RED FLAG para Síncope de Esforço
+   Categoria: seguranca
+20. [sug_022] Reforçar prescrição de estatina em DAC (Duplicado)
+   Categoria: seguranca
+21. [sug_026] Adicionar RED FLAG para Síncope de Esforço (Duplicado)
+   Categoria: seguranca
+22. [sug_032] Adicionar RED FLAG para Síncope de Esforço (Duplicado)
+   Categoria: seguranca
+23. [sug_034] Reforçar prescrição de estatina em DAC (Duplicado)
+   Categoria: seguranca
+24. [sug_002] Reforçar indicação de ECOTT em FA + Dispneia
+   Categoria: seguranca
+25. [sug_012] Adicionar alerta de segurança para Síncope sem pródromos
+   Categoria: seguranca
+26. [sug_015] Incluir alerta crítico de DAC sem estatina no resumo médico
+   Categoria: seguranca
+27. [sug_016] Incluir alerta de DAC sem estatina no resumo PREVENT
+   Categoria: seguranca
+28. [sug_018] Reforçar alerta de segurança para Síncope sem pródromos (Duplicado)
+   Categoria: seguranca
+29. [sug_021] Reforçar indicação de ECOTT em FA + Dispneia (Duplicado)
+   Categoria: seguranca
+30. [sug_028] Adicionar alerta de segurança para Síncope sem pródromos (Duplicado)
+   Categoria: seguranca
+31. [sug_033] Reforçar indicação de ECOTT em FA + Dispneia (Duplicado)
+   Categoria: seguranca
+32. [sug_035] Reforçar indicação de ECOTT em FA + Dispneia (Duplicado)
+   Categoria: seguranca
+
+======================================================================
+RESUMO: 32 sugestões | 2025-12-13 21:40:18
+======================================================================

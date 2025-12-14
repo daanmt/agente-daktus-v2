@@ -1,0 +1,69 @@
+======================================================================
+📋 RELATÓRIO DE AUDITORIA - RECONSTRUÇÃO DE PROTOCOLO
+======================================================================
+Data: 2025-12-13 22:37:31
+Protocolo: Unknown
+Sugestões Aplicadas: 24
+
+======================================================================
+MUDANÇAS DETECTADAS (COMPARAÇÃO)
+======================================================================
+
+🔹 Nodo: Cronologia e Fatores Modificadores (node-cronologia-fatores)
+   • descrição: MODIFICADA
+
+======================================================================
+SUGESTÕES APLICADAS
+======================================================================
+1. [sug_016] Melhorar clareza da condição para Polissonografia
+   Categoria: usabilidade
+2. [sug_019] Adicionar mensagem de alerta para Rinossinusite Bacteriana Aguda
+   Categoria: seguranca
+3. [sug_020] Adicionar mensagem de alerta para Otite Média Aguda Pediátrica
+   Categoria: seguranca
+4. [sug_022] Adicionar mensagem de alerta para Vertigem Periférica
+   Categoria: seguranca
+5. [sug_023] Adicionar mensagem de alerta para Refluxo Laringofaríngeo
+   Categoria: seguranca
+6. [sug_025] Adicionar mensagem de alerta para Otite Externa
+   Categoria: seguranca
+7. [sug_027] Adicionar mensagem de alerta para Rinossinusite Crônica
+   Categoria: seguranca
+8. [sug_028] Adicionar mensagem de alerta para Otite Externa - Tratamento Tópico
+   Categoria: seguranca
+9. [sug_030] Adicionar mensagem de alerta para Orientações Gerais de Prevenção
+   Categoria: seguranca
+10. [sug_005] Otimizar condição para prescrição de Amoxicilina + Clavulanato
+   Categoria: eficiencia
+11. [sug_007] Otimizar condição para prescrição de Pantoprazol
+   Categoria: eficiencia
+12. [sug_009] Refinar condição para prescrição de Budesonida spray nasal
+   Categoria: eficiencia
+13. [sug_011] Otimizar condição para prescrição de Mometasona spray nasal
+   Categoria: eficiencia
+14. [sug_026] Adicionar mensagem de alerta para Rinite Alérgica - Manejo Combinado
+   Categoria: seguranca
+15. [sug_029] Adicionar mensagem de alerta para Tratamento Prévio Otimizado
+   Categoria: seguranca
+16. [sug_006] Simplificar condição para prescrição de Fexofenadina
+   Categoria: eficiencia
+17. [sug_010] Ajustar condição para prescrição de Loratadina
+   Categoria: eficiencia
+18. [sug_013] Ajustar condição para prescrição de Azelastina intranasal
+   Categoria: eficiencia
+19. [sug_015] Otimizar condição para prescrição de Fluticasona spray nasal
+   Categoria: eficiencia
+20. [sug_017] Adicionar alerta para RM de encéfalo em vertigem com sintomas neurológicos
+   Categoria: seguranca
+21. [sug_018] Adicionar mensagem de alerta para Vertigem Central
+   Categoria: seguranca
+22. [sug_002] Reforçar contraindicação de antibióticos em alergia à penicilina
+   Categoria: seguranca
+23. [sug_021] Adicionar mensagem de alerta para Hipoacusia Infantil
+   Categoria: seguranca
+24. [sug_024] Adicionar mensagem de alerta para SAHOS
+   Categoria: seguranca
+
+======================================================================
+RESUMO: 24 sugestões | 2025-12-13 22:37:31
+======================================================================

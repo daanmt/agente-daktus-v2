@@ -688,8 +688,8 @@ CRITICAL REQUIREMENTS:
    - "alerta de alta prioridade"
    
    ✅ ALWAYS INCLUDE FOR ALERT SUGGESTIONS:
-   - specific_location: { node_id, field, path }
-   - implementation_path: { json_path, modification_type, proposed_value }
+   - specific_location: {{ node_id, field, path }}
+   - implementation_path: {{ json_path, modification_type, proposed_value }}
    - proposed_value MUST include complete HTML content for alerts
 
 ANALYSIS DEPTH:
@@ -1356,12 +1356,19 @@ CRITICAL OUTPUT REQUIREMENTS:
                     raw_suggestions = data
             
             # 3. Processar sugestões
+            scorer = ImpactScorer()
             for idx, sug_data in enumerate(raw_suggestions):
                 try:
                     sug_id = sug_data.get("id", f"sug_{idx+1}")
                     
-                    # Extract nested objects safely
-                    impact_scores = ImpactScores(**sug_data.get("impact_scores", {}))
+                    # Extract nested objects safely using ImpactScorer
+                    # This is more robust than creating ImpactScores directly from dict
+                    try:
+                        impact_scores = scorer.calculate_impact_scores(sug_data)
+                    except Exception as e:
+                        logger.warning(f"Failed to calculate impact_scores for {sug_id}: {e}")
+                        # Use default scores
+                        impact_scores = ImpactScores(seguranca=0, economia="L", eficiencia="L", usabilidade=0)
                     
                     evidence = sug_data.get("evidence", {})
                     impl_effort = sug_data.get("implementation_effort", {})
@@ -1393,7 +1400,7 @@ CRITICAL OUTPUT REQUIREMENTS:
             logger.debug(f"Raw response: {llm_response[:500]}...")
             
         except Exception as e:
-            logger.error(f"Unexpected error extracting suggestions: {e}")
+            logger.error(f"Unexpected error extracting suggestions: {e}", exc_info=True)
 
         logger.info(f"Successfully extracted {len(suggestions)} suggestions")
         return suggestions

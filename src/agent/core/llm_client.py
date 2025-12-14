@@ -391,8 +391,34 @@ class LLMClient:
                     )
             
             except Exception as e:
+                error_str = str(e).lower()
+                
+                # Transient errors that should be retried
+                transient_errors = [
+                    "response ended prematurely",
+                    "connection reset",
+                    "connection aborted",
+                    "read timed out",
+                    "server error",
+                    "internal server error",
+                    "bad gateway",
+                    "service unavailable",
+                    "gateway timeout"
+                ]
+                
+                is_transient = any(err in error_str for err in transient_errors)
+                
+                if is_transient and attempt < max_retries - 1:
+                    wait_time = 2 ** attempt  # Exponential backoff
+                    logger.warning(
+                        f"Transient error (attempt {attempt + 1}/{max_retries}): {e}. "
+                        f"Retrying in {wait_time}s..."
+                    )
+                    time.sleep(wait_time)
+                    continue
+                
                 logger.error(f"Unexpected error in LLM call: {e}", exc_info=True)
-                # MVP: Return structured error, no retries
+                # Return structured error after all retries or non-transient error
                 return {
                     "status": "error",
                     "error_type": "llm_failure",
@@ -420,7 +446,7 @@ class LLMClient:
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
-            "HTTP-Referer": "https://github.com/daktus-medical",
+            "HTTP-Referer": "https://github.com/agente-daktus",
             "X-Title": "Daktus QA Agent"
         }
         
@@ -634,6 +660,11 @@ class LLMClient:
         # Remove BOM and other invisible characters that can break JSON parsing
         response = response.lstrip('\ufeff\u200b\u200c\u200d\ufffe')
         
+        # Fix escaped single quotes - not valid in JSON but LLMs sometimes generate them
+        # Must be done early so all strategies benefit from the fix
+        if "\\'" in response:
+            response = response.replace("\\'", "'")
+        
         # Strategy 1: Direct JSON parsing
         try:
             return json.loads(response)
@@ -664,6 +695,15 @@ class LLMClient:
                 return json.loads(clean)
             except json.JSONDecodeError as e:
                 logger.debug(f"Clean control chars JSON parse failed: {e}")
+        
+        # Strategy 1.8: Fix escaped single quotes (not valid in JSON)
+        # LLMs sometimes generate \' which is invalid JSON - single quotes don't need escaping
+        if "\\'" in response:
+            try:
+                fixed = response.replace("\\'", "'")
+                return json.loads(fixed)
+            except json.JSONDecodeError as e:
+                logger.debug(f"Fixed single quote escapes JSON parse failed: {e}")
         
         # Strategy 2: Extract from markdown code blocks
         # Find content after ```json or ``` and extract JSON using brace counting
@@ -716,6 +756,32 @@ class LLMClient:
                 return json.loads(json_str)
             except json.JSONDecodeError as e:
                 logger.debug(f"Strategy 5 (simple slice) failed: {e}")
+        
+        # Strategy 6: Fix literal newlines inside JSON strings
+        # LLMs sometimes generate multi-line strings with literal newlines instead of \n
+        # This is invalid JSON - we need to escape them
+        if first_brace_idx != -1 and last_brace_idx != -1:
+            try:
+                json_str = response[first_brace_idx:last_brace_idx + 1]
+                # Fix literal newlines inside strings
+                fixed = self._fix_multiline_strings(json_str)
+                return json.loads(fixed)
+            except json.JSONDecodeError as e:
+                logger.debug(f"Strategy 6 (fix multiline strings) failed: {e}")
+        
+        # Strategy 7: Repair truncated/incomplete JSON
+        # LLMs sometimes hit output token limits and generate incomplete JSON
+        if first_brace_idx != -1:
+            try:
+                json_str = response[first_brace_idx:]
+                # First fix multiline strings
+                fixed = self._fix_multiline_strings(json_str)
+                # Then try to repair incomplete JSON
+                repaired = self._repair_truncated_json(fixed)
+                if repaired:
+                    return json.loads(repaired)
+            except json.JSONDecodeError as e:
+                logger.debug(f"Strategy 7 (repair truncated JSON) failed: {e}")
         
         # All strategies failed - provide detailed error with diagnostic info
         # Check if JSON appears incomplete (no closing brace found)
@@ -800,6 +866,121 @@ class LLMClient:
         
         # No matching closing brace found - JSON may be incomplete
         return None
+    
+    def _fix_multiline_strings(self, json_str: str) -> str:
+        """
+        Fix literal newlines inside JSON strings.
+        
+        LLMs sometimes generate multi-line strings with actual newline characters
+        instead of escaped \\n. This is invalid JSON.
+        
+        This method finds all string values and escapes any literal newlines inside them.
+        """
+        result = []
+        i = 0
+        in_string = False
+        string_start = 0
+        
+        while i < len(json_str):
+            char = json_str[i]
+            
+            # Track when entering/exiting strings
+            if char == '"' and (i == 0 or json_str[i-1] != '\\'):
+                if not in_string:
+                    in_string = True
+                    string_start = i + 1  # Position after opening quote
+                else:
+                    # Exiting string - extract and fix content
+                    # The string content is from string_start to i (not including i)
+                    string_content = json_str[string_start:i]
+                    
+                    # Replace literal newlines with escaped newlines
+                    fixed_content = string_content.replace('\n', '\\n').replace('\r', '\\r')
+                    
+                    # Add opening quote + fixed content + closing quote
+                    result.append('"')
+                    result.append(fixed_content)
+                    result.append('"')
+                    in_string = False
+                    i += 1
+                    continue
+            
+            if not in_string:
+                result.append(char)
+            
+            i += 1
+        
+        # Handle edge case: if still in string at end, it's malformed but try to salvage
+        if in_string:
+            # Close the hanging string
+            string_content = json_str[string_start:]
+            fixed_content = string_content.replace('\n', '\\n').replace('\r', '\\r')
+            result.append('"')
+            result.append(fixed_content)
+            result.append('"')
+        
+        return ''.join(result)
+    
+    def _repair_truncated_json(self, json_str: str) -> Optional[str]:
+        """
+        Attempt to repair truncated JSON by closing unclosed structures.
+        
+        When LLMs hit output token limits, they may produce incomplete JSON.
+        This method tries to close any unclosed braces, brackets, and strings.
+        
+        Args:
+            json_str: Potentially truncated JSON string
+            
+        Returns:
+            Repaired JSON string or None if repair not possible
+        """
+        if not json_str or not json_str.strip():
+            return None
+        
+        # Count unclosed structures
+        open_braces = 0  # {
+        open_brackets = 0  # [
+        in_string = False
+        i = 0
+        
+        while i < len(json_str):
+            char = json_str[i]
+            
+            # Handle string boundaries (skip escaped quotes)
+            if char == '"' and (i == 0 or json_str[i-1] != '\\'):
+                in_string = not in_string
+            elif not in_string:
+                if char == '{':
+                    open_braces += 1
+                elif char == '}':
+                    open_braces -= 1
+                elif char == '[':
+                    open_brackets += 1
+                elif char == ']':
+                    open_brackets -= 1
+            
+            i += 1
+        
+        # If structures are balanced, no repair needed
+        if open_braces == 0 and open_brackets == 0 and not in_string:
+            return json_str
+        
+        # Build repair suffix
+        repair = ""
+        
+        # Close hanging string if needed
+        if in_string:
+            repair += '"'
+        
+        # Close brackets and braces
+        repair += ']' * max(0, open_brackets)
+        repair += '}' * max(0, open_braces)
+        
+        if repair:
+            logger.info(f"🔧 Repairing truncated JSON: adding '{repair}' to close unclosed structures")
+            return json_str + repair
+        
+        return json_str
     
     def _attempt_json_repair(self, response: str) -> Optional[Dict]:
         """

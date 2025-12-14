@@ -20,157 +20,313 @@ As seções abaixo contêm regras estruturadas que são usadas para filtrar suge
 ```json
 [
   {
-    "rule_id": "efeafb37097d3ae8",
-    "text": "Consolidar mensagens educativas repetidas sobre estatina em DAC em uma única mensagem reutilizável. O campo 'mensagemMedico' de múltiplos medicamentos estatinas (Sinvastatina 20mg, Sinvastatina 40mg, Atorvastatina 20mg, Atorvastatina 40mg, Rosuvastatina 10mg, Rosuvastatina 20mg, Rosuvastatina 40mg) contém EXATAMENTE o mesmo texto longo sobre 'ESTATINA OBRIGATÓRIA EM DAC'. Isso gera redundância no JSON (7 cópias do mesmo texto de ~1500 caracteres = ~10.5KB de duplicação). SOLUÇÃO: Criar uma mensagem educativa única (id: 'msg-educativa-estatina-dac') no nó de conduta e referenciar essa mensagem no campo 'mensagemMedico' de cada estatina usando template variable ou link.",
+    "rule_id": "e60ebfbed4b7ef2c",
+    "text": "Melhorar clareza da condição para Polissonografia. Ajustar a condição para a prescrição de 'Polissonografia de noite inteira' para ser mais explícita sobre a combinação de sintomas que indicam a necessidade do exame.",
     "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "anthropic/claude-sonnet-4.5",
-    "timestamp": "2025-12-13T10:17:23.760880",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:33:22.458306",
     "comment": null,
-    "suggestion_id": "sug_009",
-    "category": "eficiencia",
+    "suggestion_id": "sug_016",
+    "category": "usabilidade",
     "priority": "baixa",
     "keywords": null
   },
   {
-    "rule_id": "f32df7900170654f",
-    "text": "Adicionar campo de frequência de síncope no nó de anamnese inicial para estratificação de risco. O protocolo coleta contexto de síncope (esforço, ortostática, etc.) e pródromo, mas NÃO coleta frequência dos episódios. Playbook menciona que 'primeiro episódio (primeira vez na vida)' merece investigação mais ampla, enquanto episódios recorrentes podem sugerir causa benigna. Campo 'sincope_frequencia' existe no nó node-1754054008885 mas está oculto (expressao: 'sincope_presente in ['pre_sincope', 'sincope']', mas 'sincope_presente' não é definido). SOLUÇÃO: Corrigir expressão para 'sincope' in main e tornar campo visível quando síncope for selecionada.",
+    "rule_id": "898f92c1711b0e68",
+    "text": "Adicionar mensagem de alerta para Rinossinusite Bacteriana Aguda. Incluir uma mensagem de alerta específica ('MENSAGEM AO MÉDICO') para o cenário de Rinossinusite Bacteriana Aguda (ABRS), detalhando os critérios diagnósticos e a conduta.",
     "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "anthropic/claude-sonnet-4.5",
-    "timestamp": "2025-12-13T10:17:41.451919",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:34:00.613843",
     "comment": null,
-    "suggestion_id": "sug_006",
+    "suggestion_id": "sug_019",
     "category": "seguranca",
     "priority": "media",
     "keywords": null
   },
   {
-    "rule_id": "7a1c442cacff63a8",
-    "text": "Adicionar validação de idade para cálculo PREVENT (30-79 anos) com bloqueio de resultado se fora da faixa. O protocolo calcula PREVENT para qualquer idade, mas calculadora é validada apenas para 30-79 anos (AHA 2024). Existe expressão 'prevent_validacao_idade' que detecta idade fora da faixa, mas apenas exibe alerta sem bloquear cálculo. SOLUÇÃO: Modificar lógica para que, se idade <30 ou >79, resultado de risco NÃO seja exibido (apenas alerta de validação). Adicionar condição no template 'prevent_resumo': 'if 30 <= age <= 79: exibir resultado, else: exibir apenas alerta de idade fora da faixa validada'.",
+    "rule_id": "ba75446fce61ecea",
+    "text": "Adicionar mensagem de alerta para Otite Média Aguda Pediátrica. Incluir uma mensagem de alerta específica ('MENSAGEM AO MÉDICO') para o cenário de Otite Média Aguda em crianças, detalhando os critérios de tratamento baseados na idade.",
     "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "anthropic/claude-sonnet-4.5",
-    "timestamp": "2025-12-13T10:17:52.092163",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:34:04.811015",
     "comment": null,
-    "suggestion_id": "sug_007",
+    "suggestion_id": "sug_020",
     "category": "seguranca",
     "priority": "media",
     "keywords": null
   },
   {
-    "rule_id": "6bcc73fb698bd9ea",
-    "text": "Adicionar descrição explicativa no campo de coleta de eGFR para cálculo PREVENT. O campo 'prevent_egfr' (id: P89dfc661-e3c5-4f73-a3fa-83a837349f08) solicita 'eGFR - Taxa de Filtração Glomerular (mL/min/1.73m²)' com descrição 'Calculado pela creatinina (equação CKD-EPI)', mas não explica COMO calcular. Médico pode não saber fórmula CKD-EPI ou não ter calculadora disponível. SOLUÇÃO: Adicionar link para calculadora online (ex: https://www.kidney.org/professionals/kdoqi/gfr_calculator) na descrição do campo OU implementar cálculo automático a partir de creatinina, idade, sexo e raça (se disponível). Descrição sugerida: 'eGFR calculado pela creatinina usando equação CKD-EPI. Se não souber o valor, deixe em branco e o sistema calculará automaticamente a partir da creatinina registrada.'",
+    "rule_id": "effe65048e44d8a3",
+    "text": "Adicionar mensagem de alerta para Vertigem Periférica. Incluir uma mensagem de alerta específica ('MENSAGEM AO MÉDICO') para o cenário de Vertigem Periférica, detalhando o diagnóstico diferencial e a conduta.",
     "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "anthropic/claude-sonnet-4.5",
-    "timestamp": "2025-12-13T10:18:07.964151",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:34:07.963736",
     "comment": null,
-    "suggestion_id": "sug_011",
-    "category": "usabilidade",
-    "priority": "media",
-    "keywords": null
-  },
-  {
-    "rule_id": "a05531a71601f085",
-    "text": "Adicionar campo de coleta de IMC no nó de exame físico para cálculo PREVENT. O cálculo PREVENT requer IMC (prevent_imc), mas protocolo NÃO coleta peso e altura no nó de exame físico (node-1754076722505). Campo prevent_imc é solicitado manualmente no nó node-prevent-dados-clinicos, mas médico pode não saber calcular ou digitar valor incorreto. SOLUÇÃO: Adicionar campos de peso (kg) e altura (m) no nó de exame físico. Criar expressão clínica que calcule IMC automaticamente: imc_calculado = peso / (altura ** 2). Auto-preencher campo prevent_imc com imc_calculado.",
-    "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "anthropic/claude-sonnet-4.5",
-    "timestamp": "2025-12-13T10:18:18.839997",
-    "comment": null,
-    "suggestion_id": "sug_013",
+    "suggestion_id": "sug_022",
     "category": "seguranca",
     "priority": "media",
     "keywords": null
   },
   {
-    "rule_id": "9b28be272b75f028",
-    "text": "Adicionar auto-preenchimento de campos PREVENT a partir de dados já coletados no protocolo. O nó 'node-prevent-dados-clinicos' solicita dados que já foram coletados em nós anteriores: PAS (campo 'pas' em node-1754076722505), creatinina (campo 'creatinina' em node-1754075093485), CT e HDL (campos 'colesterol_total' e 'colesterol_hdl' em node-1754075093485). Isso gera retrabalho e risco de inconsistência (médico pode digitar valores diferentes). SOLUÇÃO: Adicionar expressões clínicas que auto-preencham campos PREVENT: prevent_pas = pas (se pas != None), prevent_ct = colesterol_total (se colesterol_total != None), prevent_hdl = colesterol_hdl (se colesterol_hdl != None). Calcular prevent_egfr a partir de creatinina usando fórmula CKD-EPI. Campos devem ser editáveis (permitir override se necessário).",
+    "rule_id": "44bc7b8658b3e7ce",
+    "text": "Adicionar mensagem de alerta para Refluxo Laringofaríngeo. Incluir uma mensagem de alerta específica ('MENSAGEM AO MÉDICO') para o cenário de Refluxo Laringofaríngeo (RLF), destacando a necessidade de tratamento prolongado com IBP e medidas comportamentais.",
     "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "anthropic/claude-sonnet-4.5",
-    "timestamp": "2025-12-13T10:18:29.292945",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:34:08.934759",
     "comment": null,
-    "suggestion_id": "sug_008",
+    "suggestion_id": "sug_023",
+    "category": "seguranca",
+    "priority": "media",
+    "keywords": null
+  },
+  {
+    "rule_id": "fe4c53e48e3160b3",
+    "text": "Adicionar mensagem de alerta para Otite Externa. Incluir uma mensagem de alerta específica ('MENSAGEM AO MÉDICO') para Otite Externa, enfatizando o tratamento tópico e cuidados.",
+    "decision": "accepted",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:34:12.195286",
+    "comment": null,
+    "suggestion_id": "sug_025",
+    "category": "seguranca",
+    "priority": "media",
+    "keywords": null
+  },
+  {
+    "rule_id": "35e4290c90462528",
+    "text": "Adicionar mensagem de alerta para Rinossinusite Crônica. Incluir uma mensagem de alerta específica ('MENSAGEM AO MÉDICO') para Rinossinusite Crônica, detalhando o manejo escalonado.",
+    "decision": "accepted",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:34:16.660984",
+    "comment": null,
+    "suggestion_id": "sug_027",
+    "category": "seguranca",
+    "priority": "media",
+    "keywords": null
+  },
+  {
+    "rule_id": "feea5b51dc16c8b2",
+    "text": "Adicionar mensagem de alerta para Otite Externa - Tratamento Tópico. Incluir uma mensagem de alerta específica ('MENSAGEM AO MÉDICO') para Otite Externa, enfatizando o tratamento tópico e cuidados.",
+    "decision": "accepted",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:34:19.993243",
+    "comment": null,
+    "suggestion_id": "sug_028",
+    "category": "seguranca",
+    "priority": "media",
+    "keywords": null
+  },
+  {
+    "rule_id": "105a915e269bf606",
+    "text": "Adicionar mensagem de alerta para Orientações Gerais de Prevenção. Incluir uma mensagem de alerta genérica ('MENSAGEM AO MÉDICO') com orientações gerais de prevenção e sinais de alerta para reavaliação.",
+    "decision": "accepted",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:34:26.051277",
+    "comment": null,
+    "suggestion_id": "sug_030",
+    "category": "seguranca",
+    "priority": "media",
+    "keywords": null
+  },
+  {
+    "rule_id": "45be54b051a99823",
+    "text": "Otimizar condição para prescrição de Amoxicilina + Clavulanato. Ajustar a condição para a prescrição de 'Amoxicilina + Clavulanato 875mg + 125mg' para incluir explicitamente a duração dos sintomas como 'agudo' ou 'persistente (>10 dias sem melhora)', além dos sintomas atuais.",
+    "decision": "accepted",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:34:32.161489",
+    "comment": null,
+    "suggestion_id": "sug_005",
     "category": "eficiencia",
     "priority": "media",
     "keywords": null
   },
   {
-    "rule_id": "bad3041331a54c0b",
-    "text": "Adicionar alerta crítico de bloqueio para síncope de esforço no nó de conduta médica. O protocolo detecta síncope de esforço (sincope_contexto == 'contexto_esforco') e exibe mensagem educativa (msg-critico-sincope-esforco), mas NÃO bloqueia liberação para atividade física. Síncope de esforço tem risco de morte súbita 5-30% e requer investigação OBRIGATÓRIA antes de qualquer liberação. SOLUÇÃO: Adicionar alerta CRÍTICO no nó de conduta (conduta-1754085461792) que IMPEÇA finalização do atendimento sem: (1) ECG realizado, (2) ECOTT solicitado, (3) Teste ergométrico/cintilografia solicitado, (4) Encaminhamento cardiologia registrado. Exemplo JSON: {'id': 'alerta-bloqueio-sincope-esforco', 'condicao': 'sincope_contexto == \"contexto_esforco\"', 'tipo': 'bloqueio', 'mensagem': 'BLOQUEIO DE SEGURANÇA: Paciente com síncope de esforço NÃO pode ser liberado para atividade física. Investigação obrigatória: ECG + ECOTT + Teste ergométrico/Cintilografia + Avaliação cardiologista.'}",
+    "rule_id": "bbff76e19afab923",
+    "text": "Otimizar condição para prescrição de Pantoprazol. Ajustar a condição para a prescrição de 'Pantoprazol 40mg' para incluir a duração dos sintomas como 'cronico' ou a presença de 'ardor_faringeo', além dos sintomas atuais.",
     "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "anthropic/claude-sonnet-4.5",
-    "timestamp": "2025-12-13T10:18:36.076942",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:34:41.142300",
     "comment": null,
-    "suggestion_id": "sug_003",
-    "category": "seguranca",
-    "priority": "alta",
+    "suggestion_id": "sug_007",
+    "category": "eficiencia",
+    "priority": "media",
     "keywords": null
   },
   {
-    "rule_id": "c84834ce144cbed0",
-    "text": "Adicionar validação de prescrição de estatina em pacientes com DAC no nó de conduta. O protocolo detecta DAC sem estatina (dac_sem_estatina) e exibe mensagem educativa (msg-critico-dac-sem-estatina), mas NÃO valida se estatina foi PRESCRITA antes de finalizar atendimento. DAC sem estatina é gap terapêutico crítico (Evidência 1A). SOLUÇÃO: Adicionar validação no nó de conduta que IMPEÇA finalização se: (1) 'dac' in comorbidades E (2) Nenhuma estatina foi prescrita (verificar lista de medicamentos prescritos) E (3) Não há justificativa documentada de contraindicação. Exemplo JSON: {'id': 'validacao-estatina-dac', 'condicao': \"'dac' in comorbidades and not any('estatina' in med['categoria'].lower() for med in medicamentos_prescritos)\", 'tipo': 'alerta_critico', 'mensagem': 'ATENÇÃO: Paciente com DAC sem prescrição de estatina. Prescrever estatina alta intensidade (Atorvastatina 40-80mg OU Rosuvastatina 20-40mg) ou documentar contraindicação.'}",
+    "rule_id": "9958093d6fc25309",
+    "text": "Refinar condição para prescrição de Budesonida spray nasal. Ajustar a condição para 'Budesonida spray nasal 64mcg/dose' para incluir a duração dos sintomas como 'subagudo' ou 'cronico', além dos sintomas nasais e ausência de alergia a corticoides.",
     "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "anthropic/claude-sonnet-4.5",
-    "timestamp": "2025-12-13T10:18:51.119945",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:34:44.987025",
     "comment": null,
-    "suggestion_id": "sug_004",
-    "category": "seguranca",
-    "priority": "alta",
+    "suggestion_id": "sug_009",
+    "category": "eficiencia",
+    "priority": "media",
     "keywords": null
   },
   {
-    "rule_id": "09cd8063b0794e73",
-    "text": "Adicionar validação de dados obrigatórios para cálculo PREVENT antes de exibir resultado. O nó 'summary-prevent-calculo' exibe resultado de risco cardiovascular mesmo com dados incompletos (CT, HDL, PAS, eGFR ausentes). Isso pode gerar estimativa incorreta e decisão clínica inadequada. SOLUÇÃO: Adicionar expressão clínica 'prevent_dados_completos' que valida presença de TODOS os campos obrigatórios. Se falso, exibir apenas mensagem de alerta 'msg-validacao-prevent-dados-faltantes' e NÃO calcular risco. Exemplo JSON: {'id': 'expr-prevent-validacao', 'formula': 'prevent_ct != None and prevent_hdl != None and prevent_pas != None and prevent_egfr != None', 'template': 'Exibir resultado apenas se True'}",
+    "rule_id": "8741ed616e13a578",
+    "text": "Otimizar condição para prescrição de Mometasona spray nasal. Ajustar a condição para 'Mometasona spray nasal 50mcg/dose' para incluir a duração dos sintomas como 'cronico' e a presença de 'hiposmia_anosmia' ou 'obstrucao_nasal'.",
     "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "anthropic/claude-sonnet-4.5",
-    "timestamp": "2025-12-13T10:18:59.385078",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:34:54.597917",
     "comment": null,
-    "suggestion_id": "sug_001",
-    "category": "seguranca",
-    "priority": "alta",
+    "suggestion_id": "sug_011",
+    "category": "eficiencia",
+    "priority": "media",
     "keywords": null
   },
   {
-    "rule_id": "c1d69b479e1cbe94",
-    "text": "Adicionar solicitação automática de ECOTT quando FA + dispneia detectados. O protocolo detecta FA + dispneia (fa_dispneia_ecott_required) e exibe mensagem educativa (msg-critico-fa-dispneia-ecott), mas NÃO adiciona ECOTT automaticamente à lista de exames solicitados. ECOTT é OBRIGATÓRIO nessa combinação (ESC Guidelines on AF 2020 - Classe I). SOLUÇÃO: Adicionar lógica no nó de conduta que, quando fa_dispneia_ecott_required == True, automaticamente inclui exame 'US - Ecocardiograma com Doppler convencional - artérias' (id: 08a4d940-0732-464d-8fdc-f7a62afeff7c) na lista de exames solicitados, com alerta destacado: 'OBRIGATÓRIO em FA + dispneia para avaliar FE e trombos em AE (risco AVE)'.",
+    "rule_id": "a3b79d10cd382d0d",
+    "text": "Adicionar mensagem de alerta para Rinite Alérgica - Manejo Combinado. Incluir uma mensagem de alerta específica ('MENSAGEM AO MÉDICO') para Rinite Alérgica, enfatizando o manejo combinado e o controle ambiental.",
     "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "anthropic/claude-sonnet-4.5",
-    "timestamp": "2025-12-13T10:19:02.478223",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:35:12.942874",
     "comment": null,
-    "suggestion_id": "sug_005",
+    "suggestion_id": "sug_026",
     "category": "seguranca",
-    "priority": "alta",
+    "priority": "media",
     "keywords": null
   },
   {
-    "rule_id": "91a9f361beb34673",
-    "text": "Adicionar validação de contraindicações para teste ergométrico antes de solicitar exame. O protocolo solicita teste ergométrico em várias situações (DAC estável, dor torácica de risco baixo-moderado, pré-operatório), mas NÃO valida contraindicações absolutas antes de solicitar. Playbook menciona contraindicações: estenose aórtica grave/sintomática, arritmias permanentes não controladas, obstrução hemodinâmica de via de saída VE, hipotensão (PAS <90mmHg). SOLUÇÃO: Adicionar validação no exame 'Teste ergométrico computadorizado' que detecte contraindicações e exiba alerta: 'ATENÇÃO: Paciente possui contraindicação para teste ergométrico (estenose aórtica grave/hipotensão/arritmia não controlada). Considerar prova funcional alternativa (cintilografia com estresse farmacológico ou eco de estresse com dobutamina).'",
+    "rule_id": "d48858261a6008ae",
+    "text": "Adicionar mensagem de alerta para Tratamento Prévio Otimizado. Incluir uma mensagem de alerta específica ('MENSAGEM AO MÉDICO') para quando o paciente já realizou tratamentos prévios, enfatizando a otimização da conduta atual.",
     "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "anthropic/claude-sonnet-4.5",
-    "timestamp": "2025-12-13T10:19:08.126778",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:35:18.053815",
     "comment": null,
-    "suggestion_id": "sug_015",
+    "suggestion_id": "sug_029",
     "category": "seguranca",
-    "priority": "alta",
+    "priority": "media",
     "keywords": null
   },
   {
-    "rule_id": "397519bae4b15eca",
-    "text": "Adicionar validação de valores de BNP/NT-proBNP com alerta se elevados em pacientes com DM2. O protocolo solicita BNP ou NT-proBNP para rastreamento de IC estágio B em DM2 (ADA 2025), mas NÃO valida valores de corte (BNP ≥50 pg/mL ou NT-proBNP ≥125 pg/mL) nem gera alerta automático se elevados. Médico precisa interpretar manualmente. SOLUÇÃO: Adicionar campos de coleta de valores de BNP e NT-proBNP no nó de exames complementares. Criar expressões clínicas que validem valores: bnp_elevado = bnp >= 50, ntprobnp_elevado = ntprobnp >= 125. Se elevado E paciente tem DM2, adicionar alerta automático no nó de conduta: 'BNP/NT-proBNP elevado em paciente com DM2. Solicitar ECOTT e encaminhar para cardiologista (risco IC estágio B)'.",
+    "rule_id": "cc557a652400e933",
+    "text": "Simplificar condição para prescrição de Fexofenadina. Ajustar a condição para a prescrição de 'Fexofenadina 120mg' para que seja acionada apenas pela presença de sintomas alérgicos nasais, sem a necessidade de verificar se já foi tratada.",
     "decision": "accepted",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "anthropic/claude-sonnet-4.5",
-    "timestamp": "2025-12-13T10:19:31.385133",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:35:26.232817",
+    "comment": null,
+    "suggestion_id": "sug_006",
+    "category": "eficiencia",
+    "priority": "media",
+    "keywords": null
+  },
+  {
+    "rule_id": "4a1d239ce8a8b1d0",
+    "text": "Ajustar condição para prescrição de Loratadina. Modificar a condição para 'Loratadina 10mg' para incluir a presença de sintomas nasais alérgicos, além de fatores sazonais.",
+    "decision": "accepted",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:35:29.645963",
     "comment": null,
     "suggestion_id": "sug_010",
+    "category": "eficiencia",
+    "priority": "media",
+    "keywords": null
+  },
+  {
+    "rule_id": "e921e2c78c6d037e",
+    "text": "Ajustar condição para prescrição de Azelastina intranasal. Modificar a condição para 'Azelastina spray nasal 0,1%' para incluir a presença de sintomas nasais, especialmente obstrução, e fatores desencadeantes como irritantes ou variação térmica.",
+    "decision": "accepted",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:35:31.813763",
+    "comment": null,
+    "suggestion_id": "sug_013",
+    "category": "eficiencia",
+    "priority": "media",
+    "keywords": null
+  },
+  {
+    "rule_id": "ff64971c6be629c3",
+    "text": "Otimizar condição para prescrição de Fluticasona spray nasal. Ajustar a condição para 'Furoato de Fluticasona spray nasal 27,5mcg/dose' para incluir a presença de sintomas nasais, especialmente obstrução ou rinorreia, e fatores desencadeantes como alérgenos ou irritantes.",
+    "decision": "accepted",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:35:33.421185",
+    "comment": null,
+    "suggestion_id": "sug_015",
+    "category": "eficiencia",
+    "priority": "media",
+    "keywords": null
+  },
+  {
+    "rule_id": "5f688c6075b9f80f",
+    "text": "Adicionar alerta para RM de encéfalo em vertigem com sintomas neurológicos. Implementar um alerta no exame 'RM encéfalo com e sem contraste' para reforçar a indicação em casos de vertigem com sintomas neurológicos.",
+    "decision": "accepted",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:35:55.064400",
+    "comment": null,
+    "suggestion_id": "sug_017",
+    "category": "seguranca",
+    "priority": "alta",
+    "keywords": null
+  },
+  {
+    "rule_id": "71d0cbc37e6b257e",
+    "text": "Adicionar mensagem de alerta para Vertigem Central. Incluir uma mensagem de alerta específica ('MENSAGEM AO MÉDICO') para o cenário de vertigem com sintomas neurológicos, enfatizando a urgência e a necessidade de avaliação neurológica.",
+    "decision": "accepted",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:35:58.664337",
+    "comment": null,
+    "suggestion_id": "sug_018",
+    "category": "seguranca",
+    "priority": "alta",
+    "keywords": null
+  },
+  {
+    "rule_id": "706daaae5d94fefc",
+    "text": "Reforçar contraindicação de antibióticos em alergia à penicilina. Adicionar uma mensagem de alerta específica no medicamento 'Amoxicilina + Clavulanato 875mg + 125mg' para reforçar a contraindicação em caso de alergia à penicilina.",
+    "decision": "accepted",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:36:02.647806",
+    "comment": null,
+    "suggestion_id": "sug_002",
+    "category": "seguranca",
+    "priority": "alta",
+    "keywords": null
+  },
+  {
+    "rule_id": "c5a9ccd646e43704",
+    "text": "Adicionar mensagem de alerta para Hipoacusia Infantil. Incluir uma mensagem de alerta específica ('MENSAGEM AO MÉDICO') para Hipoacusia Infantil, enfatizando a importância da intervenção precoce.",
+    "decision": "accepted",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:36:06.063546",
+    "comment": null,
+    "suggestion_id": "sug_021",
+    "category": "seguranca",
+    "priority": "alta",
+    "keywords": null
+  },
+  {
+    "rule_id": "ecb6658b9d1b8463",
+    "text": "Adicionar mensagem de alerta para SAHOS. Incluir uma mensagem de alerta específica ('MENSAGEM AO MÉDICO') para Síndrome da Apneia Obstrutiva do Sono (SAHOS), destacando a importância do diagnóstico e tratamento.",
+    "decision": "accepted",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:36:09.784212",
+    "comment": null,
+    "suggestion_id": "sug_024",
     "category": "seguranca",
     "priority": "alta",
     "keywords": null
@@ -183,14 +339,53 @@ As seções abaixo contêm regras estruturadas que são usadas para filtrar suge
 ```json
 [
   {
-    "rule_id": "6cbf6d91f61c94a1",
-    "text": "Corrigir lógica de ocultação do nó de exames complementares (node-1754075093485). O nó 'Resultados de exames complementares - inicial' (node-1754075093485) está configurado como OCULTO quando 'sem_exames_recentes' está selecionado. Isso é INVERSO à lógica correta: o nó deveria ser VISÍVEL quando paciente NÃO traz exames, para coletar dados laboratoriais essenciais (creatinina, HbA1c, lipidograma) necessários para cálculo PREVENT e estratificação de risco. SOLUÇÃO: Alterar condicional de 'oculto' para 'visivel' e inverter condição para 'not('sem_exames_recentes' in exames_avaliacao)' OU remover condição completamente (nó sempre visível).",
+    "rule_id": "5f1cd6a395a97e94",
+    "text": "Adicionar condição para prescrição de Azitromicina. Adicionar a condição 'alergia_penicilina' à prescrição de 'Azitromicina 500mg' para garantir que seja considerada como alternativa em casos de alergia.",
     "decision": "rejected",
-    "protocol_id": "amil_ficha_cardiologia_v2.0.0_12-12-2025-1024",
-    "model_id": "anthropic/claude-sonnet-4.5",
-    "timestamp": "2025-12-13T10:19:27.026785",
-    "comment": "na verdade, a lógica está correta.",
-    "suggestion_id": "sug_002",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:33:32.014623",
+    "comment": "autonomia médica",
+    "suggestion_id": "sug_008",
+    "category": "eficiencia",
+    "priority": "media",
+    "keywords": null
+  },
+  {
+    "rule_id": "e10530987acc303a",
+    "text": "Refinar condição para prescrição de Prednisolona. Ajustar a condição para 'Prednisolona 20mg' para priorizar casos de rinossinusite crônica com anosmia ou vertigem aguda com sintomas neurológicos, além de não ter alergia a corticoides.",
+    "decision": "rejected",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:33:56.150133",
+    "comment": "autonomia médica + indicação específica no playbook",
+    "suggestion_id": "sug_014",
+    "category": "eficiencia",
+    "priority": "media",
+    "keywords": null
+  },
+  {
+    "rule_id": "cf97081da6978e20",
+    "text": "Otimizar condição para prescrição de Budesonida irrigação nasal. Ajustar a condição para 'Budesonida irrigação nasal 0,5mg em 250mL' para incluir a duração dos sintomas como 'cronico' e a presença de 'hiposmia_anosmia'.",
+    "decision": "rejected",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:35:05.811431",
+    "comment": "autonomia médica",
+    "suggestion_id": "sug_012",
+    "category": "eficiencia",
+    "priority": "media",
+    "keywords": null
+  },
+  {
+    "rule_id": "94e1fea85021db2f",
+    "text": "Adicionar alerta para vertigem com sintomas neurológicos. Implementar um alerta visual e/ou sonoro no nó 'node-sintomas-principais' quando a opção 'sintomas_neurologicos' for selecionada em 'sintomas_associados', direcionando para a avaliação neurológica urgente.",
+    "decision": "rejected",
+    "protocol_id": "amil_ficha_orl_v1.0.5_07-12-2025-2154",
+    "model_id": "google/gemini-2.5-flash-lite",
+    "timestamp": "2025-12-13T22:35:46.226445",
+    "comment": "não temos alertas visuais ou sonoros no daktus studio",
+    "suggestion_id": "sug_001",
     "category": "seguranca",
     "priority": "alta",
     "keywords": null
@@ -5540,4 +5735,326 @@ A análise apresenta uma taxa de aceitação excepcionalmente alta (92.3% - 12 d
 **Categoria Dominante:** distribuicao_desbalanceada_categorias
 
 ---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Feedback - 2025-12-13 21:33
+
+**Protocolo:** amil_ficha_cardiologia_v2.0.2_13-12-2025-1751
+**Modelo:** google/gemini-2.5-flash-lite
+
+**Estatísticas:**
+- Total revisado: 32
+- Relevantes: 32
+- Irrelevantes: 0
+
+
+---
+
+## Feedback - 2025-12-13 21:33
+
+**Protocolo:** amil_ficha_cardiologia_v2.0.2_13-12-2025-1751
+**Modelo:** google/gemini-2.5-flash-lite
+
+**Estatísticas:**
+- Total revisado: 32
+- Relevantes: 32
+- Irrelevantes: 0
+
+
+---
+
+## Insight LLM - 2025-12-13 21:33
+
+**Análise:**
+O feedback do usuário indica que todas as 32 sugestões geradas foram consideradas relevantes. No entanto, a análise do relatório revela uma tendência a gerar sugestões duplicadas e um foco excessivo em detalhes técnicos de implementação, o que pode não refletir a prioridade ou o impacto real para o usuário. A categorização das sugestões (eficiência, usabilidade, segurança) parece adequada, mas a qualidade e a originalidade das sugestões dentro dessas categorias precisam ser aprimoradas.
+
+**Recomendações:**
+1. Implementar um filtro de duplicidade eficaz para evitar a repetição de sugestões. 2. Priorizar a geração de sugestões de alto nível com impacto claro na experiência do usuário, contextualizando os benefícios. 3. Aprimorar a análise contextual para gerar sugestões de segurança mais específicas e acionáveis. 4. Considerar a possibilidade de agrupar sugestões relacionadas para apresentar um conjunto mais coeso e menos volumoso ao usuário.
+
+---
+
+## Aprendizados - 2025-12-13 21:33
+
+### Padrão: Duplicidade de Sugestões
+
+**Descrição:** O relatório gerou sugestões idênticas ou muito similares, indicando uma falha no processo de identificação e consolidação de sugestões únicas. Isso infla o número total de sugestões e pode confundir o usuário.
+
+**Severidade:** alta
+**Frequência:** 2
+
+**Exemplos:**
+- Simplificar condição de visibilidade do nó de Exames Cardiológicos
+- Simplificar condição de visibilidade do nó de Exames Cardiológicos (Duplicado)
+- Refinar condição para BNP/NT-proBNP em DM2 (Duplicado)
+
+---
+
+### Padrão: Foco Excessivo em Detalhes de Implementação
+
+**Descrição:** Muitas sugestões focam em aspectos muito específicos de implementação (ex: 'Otimizar condição de exibição', 'Simplificar condição de visibilidade', 'Ajustar visibilidade do campo'), sem necessariamente contextualizar o impacto geral na usabilidade ou eficiência para o usuário final.
+
+**Severidade:** media
+**Frequência:** 15
+
+**Exemplos:**
+- Otimizar condição de exibição do nó de Exames Laboratoriais
+- Simplificar condição de visibilidade do nó de Exames Cardiológicos
+- Ajustar visibilidade do campo 'Outras alterações no ECG'
+
+---
+
+### Padrão: Sugestões de Segurança Genéricas
+
+**Descrição:** Algumas sugestões de segurança, como a implementação de rastreamento de IC Estágio B, embora potencialmente relevantes, podem ser genéricas demais e não capturar nuances específicas do contexto clínico ou do fluxo de trabalho do usuário.
+
+**Severidade:** media
+**Frequência:** 3
+
+**Exemplos:**
+- Implementar rastreamento de IC Estágio B em DM2 assintomático com BNP/NT-proBNP
+
+---
+
+
+## Métricas - 2025-12-13 21:33
+
+**Protocolo:** amil_ficha_cardiologia_v2.0.2_13-12-2025-1751
+**Sessão:** fb-20251213-002
+
+### Breakdown de Sugestões
+
+- **Total geradas:** 32
+- **Revisadas:** 32
+- **Relevantes:** 32 (100.0%)
+- **Irrelevantes:** 0 (0.0%)
+
+### Distribuição por Prioridade
+
+- **Alta:** 15
+- **Média:** 11
+- **Baixa:** 6
+
+**Taxa de Rejeição (Baixa Prioridade):** 0.0%
+
+### Tendência de Melhoria
+
+- **Taxa de Rejeição Atual:** 0.0%
+- **Taxa de Rejeição Acumulada:** 31.0%
+- **Mudança vs Sessão Anterior:** N/A (primeira sessão)
+- **Sessões até agora:** 76
+
+### Padrões de Rejeição Detectados
+
+- **Foco Excessivo em Detalhes de Implementação:** 15 ocorrências
+- **Sugestões de Segurança Genéricas:** 3 ocorrências
+- **Duplicidade de Sugestões:** 2 ocorrências
+
+**Categoria Dominante:** Foco Excessivo em Detalhes de Implementação
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Feedback - 2025-12-13 22:36
+
+**Protocolo:** amil_ficha_orl_v1.0.5_07-12-2025-2154
+**Modelo:** google/gemini-2.5-flash-lite
+
+**Estatísticas:**
+- Total revisado: 28
+- Relevantes: 24
+- Irrelevantes: 4
+
+### Sugestões Rejeitadas (com comentários)
+
+- **sug_008:** autonomia médica
+- **sug_014:** autonomia médica + indicação específica no playbook
+- **sug_012:** autonomia médica
+- **sug_001:** não temos alertas visuais ou sonoros no daktus studio
+
+
+---
+
+## Feedback - 2025-12-13 22:36
+
+**Protocolo:** amil_ficha_orl_v1.0.5_07-12-2025-2154
+**Modelo:** google/gemini-2.5-flash-lite
+
+**Estatísticas:**
+- Total revisado: 28
+- Relevantes: 24
+- Irrelevantes: 4
+
+### Sugestões Rejeitadas (com comentários)
+
+- **sug_008:** autonomia médica
+- **sug_014:** autonomia médica + indicação específica no playbook
+- **sug_012:** autonomia médica
+- **sug_001:** não temos alertas visuais ou sonoros no daktus studio
+
+
+---
+
+## Insight LLM - 2025-12-13 22:36
+
+**Análise:**
+O relatório gerado categoriza as sugestões de forma estruturada (usabilidade, eficiência, segurança), mas o feedback do usuário revela uma necessidade de contextualização mais profunda. A autonomia médica e a integração com playbooks são aspectos cruciais que o relatório não abordou explicitamente. Além disso, a percepção de relevância pelo usuário (24/28 sugestões) sugere que o modelo pode ter subestimado a importância de certas áreas ou que a distribuição das sugestões por categoria não reflete totalmente o valor percebido. A menção sobre a ausência de alertas visuais/sonoros no 'daktus studio' aponta para uma lacuna na avaliação da aplicabilidade prática das sugestões de segurança.
+
+**Recomendações:**
+1. Incorporar a análise da autonomia médica e a necessidade de integração com playbooks/guias clínicos como critérios de avaliação para sugestões futuras. 2. Ao categorizar sugestões de segurança, considerar a viabilidade de implementação e os tipos de alertas (visuais, sonoros) que são suportados pelos sistemas de destino. 3. Ajustar a granularidade ou a ponderação das categorias de sugestão para melhor alinhar com a percepção de importância do usuário, especialmente se sugestões em categorias menos representadas forem consideradas altamente relevantes. 4. Sempre correlacionar o número total de sugestões relevantes/irrelevantes com as sugestões detalhadas por categoria para garantir que todas as sugestões avaliadas sejam consideradas na análise.
+
+---
+
+## Aprendizados - 2025-12-13 22:36
+
+### Padrão: Discrepância entre Sugestões Gerais e Feedback Específico
+
+**Descrição:** O relatório categoriza sugestões em usabilidade, eficiência e segurança, mas o feedback do usuário aponta para a necessidade de considerar a autonomia médica e a integração com o playbook, aspectos não explicitamente abordados nas categorias do relatório.
+
+**Severidade:** alta
+**Frequência:** 1
+
+**Exemplos:**
+- O usuário mencionou 'autonomia médica + indicação específica no playbook', o que sugere que as sugestões de segurança e eficiência precisam ser contextualizadas com diretrizes clínicas e operacionais mais amplas, algo que a categorização atual não captura.
+- O feedback sobre 'não temos alertas visuais ou sonoros no daktus studio' indica uma lacuna na avaliação da aplicabilidade prática das sugestões de segurança, que foram categorizadas como 'segurança' mas não abordaram a infraestrutura de alerta.
+
+---
+
+### Padrão: Foco Excessivo em Categorias Específicas
+
+**Descrição:** O relatório gerado distribui as sugestões de forma desproporcional entre as categorias, com 16 sugestões em segurança, 11 em eficiência e apenas 1 em usabilidade. O feedback do usuário, no entanto, indica que a maioria das sugestões (24 de 28) foi considerada relevante, sugerindo que a distribuição do relatório pode não refletir a percepção geral de valor pelo usuário.
+
+**Severidade:** media
+**Frequência:** 1
+
+**Exemplos:**
+- O relatório destaca 16 sugestões de segurança, mas o feedback geral de relevância (24/28) não detalha se essas sugestões de segurança foram as mais valorizadas ou se outras categorias também tiveram alta relevância.
+- A baixa sugestão em usabilidade (1) contrasta com a alta taxa de relevância geral, indicando que o modelo pode ter subestimado a importância de melhorias de usabilidade ou que as sugestões de outras categorias foram percebidas como mais críticas.
+
+---
+
+### Padrão: Interpretação de Feedback Implícito
+
+**Descrição:** O relatório não faz inferências sobre sugestões não avaliadas explicitamente. O feedback do usuário, ao classificar 24 de 28 sugestões como relevantes e 4 como irrelevantes, implica que as 24 sugestões relevantes podem abranger diversas categorias, e não apenas as explicitamente detalhadas no relatório.
+
+**Severidade:** baixa
+**Frequência:** 1
+
+**Exemplos:**
+- O relatório lista sugestões específicas dentro de cada categoria, mas não correlaciona essas sugestões com o número total de sugestões relevantes (24).
+- O usuário considerou 24 sugestões relevantes, mas o relatório detalha apenas um subconjunto dessas sugestões dentro de suas categorias.
+
+---
+
+
+## Métricas - 2025-12-13 22:36
+
+**Protocolo:** amil_ficha_orl_v1.0.5_07-12-2025-2154
+**Sessão:** fb-20251213-003
+
+### Breakdown de Sugestões
+
+- **Total geradas:** 28
+- **Revisadas:** 28
+- **Relevantes:** 24 (85.7%)
+- **Irrelevantes:** 4 (14.3%)
+
+### Distribuição por Prioridade
+
+- **Alta:** 6
+- **Média:** 21
+- **Baixa:** 1
+
+**Taxa de Rejeição (Baixa Prioridade):** 0.0%
+
+### Tendência de Melhoria
+
+- **Taxa de Rejeição Atual:** 14.3%
+- **Taxa de Rejeição Acumulada:** 30.6%
+- **Mudança vs Sessão Anterior:** [PIORA] 0.0%
+- **Sessões até agora:** 78
+
+### Padrões de Rejeição Detectados
+
+- **Discrepância entre Sugestões Gerais e Feedback Específico:** 1 ocorrências
+- **Foco Excessivo em Categorias Específicas:** 1 ocorrências
+- **Interpretação de Feedback Implícito:** 1 ocorrências
+
+**Categoria Dominante:** Discrepância entre Sugestões Gerais e Feedback Específico
+
+---
+
+
+
+---
+
+## 🔍 Lições de Erros de Validação
+
+- **[2025-12-13]** `node-1754075093485`: Erro em node-1754075093485: Condicionais NÃO suportam chamadas de função. Usar sintaxe Python pura: 'valor' in variavel, variavel == True, etc.
+- **[2025-12-13]** `node-1754083703202`: Erro em node-1754083703202: Condicionais NÃO suportam chamadas de função. Usar sintaxe Python pura: 'valor' in variavel, variavel == True, etc.
+- **[2025-12-13]** `node-1754083703202`: Erro em node-1754083703202: Condicionais NÃO suportam chamadas de função. Usar sintaxe Python pura: 'valor' in variavel, variavel == True, etc.
+- **[2025-12-13]** `node-1754083703202`: Erro em node-1754083703202: Condicionais NÃO suportam chamadas de função. Usar sintaxe Python pura: 'valor' in variavel, variavel == True, etc.
+- **[2025-12-13]** `unknown`: Erro em unknown: Condicionais NÃO suportam chamadas de função. Usar sintaxe Python pura: 'valor' in variavel, variavel == True, etc.
+- **[2025-12-13]** `unknown`: Erro em unknown: Condicionais NÃO suportam chamadas de função. Usar sintaxe Python pura: 'valor' in variavel, variavel == True, etc.
+
+_Erros de sintaxe condicional detectados durante reconstrução._
 

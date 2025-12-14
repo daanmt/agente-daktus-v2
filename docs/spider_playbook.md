@@ -6,7 +6,7 @@ Responsável: Conteúdo Daktus
 
 O **Spider** é a ferramenta utilizada para modelar e editar protocolos clínicos dentro da Daktus.
 
-Link: https://daktusspider.netlify.app/
+Link: https://flow.daktus.com.br/
 
 ---
 

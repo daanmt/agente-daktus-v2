@@ -278,3 +278,259 @@ def learn_from_feedback_session(
     
     learner = FeedbackLearner()
     return learner.learn_from_rejected_suggestions(rejected)
+
+
+def learn_from_implementation_failures(
+    failed_changes: List[Dict],
+    protocol_name: str = "unknown"
+) -> List[str]:
+    """
+    Aprende com falhas de implementação de sugestões.
+    
+    Quando o agente tenta aplicar uma sugestão mas ela falha (não modifica o nó,
+    erro de lógica condicional, etc.), isso é salvo na memória para evitar
+    repetir o mesmo erro nas próximas análises.
+    
+    Args:
+        failed_changes: Lista de mudanças que falharam, cada uma com:
+            - id: ID da sugestão
+            - title: título da sugestão
+            - node_id: ID do nó afetado
+            - error: razão da falha
+        protocol_name: Nome do protocolo (para contexto)
+    
+    Returns:
+        Lista de entradas adicionadas à memória
+    """
+    if not failed_changes:
+        return []
+    
+    memory_entries = []
+    
+    for failure in failed_changes:
+        sug_id = failure.get('id', 'unknown')
+        title = failure.get('title', 'N/A')
+        node_id = failure.get('node_id', 'unknown')
+        error = failure.get('error', 'Unknown error')
+        
+        # Criar entrada de memória estruturada
+        entry = {
+            "type": "implementation_failure",
+            "suggestion_id": sug_id,
+            "suggestion_title": title,
+            "node_id": node_id,
+            "failure_reason": error,
+            "protocol": protocol_name,
+            "timestamp": datetime.now().isoformat(),
+            "lesson": _extract_lesson_from_failure(error, title)
+        }
+        
+        memory_entries.append(entry)
+        logger.info(f"📝 Learned from implementation failure: {sug_id} - {error[:50]}")
+    
+    # Salvar na memória do agente
+    try:
+        _save_failures_to_memory(memory_entries)
+    except Exception as e:
+        logger.warning(f"Could not save failure lessons to memory: {e}")
+    
+    return [e["lesson"] for e in memory_entries]
+
+
+def _extract_lesson_from_failure(error: str, title: str) -> str:
+    """Extrai uma lição aprendida da falha para uso futuro."""
+    
+    error_lower = error.lower()
+    
+    if "node unchanged" in error_lower:
+        return f"Sugestão '{title[:40]}' não modifica efetivamente o nó. Verificar se a mudança é concreta e implementável."
+    
+    elif "no node_id" in error_lower or "node not found" in error_lower:
+        return f"Sugestão '{title[:40]}' referencia nó inexistente ou não especificado. Garantir specific_location correto."
+    
+    elif "no implementation_strategy" in error_lower:
+        return f"Sugestão '{title[:40]}' sem estratégia de implementação clara. Adicionar json_path e proposed_value."
+    
+    elif "conditional logic" in error_lower:
+        return f"Sugestão '{title[:40]}' gerou erro de lógica condicional. Validar sintaxe antes de reconstruir."
+    
+    else:
+        return f"Implementação de '{title[:40]}' falhou: {error[:60]}. Revisar estrutura da sugestão."
+
+
+def _save_failures_to_memory(entries: List[Dict]) -> None:
+    """Salva lições de falhas na memória do agente (memory_qa.md)."""
+    from pathlib import Path
+    
+    # Encontrar memory_qa.md
+    possible_paths = [
+        Path.cwd() / "memory_qa.md",
+        Path.cwd().parent / "memory_qa.md",
+    ]
+    
+    memory_path = None
+    for path in possible_paths:
+        if path.exists():
+            memory_path = path
+            break
+    
+    if not memory_path:
+        logger.debug("memory_qa.md not found, skipping failure recording")
+        return
+    
+    # Ler conteúdo atual
+    content = memory_path.read_text(encoding='utf-8')
+    
+    # Adicionar seção de falhas se não existir
+    failures_header = "## 📋 Lições de Falhas de Implementação"
+    if failures_header not in content:
+        content += f"\n\n---\n\n{failures_header}\n\n"
+        content += "_Esta seção registra falhas de implementação para evitar repeti-las._\n\n"
+    
+    # Adicionar novas entradas
+    new_entries = []
+    for entry in entries:
+        timestamp = entry.get("timestamp", "")[:10]  # Só data
+        lesson = entry.get("lesson", "")
+        sug_id = entry.get("suggestion_id", "")
+        node_id = entry.get("node_id", "")
+        
+        # Evitar duplicatas (verificar se a lição já existe)
+        if lesson[:50] in content:
+            continue
+        
+        entry_text = f"- **[{timestamp}]** `{sug_id}` @ `{node_id}`: {lesson}\n"
+        new_entries.append(entry_text)
+    
+    if new_entries:
+        # Inserir após o header de falhas
+        insert_pos = content.find(failures_header) + len(failures_header)
+        insert_pos = content.find('\n\n', insert_pos) + 2  # Após descrição
+        
+        # Se há entradas antigas, adicionar no início da lista
+        if "- **[" in content[insert_pos:insert_pos+100]:
+            content = content[:insert_pos] + ''.join(new_entries) + content[insert_pos:]
+        else:
+            content = content[:insert_pos] + ''.join(new_entries) + "\n" + content[insert_pos:]
+        
+        memory_path.write_text(content, encoding='utf-8')
+        logger.info(f"✅ Saved {len(new_entries)} implementation failure lessons to memory")
+
+
+def learn_from_validation_errors(
+    validation_warnings: List[str],
+    protocol_name: str = "unknown"
+) -> List[str]:
+    """
+    Aprende com erros de validação de lógica condicional.
+    
+    Quando o protocolo reconstruído tem erros de validação (ex: chamadas de função
+    em condicionais), isso é salvo na memória para melhorar prompts futuros.
+    
+    Args:
+        validation_warnings: Lista de warnings de validação
+        protocol_name: Nome do protocolo (para contexto)
+    
+    Returns:
+        Lista de lições extraídas
+    """
+    if not validation_warnings:
+        return []
+    
+    # Filtrar apenas erros de lógica condicional
+    conditional_errors = [
+        w for w in validation_warnings 
+        if "Conditional Logic" in w or "Function calls" in w
+    ]
+    
+    if not conditional_errors:
+        return []
+    
+    lessons = []
+    
+    for error in conditional_errors:
+        # Extrair node_id do erro se disponível
+        node_id = "unknown"
+        if "node-" in error:
+            import re
+            match = re.search(r'(node-\d+)', error)
+            if match:
+                node_id = match.group(1)
+        
+        # Criar lição baseada no tipo de erro
+        if "Function calls not allowed" in error:
+            lesson = f"Erro em {node_id}: Condicionais NÃO suportam chamadas de função. Usar sintaxe Python pura: 'valor' in variavel, variavel == True, etc."
+        else:
+            lesson = f"Erro de lógica condicional em {node_id}: {error[:100]}"
+        
+        lessons.append({
+            "type": "validation_error",
+            "node_id": node_id,
+            "error": error,
+            "lesson": lesson,
+            "protocol": protocol_name,
+            "timestamp": datetime.now().isoformat()
+        })
+    
+    # Salvar na memória
+    try:
+        _save_validation_errors_to_memory(lessons)
+    except Exception as e:
+        logger.warning(f"Could not save validation error lessons: {e}")
+    
+    logger.info(f"📝 Learned from {len(lessons)} validation errors")
+    return [l["lesson"] for l in lessons]
+
+
+def _save_validation_errors_to_memory(entries: List[Dict]) -> None:
+    """Salva lições de erros de validação na memória."""
+    from pathlib import Path
+    
+    possible_paths = [
+        Path.cwd() / "memory_qa.md",
+        Path.cwd().parent / "memory_qa.md",
+    ]
+    
+    memory_path = None
+    for path in possible_paths:
+        if path.exists():
+            memory_path = path
+            break
+    
+    if not memory_path:
+        logger.debug("memory_qa.md not found, skipping validation error recording")
+        return
+    
+    content = memory_path.read_text(encoding='utf-8')
+    
+    # Adicionar seção de erros de validação se não existir
+    validation_header = "## 🔍 Lições de Erros de Validação"
+    if validation_header not in content:
+        content += f"\n\n---\n\n{validation_header}\n\n"
+        content += "_Erros de sintaxe condicional detectados durante reconstrução._\n\n"
+    
+    new_entries = []
+    for entry in entries:
+        timestamp = entry.get("timestamp", "")[:10]
+        lesson = entry.get("lesson", "")
+        node_id = entry.get("node_id", "")
+        
+        # Evitar duplicatas
+        if lesson[:50] in content:
+            continue
+        
+        entry_text = f"- **[{timestamp}]** `{node_id}`: {lesson}\n"
+        new_entries.append(entry_text)
+    
+    if new_entries:
+        insert_pos = content.find(validation_header) + len(validation_header)
+        insert_pos = content.find('\n\n', insert_pos) + 2
+        
+        if "- **[" in content[insert_pos:insert_pos+100]:
+            content = content[:insert_pos] + ''.join(new_entries) + content[insert_pos:]
+        else:
+            content = content[:insert_pos] + ''.join(new_entries) + "\n" + content[insert_pos:]
+        
+        memory_path.write_text(content, encoding='utf-8')
+        logger.info(f"✅ Saved {len(new_entries)} validation error lessons to memory")
+

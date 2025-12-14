@@ -1,0 +1,104 @@
+======================================================================
+📋 RELATÓRIO DE AUDITORIA - RECONSTRUÇÃO DE PROTOCOLO
+======================================================================
+Data: 2025-12-13 20:00:58
+Protocolo: Unknown
+Sugestões Aplicadas: 25
+
+======================================================================
+MUDANÇAS DETECTADAS (COMPARAÇÃO)
+======================================================================
+
+🔹 Nodo: Triagem - Sintomas Base (node-triagem-sintomas)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Investigação - Artrite Reumatoide (node-investigacao-ar)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Investigação - Gota (node-investigacao-gota)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Investigação - Fibromialgia (node-investigacao-fibromialgia)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Investigação - Osteoartrite (node-investigacao-osteoartrite)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Investigação - Síndrome do Manguito Rotador (node-investigacao-manguito-rotador)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Investigação - Epicondilite Lateral (node-investigacao-epicondilite)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Investigação - Dedo em Gatilho (node-investigacao-dedogatilho)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Investigação - Bursite Anserina (node-investigacao-bursiteanserina)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Investigação - Fasciíte Plantar (node-investigacao-fasciiteplantar)
+   • descrição: MODIFICADA
+
+🔹 Nodo: História e Medicamentos (node-historia-medicamentos)
+   • descrição: MODIFICADA
+
+🔹 Nodo: Condutas Reumatológicas (conduta-final-reumatologia)
+   • descrição: MODIFICADA
+
+======================================================================
+SUGESTÕES APLICADAS
+======================================================================
+1. [sug_011] Melhorar clareza da condição para 'Investigação - Osteoartrite'
+   Categoria: usabilidade
+2. [sug_012] Melhorar clareza da condição para 'Investigação - Manguito Rotador'
+   Categoria: usabilidade
+3. [sug_018] Adicionar 'Nenhuma das anteriores' para localização da dor
+   Categoria: eficiencia
+4. [sug_009] Agrupar exames laboratoriais de monitorização de DMARDs
+   Categoria: eficiencia
+5. [sug_006] Automatizar cálculo de score para suspeita de AR
+   Categoria: eficiencia
+6. [sug_007] Otimizar fluxo de investigação para Gota
+   Categoria: eficiencia
+7. [sug_008] Otimizar fluxo de investigação para Fibromialgia
+   Categoria: eficiencia
+8. [sug_010] Otimizar solicitação de exames de Hepatite e HIV
+   Categoria: economia
+9. [sug_014] Adicionar descrição textual para condições de nós de investigação
+   Categoria: eficiencia
+10. [sug_023] Adicionar alerta para uso de Metotrexato e risco de teratogenicidade
+   Categoria: seguranca
+11. [sug_001] Adicionar alerta para contraindicação de AINEs em DRC
+   Categoria: seguranca
+12. [sug_002] Adicionar alerta para uso de Colchicina em DRC grave
+   Categoria: seguranca
+13. [sug_004] Adicionar alerta para rastreio oftalmológico obrigatório com Hidroxicloroquina
+   Categoria: seguranca
+14. [sug_005] Adicionar alerta para rastreio de TB e Hepatites antes de Biológicos/DMARDs
+   Categoria: seguranca
+15. [sug_013] Adicionar alerta para uso de corticoides e risco de GIOP
+   Categoria: seguranca
+16. [sug_015] Adicionar alerta para uso de corticoides e risco de GIOP (Prednisolona)
+   Categoria: seguranca
+17. [sug_019] Adicionar alerta para uso de Metotrexato e risco de hepatotoxicidade/teratogenic
+   Categoria: seguranca
+18. [sug_021] Adicionar alerta para uso de Alopurinol e risco de reações de hipersensibilidade
+   Categoria: seguranca
+19. [sug_025] Adicionar alerta para uso de Colchicina e risco de toxicidade em DRC
+   Categoria: seguranca
+20. [sug_026] Adicionar alerta para uso de AINEs e risco de úlcera péptica/DRC
+   Categoria: seguranca
+21. [sug_028] Adicionar alerta para uso de Metotrexato e necessidade de ácido fólico
+   Categoria: seguranca
+22. [sug_029] Adicionar alerta para uso de corticoides e risco de GIOP (Prednisolona - Condiçã
+   Categoria: seguranca
+23. [sug_030] Adicionar alerta para uso de AINEs e risco de úlcera péptica/DRC (Naproxeno)
+   Categoria: seguranca
+24. [sug_003] Adicionar alerta para uso de Alopurinol sem profilaxia em Gota Crônica
+   Categoria: seguranca
+25. [sug_016] Adicionar alerta para uso de Alopurinol sem profilaxia em Gota Crônica (Benzobro
+   Categoria: seguranca
+
+======================================================================
+RESUMO: 25 sugestões | 2025-12-13 20:00:58
+======================================================================
